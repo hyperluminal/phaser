@@ -19,7 +19,7 @@ var Vector4 = require('../../../../src/math/Vector4');
  *
  * @class Sprite3D
  * @extends Phaser.GameObjects.GameObject
- * @memberOf Phaser.GameObjects
+ * @memberof Phaser.GameObjects
  * @constructor
  * @since 3.0.0
  *

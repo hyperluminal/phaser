@@ -91,7 +91,7 @@ var SpinePlugin = new Class({
      * @param {string} texture - The key of the Texture this Game Object will use to render with, as stored in the Texture Manager.
      * @param {(string|integer)} [frame] - An optional frame from the Texture this Game Object is rendering with.
      *
-     * @return {Phaser.GameObjects.Spine} The Game Object that was created.
+     * @return {Phaser.GameObjects.SpineGameObject} The Game Object that was created.
      */
     createSpineFactory: function (plugin)
     {

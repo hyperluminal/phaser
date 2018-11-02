@@ -325,7 +325,7 @@ var Class = __webpack_require__(0);
  * Defines a Point in 2D space, with an x and y component.
  *
  * @class Point
- * @memberOf Phaser.Geom
+ * @memberof Phaser.Geom
  * @constructor
  * @since 3.0.0
  *
@@ -411,7 +411,7 @@ var Class = __webpack_require__(0);
  * A three-component vector.
  *
  * @class Vector3
- * @memberOf Phaser.Math
+ * @memberof Phaser.Math
  * @constructor
  * @since 3.0.0
  *
@@ -1204,7 +1204,7 @@ var Class = __webpack_require__(0);
  * A two-component vector.
  *
  * @class Vector2
- * @memberOf Phaser.Math
+ * @memberof Phaser.Math
  * @constructor
  * @since 3.0.0
  *
@@ -1867,7 +1867,7 @@ var Class = __webpack_require__(0);
  * A four-component vector.
  *
  * @class Vector4
- * @memberOf Phaser.Math
+ * @memberof Phaser.Math
  * @constructor
  * @since 3.0.0
  *
@@ -2474,7 +2474,7 @@ var Class = __webpack_require__(0);
  * ```
  *
  * @class TransformMatrix
- * @memberOf Phaser.GameObjects.Components
+ * @memberof Phaser.GameObjects.Components
  * @constructor
  * @since 3.0.0
  *
@@ -3491,7 +3491,7 @@ var EventEmitter = __webpack_require__(26);
  * Instead, use them as the base for your own custom classes.
  *
  * @class GameObject
- * @memberOf Phaser.GameObjects
+ * @memberof Phaser.GameObjects
  * @extends Phaser.Events.EventEmitter
  * @constructor
  * @since 3.0.0
@@ -4052,7 +4052,7 @@ var GameObject = new Class({
  * The bitmask that `GameObject.renderFlags` is compared against to determine if the Game Object will render or not.
  *
  * @constant {integer} RENDER_MASK
- * @memberOf Phaser.GameObjects.GameObject
+ * @memberof Phaser.GameObjects.GameObject
  * @default
  */
 GameObject.RENDER_MASK = 15;
@@ -4085,7 +4085,7 @@ var Vector4 = __webpack_require__(5);
  *
  * @class Sprite3D
  * @extends Phaser.GameObjects.GameObject
- * @memberOf Phaser.GameObjects
+ * @memberof Phaser.GameObjects
  * @constructor
  * @since 3.0.0
  *
@@ -4348,7 +4348,7 @@ var EPSILON = 0.000001;
  * A four-dimensional matrix.
  *
  * @class Matrix4
- * @memberOf Phaser.Math
+ * @memberof Phaser.Math
  * @constructor
  * @since 3.0.0
  *
@@ -5772,7 +5772,7 @@ var billboardMatrix = new Matrix4();
  * [description]
  *
  * @class Camera
- * @memberOf Phaser.Cameras.Sprite3D
+ * @memberof Phaser.Cameras.Sprite3D
  * @constructor
  * @since 3.0.0
  *
@@ -6823,7 +6823,7 @@ module.exports = Camera;
  * 
  * @name Phaser.ScaleModes
  * @enum {integer}
- * @memberOf Phaser
+ * @memberof Phaser
  * @readOnly
  * @since 3.0.0
  */
@@ -6942,7 +6942,7 @@ module.exports = MATH_CONST;
  * 
  * @name Phaser.BlendModes
  * @enum {integer}
- * @memberOf Phaser
+ * @memberof Phaser
  * @readOnly
  * @since 3.0.0
  */
@@ -7096,7 +7096,7 @@ var Class = __webpack_require__(0);
  * It can listen for Game events and respond to them.
  *
  * @class BasePlugin
- * @memberOf Phaser.Plugins
+ * @memberof Phaser.Plugins
  * @constructor
  * @since 3.8.0
  *
@@ -7279,7 +7279,7 @@ var Class = __webpack_require__(0);
  * It can map itself to a Scene property, or into the Scene Systems, or both.
  *
  * @class ScenePlugin
- * @memberOf Phaser.Plugins
+ * @memberof Phaser.Plugins
  * @extends Phaser.Plugins.BasePlugin
  * @constructor
  * @since 3.8.0
@@ -7370,7 +7370,7 @@ var tmpVec3 = new Vector3();
  *
  * @class PerspectiveCamera
  * @extends Phaser.Cameras.Sprite3D.Camera
- * @memberOf Phaser.Cameras.Sprite3D
+ * @memberof Phaser.Cameras.Sprite3D
  * @constructor
  * @since 3.0.0
  *
@@ -7613,7 +7613,7 @@ var SpriteRender = __webpack_require__(24);
  *
  * @class Sprite
  * @extends Phaser.GameObjects.GameObject
- * @memberOf Phaser.GameObjects
+ * @memberof Phaser.GameObjects
  * @constructor
  * @since 3.0.0
  *
@@ -8121,7 +8121,7 @@ var Class = __webpack_require__(0);
  * or have a property called `events` that is an instance of it.
  *
  * @class DataManager
- * @memberOf Phaser.Data
+ * @memberof Phaser.Data
  * @constructor
  * @since 3.0.0
  *
@@ -10827,7 +10827,7 @@ var Class = __webpack_require__(0);
  * [description]
  *
  * @class GeometryMask
- * @memberOf Phaser.Display.Masks
+ * @memberof Phaser.Display.Masks
  * @constructor
  * @since 3.0.0
  *
@@ -10985,7 +10985,7 @@ var Class = __webpack_require__(0);
  * [description]
  *
  * @class BitmapMask
- * @memberOf Phaser.Display.Masks
+ * @memberof Phaser.Display.Masks
  * @constructor
  * @since 3.0.0
  *
@@ -11629,7 +11629,7 @@ var Vector2 = __webpack_require__(3);
  * Defines a Line segment, a part of a line between two endpoints.
  *
  * @class Line
- * @memberOf Phaser.Geom
+ * @memberof Phaser.Geom
  * @constructor
  * @since 3.0.0
  *
@@ -12044,7 +12044,7 @@ var Random = __webpack_require__(45);
  * Encapsulates a 2D rectangle defined by its corner point in the top-left and its extends in x (width) and y (height)
  *
  * @class Rectangle
- * @memberOf Phaser.Geom
+ * @memberof Phaser.Geom
  * @constructor
  * @since 3.0.0
  *
@@ -13483,7 +13483,7 @@ var Class = __webpack_require__(0);
  * This controller lives as an instance within a Game Object, accessible as `sprite.anims`.
  *
  * @class Animation
- * @memberOf Phaser.GameObjects.Components
+ * @memberof Phaser.GameObjects.Components
  * @constructor
  * @since 3.0.0
  *
@@ -14830,7 +14830,7 @@ var Class = __webpack_require__(0);
  * A Set is a collection of unique elements.
  *
  * @class Set
- * @memberOf Phaser.Structs
+ * @memberof Phaser.Structs
  * @constructor
  * @since 3.0.0
  *
@@ -15263,7 +15263,7 @@ var Class = __webpack_require__(0);
  * Defaults to the identity matrix when instantiated.
  *
  * @class Matrix3
- * @memberOf Phaser.Math
+ * @memberof Phaser.Math
  * @constructor
  * @since 3.0.0
  *
@@ -15868,7 +15868,7 @@ var tmpMat3 = new Matrix3();
  * A quaternion.
  *
  * @class Quaternion
- * @memberOf Phaser.Math
+ * @memberof Phaser.Math
  * @constructor
  * @since 3.0.0
  *
@@ -16753,7 +16753,7 @@ var tmpVec3 = new Vector3();
  *
  * @class OrthographicCamera
  * @extends Phaser.Cameras.Sprite3D.Camera
- * @memberOf Phaser.Cameras.Sprite3D
+ * @memberof Phaser.Cameras.Sprite3D
  * @constructor
  * @since 3.0.0
  *
@@ -17103,7 +17103,7 @@ var Class = __webpack_require__(0);
  * If no seed is given it will use a 'random' one based on Date.now.
  *
  * @class RandomDataGenerator
- * @memberOf Phaser.Math
+ * @memberof Phaser.Math
  * @constructor
  * @since 3.0.0
  *

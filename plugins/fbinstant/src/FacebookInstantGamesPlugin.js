@@ -50,7 +50,7 @@ var Purchase = require('./Purchase');
  * For more details follow the Quick Start guide here: https://developers.facebook.com/docs/games/instant-games
  *
  * @class FacebookInstantGamesPlugin
- * @memberOf Phaser
+ * @memberof Phaser
  * @constructor
  * @extends Phaser.Events.EventEmitter
  * @since 3.13.0

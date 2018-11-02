@@ -232,7 +232,7 @@ var Game = new Class({
          * The Scale Manager is a global system responsible for handling game scaling events.
          *
          * @name Phaser.Game#scale
-         * @type {Phaser.Boot.ScaleManager}
+         * @type {Phaser.DOM.ScaleManager}
          * @since 3.15.0
          */
         this.scale = new ScaleManager(this, this.config);

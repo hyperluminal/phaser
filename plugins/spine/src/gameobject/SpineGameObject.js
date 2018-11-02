@@ -20,6 +20,7 @@ var SpineGameObjectRender = require('./SpineGameObjectRender');
  * TODO
  *
  * @class SpineGameObject
+ * @memberof Phaser.GameObjects
  * @constructor
  * @since 3.16.0
  *

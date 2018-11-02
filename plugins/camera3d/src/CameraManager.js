@@ -14,7 +14,7 @@ var PluginCache = require('../../../src/plugins/PluginCache');
  * [description]
  *
  * @class CameraManager
- * @memberOf Phaser.Cameras.Sprite3D
+ * @memberof Phaser.Cameras.Sprite3D
  * @constructor
  * @since 3.0.0
  *

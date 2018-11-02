@@ -17,7 +17,7 @@ var tmpVec3 = new Vector3();
  *
  * @class OrthographicCamera
  * @extends Phaser.Cameras.Sprite3D.Camera
- * @memberOf Phaser.Cameras.Sprite3D
+ * @memberof Phaser.Cameras.Sprite3D
  * @constructor
  * @since 3.0.0
  *

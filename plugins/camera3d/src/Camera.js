@@ -36,7 +36,7 @@ var billboardMatrix = new Matrix4();
  * [description]
  *
  * @class Camera
- * @memberOf Phaser.Cameras.Sprite3D
+ * @memberof Phaser.Cameras.Sprite3D
  * @constructor
  * @since 3.0.0
  *

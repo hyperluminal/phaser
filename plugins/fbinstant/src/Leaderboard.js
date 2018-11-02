@@ -16,7 +16,7 @@ var LeaderboardScore = require('./LeaderboardScore');
  * `getLeaderboard()` method of the main plugin.
  *
  * @class Leaderboard
- * @memberOf Phaser.FacebookInstantGamesPlugin
+ * @memberof Phaser.FacebookInstantGamesPlugin
  * @constructor
  * @since 3.13.0
  * 
