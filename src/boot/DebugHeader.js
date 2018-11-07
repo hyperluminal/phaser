@@ -105,7 +105,7 @@ var DebugHeader = function (game)
 
         if (!config.hidePhaser)
         {
-            c = c.concat('Phaser v' + CONST.VERSION + fb + ' (' + renderType + ' | ' + audioType + ')');
+            c = c.concat('(HLG CUSTOM BUILD) Phaser v' + CONST.VERSION + fb + ' (' + renderType + ' | ' + audioType + ')');
         }
 
         c = c.concat(' %c ' + config.gameURL);
