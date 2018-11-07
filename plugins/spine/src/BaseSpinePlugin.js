@@ -153,7 +153,7 @@ var SpinePlugin = new Class({
      * The Scene that owns this plugin is shutting down.
      * We need to kill and reset all internal properties as well as stop listening to Scene events.
      *
-     * @method Camera3DPlugin#shutdown
+     * @method SpinePlugin#shutdown
      * @private
      * @since 3.0.0
      */
@@ -171,7 +171,7 @@ var SpinePlugin = new Class({
      * The Scene that owns this plugin is being destroyed.
      * We need to shutdown and then kill off all external references.
      *
-     * @method Camera3DPlugin#destroy
+     * @method SpinePlugin#destroy
      * @private
      * @since 3.0.0
      */

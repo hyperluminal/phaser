@@ -15,7 +15,7 @@ var runtime;
  * @classdesc
  * Both Canvas and WebGL Runtimes together in a single plugin.
  *
- * @class SpinePlugin
+ * @class SpineCanvasPlugin
  * @extends Phaser.Plugins.ScenePlugin
  * @constructor
  * @since 3.16.0
@@ -77,13 +77,13 @@ var SpineCanvasPlugin = new Class({
         });
 
         var atlasLoader = new runtime.AtlasAttachmentLoader(atlas);
-        
+
         var skeletonJson = new runtime.SkeletonJson(atlasLoader);
 
         var skeletonData = skeletonJson.readSkeletonData(this.json.get(key));
 
         var skeleton = new runtime.Skeleton(skeletonData);
-    
+
         return { skeletonData: skeletonData, skeleton: skeleton };
     },
 

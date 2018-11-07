@@ -13,7 +13,7 @@ var Matrix4 = require('../../../src/math/Matrix4');
  * @classdesc
  * Just the WebGL Runtime.
  *
- * @class SpinePlugin
+ * @class SpineWebGLPlugin
  * @extends Phaser.Plugins.ScenePlugin
  * @constructor
  * @since 3.16.0
