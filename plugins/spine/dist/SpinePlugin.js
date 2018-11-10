@@ -4661,7 +4661,14 @@ module.exports = {
      * 
      * @name Phaser.BlendModes.LUMINOSITY
      */
-    LUMINOSITY: 16
+    LUMINOSITY: 16,
+
+    /**
+     * Alpha erase blend mode.
+     * 
+     * @name Phaser.BlendModes.ERASE
+     */
+    ERASE: 17
 
 };
 
@@ -7209,16 +7216,17 @@ var GameObject = new Class({
 
         /**
          * The current state of this Game Object.
-         * 
+         *
          * Phaser itself will never modify this value, although plugins may do so.
-         * 
+         *
          * Use this property to track the state of a Game Object during its lifetime. For example, it could move from
          * a state of 'moving', to 'attacking', to 'dead'. The state value should typically be an integer (ideally mapped to a constant
          * in your game code), but could also be a string, or any other data-type. It is recommended to keep it light and simple.
          * If you need to store complex data about your Game Object, look at using the Data Component instead.
          *
          * @name Phaser.GameObjects.GameObject#state
-         * @type {{integer|string}}
+         * @type {integer|string}
+         * @default 0
          * @since 3.16.0
          */
         this.state = 0;
@@ -7564,7 +7572,7 @@ var GameObject = new Class({
      * If you wish to only temporarily stop an object from receiving input then use
      * `disableInteractive` instead, as that toggles the interactive state, where-as
      * this erases it completely.
-     * 
+     *
      * If you wish to resize a hit area, don't remove and then set it as being
      * interactive. Instead, access the hitarea object directly and resize the shape
      * being used. I.e.: `sprite.input.hitArea.setSize(width, height)` (assuming the

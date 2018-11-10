@@ -36,7 +36,8 @@
     "lintfix": "eslint --config .eslintrc.json \"src/**/*.js\" --fix",
     "sloc": "node-sloc \"./src\" --include-extensions \"js\"",
     "bundleshaders": "node scripts/bundle-shaders.js",
-    "postinstall": "node scripts/support.js"
+    "postinstall": "node scripts/support.js",
+    "buildhlg": "npm run distfull && npm run plugin.spine.dist"
   },
   "keywords": [
     "2d",
