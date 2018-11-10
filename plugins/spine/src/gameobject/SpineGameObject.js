@@ -20,8 +20,8 @@ var SpineGameObjectRender = require('./SpineGameObjectRender');
  * TODO
  *
  * @class SpineGameObject
- * @memberof Phaser.GameObjects
  * @extends Phaser.GameObjects.GameObject
+ * @memberof Phaser.GameObjects
  * @constructor
  * @since 3.16.0
  *
@@ -152,7 +152,7 @@ var SpineGameObject = new Class({
      * @method Phaser.GameObjects.SpineGameObject#getAnimationList
      * @public
      * @since 3.16.0
-     * 
+     *
      * @returns {string[]} an array of the animation names.
      */
     getAnimationList: function ()
@@ -178,11 +178,11 @@ var SpineGameObject = new Class({
      * @method Phaser.GameObjects.SpineGameObject#play
      * @public
      * @since 3.16.0
-     * 
+     *
      * @param {string} animationName - The animation name.
      * @param {boolean} loop - If true, the animation will repeat. If false it will not, instead its last frame is applied if played beyond its duration.
      * In either case trackEnd determines when the track is cleared.
-     * 
+     *
      * @returns {Phaser.GameObjects.SpineGameObject}
      */
     play: function (animationName, loop)
@@ -201,12 +201,12 @@ var SpineGameObject = new Class({
      * @method Phaser.GameObjects.SpineGameObject#setAnimation
      * @public
      * @since 3.16.0
-     * 
+     *
      * @param {number} trackIndex - The index of the track.
      * @param {string} animationName - The animation name.
      * @param {boolean} loop - If true, the animation will repeat. If false it will not, instead its last frame is applied if played beyond its duration.
      * In either case trackEnd determines when the track is cleared.
-     * 
+     *
      * @returns {Phaser.GameObjects.SpineGameObject}
      */
     setAnimation: function (trackIndex, animationName, loop)
@@ -223,12 +223,12 @@ var SpineGameObject = new Class({
      * @method Phaser.GameObjects.SpineGameObject#addAnimation
      * @public
      * @since 3.16.0
-     * 
+     *
      * @param {number} trackIndex - The index of the track.
      * @param {string} animationName - The index of the track.
      * @param {string} loop - The index of the track.
      * @param {string} delay - The index of the track.
-     * 
+     *
      * @returns {any} A track entry to allow further customization of animation playback.
      */
     addAnimation: function (trackIndex, animationName, loop, delay)
@@ -237,23 +237,23 @@ var SpineGameObject = new Class({
     },
 
     /**
-     * Sets an empty animation for a track, discarding any queued animations, and sets the track entry's mixDuration. 
+     * Sets an empty animation for a track, discarding any queued animations, and sets the track entry's mixDuration.
      * An empty animation has no timelines and serves as a placeholder for mixing in or out.
-     * 
-     * Mixing out is done by setting an empty animation with a mix duration using either setEmptyAnimation, setEmptyAnimations, 
-     * or addEmptyAnimation. Mixing to an empty animation causes the previous animation to be applied less and less over the mix duration. 
-     * Properties keyed in the previous animation transition to the value from lower tracks or to the setup pose value if no lower 
-     * tracks key the property. A mix duration of 0 still mixes out over one frame. 
-     * 
+     *
+     * Mixing out is done by setting an empty animation with a mix duration using either setEmptyAnimation, setEmptyAnimations,
+     * or addEmptyAnimation. Mixing to an empty animation causes the previous animation to be applied less and less over the mix duration.
+     * Properties keyed in the previous animation transition to the value from lower tracks or to the setup pose value if no lower
+     * tracks key the property. A mix duration of 0 still mixes out over one frame.
+     *
      * Mixing in is done by first setting an empty animation, then adding an animation using addAnimation and on the returned track entry,
-     * set the mixDuration. Mixing from an empty animation causes the new animation to be applied more and more over the mix duration. 
-     * Properties keyed in the new animation transition from the value from lower tracks or from the setup pose value if no lower tracks 
+     * set the mixDuration. Mixing from an empty animation causes the new animation to be applied more and more over the mix duration.
+     * Properties keyed in the new animation transition from the value from lower tracks or from the setup pose value if no lower tracks
      * key the property to the value keyed in the new animation.
      *
      * @method Phaser.GameObjects.SpineGameObject#setEmptyAnimation
      * @public
      * @since 3.16.0
-     * 
+     *
      * @param {number} trackIndex - The index of the track.
      * @param {number} mixDuration - The index of the track.
      */
@@ -272,7 +272,7 @@ var SpineGameObject = new Class({
      * @method Phaser.GameObjects.SpineGameObject#clearTrack
      * @public
      * @since 3.16.0
-     * 
+     *
      * @param {number} trackIndex - The index of the track.
      */
     clearTrack: function (trackIndex)
@@ -281,7 +281,7 @@ var SpineGameObject = new Class({
 
         return this;
     },
-     
+
     /**
      * Removes all animations from all tracks, leaving skeletons in their previous pose.
      * It may be desired to use setEmptyAnimations to mix the skeletons back to the setup pose,
@@ -301,7 +301,7 @@ var SpineGameObject = new Class({
     /**
      * Sets a skin by name.
      *
-     * @method Phaser.GameObjects.SpineGameObject#setMix
+     * @method Phaser.GameObjects.SpineGameObject#setSkinByName
      * @public
      * @since 3.16.0
      *
@@ -314,6 +314,15 @@ var SpineGameObject = new Class({
         return this;
     },
 
+    /**
+     * Sets a skin.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#setSkin
+     * @public
+     * @since 3.16.0
+     *
+     * @param {spine.Skin} newSkin - The new skin.
+     */
     setSkin: function (newSkin)
     {
         var skeleton = this.skeleton;
@@ -348,7 +357,7 @@ var SpineGameObject = new Class({
     /**
      * Find a bone on this skeleton by name
      *
-     * @method Phaser.GameObjects.SpineGameObject#findBoneIndex
+     * @method Phaser.GameObjects.SpineGameObject#findBone
      * @public
      * @since 3.16.0
      *
@@ -376,7 +385,7 @@ var SpineGameObject = new Class({
     /**
      * Find a slot index by name
      *
-     * @method Phaser.GameObjects.SpineGameObject#findSlotIndex
+     * @method Phaser.GameObjects.SpineGameObject#findSlot
      * @public
      * @since 3.16.0
      *
@@ -401,6 +410,13 @@ var SpineGameObject = new Class({
         return this.skeleton.findSlotIndex(slotName);
     },
 
+    /**
+     * todo
+     *
+     * @method Phaser.GameObjects.SpineGameObject#getBounds
+     * @public
+     * @since 3.16.0
+     */
     getBounds: function ()
     {
         return this.plugin.getBounds(this.skeleton);
