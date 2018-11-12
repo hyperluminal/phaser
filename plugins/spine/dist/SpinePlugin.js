@@ -1688,11 +1688,12 @@ var SpinePlugin = new Class({
      *
      * @method Phaser.GameObjects.GameObjectFactory#spineFactory
      * @since 3.16.0
-     * 
+     *
      * @param {number} x - The horizontal position of this Game Object.
      * @param {number} y - The vertical position of this Game Object.
      * @param {string} texture - The key of the Texture this Game Object will use to render with, as stored in the Texture Manager.
-     * @param {(string|integer)} [frame] - An optional frame from the Texture this Game Object is rendering with.
+     * @param {(string|integer)} [animationName] - The animation to load with.
+     * @param {boolean} [loop] - Loop the loaded animation?
      *
      * @return {Phaser.GameObjects.SpineGameObject} The Game Object that was created.
      */
