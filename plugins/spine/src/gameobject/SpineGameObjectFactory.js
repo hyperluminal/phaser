@@ -18,8 +18,8 @@ var GameObjectFactory = require('../../../../src/gameobjects/GameObjectFactory')
  * @param {number} x - The horizontal position of this Game Object.
  * @param {number} y - The vertical position of this Game Object.
  * @param {string} texture - The key of the Texture this Game Object will use to render with, as stored in the Texture Manager.
- * @param {(string|integer)} [frame] - An optional frame from the Texture this Game Object is rendering with.
- * @param {boolean} loop - Loop the animation?
+ * @param {(string|integer)?} [frame] - An optional frame from the Texture this Game Object is rendering with.
+ * @param {boolean?} loop - Loop the animation?
  *
  * @return {Phaser.GameObjects.SpineGameObject} The Game Object that was created.
  */
