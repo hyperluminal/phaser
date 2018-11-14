@@ -441,6 +441,71 @@ module.exports = IsPlainObject;
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
+var types = {};
+
+var FileTypesManager = {
+
+    /**
+     * Static method called when a LoaderPlugin is created.
+     * 
+     * Loops through the local types object and injects all of them as
+     * properties into the LoaderPlugin instance.
+     *
+     * @method Phaser.Loader.FileTypesManager.register
+     * @since 3.0.0
+     * 
+     * @param {Phaser.Loader.LoaderPlugin} loader - The LoaderPlugin to install the types into.
+     */
+    install: function (loader)
+    {
+        for (var key in types)
+        {
+            loader[key] = types[key];
+        }
+    },
+
+    /**
+     * Static method called directly by the File Types.
+     * 
+     * The key is a reference to the function used to load the files via the Loader, i.e. `image`.
+     *
+     * @method Phaser.Loader.FileTypesManager.register
+     * @since 3.0.0
+     * 
+     * @param {string} key - The key that will be used as the method name in the LoaderPlugin.
+     * @param {function} factoryFunction - The function that will be called when LoaderPlugin.key is invoked.
+     */
+    register: function (key, factoryFunction)
+    {
+        types[key] = factoryFunction;
+    },
+
+    /**
+     * Removed all associated file types.
+     *
+     * @method Phaser.Loader.FileTypesManager.destroy
+     * @since 3.0.0
+     */
+    destroy: function ()
+    {
+        types = {};
+    }
+
+};
+
+module.exports = FileTypesManager;
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2018 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
 var FILE_CONST = {
 
     /**
@@ -584,7 +649,7 @@ module.exports = FILE_CONST;
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -594,7 +659,7 @@ module.exports = FILE_CONST;
  */
 
 var Class = __webpack_require__(0);
-var CONST = __webpack_require__(3);
+var CONST = __webpack_require__(4);
 var GetFastValue = __webpack_require__(1);
 var GetURL = __webpack_require__(17);
 var MergeXHRSettings = __webpack_require__(6);
@@ -1178,71 +1243,6 @@ File.revokeObjectURL = function (image)
 };
 
 module.exports = File;
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-var types = {};
-
-var FileTypesManager = {
-
-    /**
-     * Static method called when a LoaderPlugin is created.
-     * 
-     * Loops through the local types object and injects all of them as
-     * properties into the LoaderPlugin instance.
-     *
-     * @method Phaser.Loader.FileTypesManager.register
-     * @since 3.0.0
-     * 
-     * @param {Phaser.Loader.LoaderPlugin} loader - The LoaderPlugin to install the types into.
-     */
-    install: function (loader)
-    {
-        for (var key in types)
-        {
-            loader[key] = types[key];
-        }
-    },
-
-    /**
-     * Static method called directly by the File Types.
-     * 
-     * The key is a reference to the function used to load the files via the Loader, i.e. `image`.
-     *
-     * @method Phaser.Loader.FileTypesManager.register
-     * @since 3.0.0
-     * 
-     * @param {string} key - The key that will be used as the method name in the LoaderPlugin.
-     * @param {function} factoryFunction - The function that will be called when LoaderPlugin.key is invoked.
-     */
-    register: function (key, factoryFunction)
-    {
-        types[key] = factoryFunction;
-    },
-
-    /**
-     * Removed all associated file types.
-     *
-     * @method Phaser.Loader.FileTypesManager.destroy
-     * @since 3.0.0
-     */
-    destroy: function ()
-    {
-        types = {};
-    }
-
-};
-
-module.exports = FileTypesManager;
 
 
 /***/ }),
@@ -2074,6 +2074,7 @@ module.exports = BasePlugin;
  */
 
 var Class = __webpack_require__(0);
+var FileTypesManager = __webpack_require__(3);
 var GetFastValue = __webpack_require__(1);
 var ImageFile = __webpack_require__(16);
 var IsPlainObject = __webpack_require__(2);
@@ -2085,13 +2086,13 @@ var TextFile = __webpack_require__(23);
  * @typedef {object} Phaser.Loader.FileTypes.SpineFileConfig
  *
  * @property {string} key - The key of the file. Must be unique within both the Loader and the Texture Manager.
- * @property {string} [textureURL] - The absolute or relative URL to load the texture image file from.
+ * @property {string} [jsonURL] - The absolute or relative URL to load the spine json file from.
  * @property {string} [textureExtension='png'] - The default file extension to use for the image texture if no url is provided.
- * @property {XHRSettingsObject} [textureXhrSettings] - Extra XHR Settings specifically for the texture image file.
- * @property {string} [normalMap] - The filename of an associated normal map. It uses the same path and url to load as the texture image.
- * @property {string} [atlasURL] - The absolute or relative URL to load the atlas data file from.
- * @property {string} [atlasExtension='txt'] - The default file extension to use for the atlas data if no url is provided.
- * @property {XHRSettingsObject} [atlasXhrSettings] - Extra XHR Settings specifically for the atlas data file.
+ * @property {XHRSettingsObject} [jsonXhrSettings] - Extra XHR Settings specifically for the spine json file.
+ * @property {string} [atlasURL] - The absolute or relative URL to load the spine atlas file from.
+ * @property {string} [atlasExtension='txt'] - The default file extension to use for the spine atlas if no url is provided.
+ * @property {XHRSettingsObject} [atlasXhrSettings] - Extra XHR Settings specifically for the spine atlas file.
+ * @property {string} [path] - The path to use when loading the textures defined in the spine atlas file.
  */
 
 /**
@@ -2109,10 +2110,11 @@ var TextFile = __webpack_require__(23);
  *
  * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader that is responsible for this file.
  * @param {(string|Phaser.Loader.FileTypes.UnityAtlasFileConfig)} key - The key to use for this file, or a file configuration object.
- * @param {string|string[]} [textureURL] - The absolute or relative URL to load the texture image file from. If undefined or `null` it will be set to `<key>.png`, i.e. if `key` was "alien" then the URL will be "alien.png".
- * @param {string} [atlasURL] - The absolute or relative URL to load the texture atlas data file from. If undefined or `null` it will be set to `<key>.txt`, i.e. if `key` was "alien" then the URL will be "alien.txt".
- * @param {XHRSettingsObject} [textureXhrSettings] - An XHR Settings configuration object for the atlas image file. Used in replacement of the Loaders default XHR Settings.
- * @param {XHRSettingsObject} [atlasXhrSettings] - An XHR Settings configuration object for the atlas data file. Used in replacement of the Loaders default XHR Settings.
+ * @param {string|string[]} [jsonURL] - The absolute or relative URL to load the json file from. If undefined or `null` it will be set to `<key>.png`, i.e. if `key` was "alien" then the URL will be "alien.png".
+ * @param {string} [atlasURL] - The absolute or relative URL to load the spine atlas file from. If undefined or `null` it will be set to `<key>.txt`, i.e. if `key` was "alien" then the URL will be "alien.txt".
+ * @param {string} [path] - The path to use when loading the textures defined in the spine atlas.
+ * @param {XHRSettingsObject} [jsonXhrSettings] - An XHR Settings configuration object for the spine json file. Used in replacement of the Loaders default XHR Settings.
+ * @param {XHRSettingsObject} [atlasXhrSettings] - An XHR Settings configuration object for the spine atlas file. Used in replacement of the Loaders default XHR Settings.
  */
 var SpineFile = new Class({
 
@@ -2120,16 +2122,19 @@ var SpineFile = new Class({
 
     initialize:
 
-    function SpineFile (loader, key, jsonURL, atlasURL, jsonXhrSettings, atlasXhrSettings)
+    function SpineFile (loader, key, jsonURL, atlasURL, path, jsonXhrSettings, atlasXhrSettings)
     {
         var json;
         var atlas;
+        var config;
 
         if (IsPlainObject(key))
         {
+            console.log('plain object ', key);
             var config = key;
 
             key = GetFastValue(config, 'key');
+            path = GetFastValue(config, 'path');
 
             json = new JSONFile(loader, {
                 key: key,
@@ -2147,13 +2152,19 @@ var SpineFile = new Class({
         }
         else
         {
+            console.log('object ', key);
+
             json = new JSONFile(loader, key, jsonURL, jsonXhrSettings);
             atlas = new TextFile(loader, key, atlasURL, atlasXhrSettings);
         }
-        
+        console.log('config',config);
         atlas.cache = loader.cacheManager.custom.spine;
 
-        MultiFile.call(this, loader, 'spine', key, [ json, atlas ]);
+        MultiFile.call(this, loader, 'spine', key, [ json, atlas ]); 
+
+        this.config.path = path;
+        this.config.jsonXhrSettings = jsonXhrSettings;
+        this.config.atlasXhrSettings = atlasXhrSettings;
     },
 
     /**
@@ -2265,14 +2276,14 @@ var SpineFile = new Class({
 });
 
 /**
- * Adds a Unity YAML based Texture Atlas, or array of atlases, to the current load queue.
+ * Adds a spine objects to the current load queue, consisting of json file, atlas file & textures.
  *
  * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
  * 
  * ```javascript
  * function preload ()
  * {
- *     this.load.unityAtlas('mainmenu', 'images/MainMenu.png', 'images/MainMenu.txt');
+ *     this.load.spine('spineboy', 'spine/sb/spineboy.json', 'spine/spineboy.atlas', 'spine/sb/' );
  * }
  * ```
  *
@@ -2287,7 +2298,7 @@ var SpineFile = new Class({
  * If you call this from outside of `preload` then you are responsible for starting the Loader afterwards and monitoring
  * its events to know when it's safe to use the asset. Please see the Phaser.Loader.LoaderPlugin class for more details.
  *
- * Phaser expects the atlas data to be provided in a YAML formatted text file as exported from Unity.
+ * Phaser expects the atlas data to be provided in a JSON format as exported from Spine.
  * 
  * Phaser can load all common image types: png, jpg, gif and any other format the browser can natively handle.
  *
@@ -2299,24 +2310,15 @@ var SpineFile = new Class({
  * Instead of passing arguments you can pass a configuration object, such as:
  * 
  * ```javascript
- * this.load.unityAtlas({
- *     key: 'mainmenu',
- *     textureURL: 'images/MainMenu.png',
- *     atlasURL: 'images/MainMenu.txt'
+ * this.load.spine({
+ *     key: 'spineboy',
+ *     jsonURL: 'spine/sb/spineboy.json',
+ *     atlasURL: 'spine/spineboy.atlas',
+ *     path: 'spine/sb/'
  * });
  * ```
  *
  * See the documentation for `Phaser.Loader.FileTypes.SpineFileConfig` for more details.
- *
- * Once the atlas has finished loading you can use frames from it as textures for a Game Object by referencing its key:
- * 
- * ```javascript
- * this.load.unityAtlas('mainmenu', 'images/MainMenu.png', 'images/MainMenu.json');
- * // and later in your game ...
- * this.add.image(x, y, 'mainmenu', 'background');
- * ```
- *
- * To get a list of all available frames within an atlas please consult your Texture Atlas software.
  *
  * If you have specified a prefix in the loader, via `Loader.setPrefix` then this value will be prepended to this files
  * key. For example, if the prefix was `MENU.` and the key was `Background` the final key will be `MENU.Background` and
@@ -2324,46 +2326,22 @@ var SpineFile = new Class({
  *
  * The URL can be relative or absolute. If the URL is relative the `Loader.baseURL` and `Loader.path` values will be prepended to it.
  *
- * If the URL isn't specified the Loader will take the key and create a filename from that. For example if the key is "alien"
- * and no URL is given then the Loader will set the URL to be "alien.png". It will always add `.png` as the extension, although
- * this can be overridden if using an object instead of method arguments. If you do not desire this action then provide a URL.
- *
- * Phaser also supports the automatic loading of associated normal maps. If you have a normal map to go with this image,
- * then you can specify it by providing an array as the `url` where the second element is the normal map:
- * 
- * ```javascript
- * this.load.unityAtlas('mainmenu', [ 'images/MainMenu.png', 'images/MainMenu-n.png' ], 'images/MainMenu.txt');
- * ```
- *
- * Or, if you are using a config object use the `normalMap` property:
- * 
- * ```javascript
- * this.load.unityAtlas({
- *     key: 'mainmenu',
- *     textureURL: 'images/MainMenu.png',
- *     normalMap: 'images/MainMenu-n.png',
- *     atlasURL: 'images/MainMenu.txt'
- * });
- * ```
- *
- * The normal map file is subject to the same conditions as the image file with regard to the path, baseURL, CORs and XHR Settings.
- * Normal maps are a WebGL only feature.
- *
- * Note: The ability to load this type of file will only be available if the Unity Atlas File type has been built into Phaser.
- * It is available in the default build but can be excluded from custom builds.
+ * Note: The ability to load this type of file will only be available if the Spine plugin has been added.
  *
  * @method Phaser.Loader.LoaderPlugin#spine
  * @fires Phaser.Loader.LoaderPlugin#addFileEvent
  * @since 3.16.0
  *
  * @param {(string|Phaser.Loader.FileTypes.SpineFileConfig|Phaser.Loader.FileTypes.SpineFileConfig[])} key - The key to use for this file, or a file configuration object, or array of them.
- * @param {string|string[]} [textureURL] - The absolute or relative URL to load the texture image file from. If undefined or `null` it will be set to `<key>.png`, i.e. if `key` was "alien" then the URL will be "alien.png".
+ * @param {string|string[]} [jsonURL] - The absolute or relative URL to load the texture image file from. If undefined or `null` it will be set to `<key>.png`, i.e. if `key` was "alien" then the URL will be "alien.png".
  * @param {string} [atlasURL] - The absolute or relative URL to load the texture atlas data file from. If undefined or `null` it will be set to `<key>.txt`, i.e. if `key` was "alien" then the URL will be "alien.txt".
- * @param {XHRSettingsObject} [textureXhrSettings] - An XHR Settings configuration object for the atlas image file. Used in replacement of the Loaders default XHR Settings.
+ * @param {string} [path] - Optional path to use when loading the textures defined in the atlas data.
+ * @param {XHRSettingsObject} [jsonXhrSettings] - An XHR Settings configuration object for the json file. Used in replacement of the Loaders default XHR Settings.
  * @param {XHRSettingsObject} [atlasXhrSettings] - An XHR Settings configuration object for the atlas data file. Used in replacement of the Loaders default XHR Settings.
  *
  * @return {Phaser.Loader.LoaderPlugin} The Loader instance.
-FileTypesManager.register('spine', function (key, jsonURL, atlasURL, jsonXhrSettings, atlasXhrSettings)
+ */
+FileTypesManager.register('spine', function (key, jsonURL, atlasURL, path, jsonXhrSettings, atlasXhrSettings)
 {
     var multifile;
 
@@ -2382,14 +2360,13 @@ FileTypesManager.register('spine', function (key, jsonURL, atlasURL, jsonXhrSett
     }
     else
     {
-        multifile = new SpineFile(this, key, jsonURL, atlasURL, jsonXhrSettings, atlasXhrSettings);
+        multifile = new SpineFile(this, key, jsonURL, atlasURL, path, jsonXhrSettings, atlasXhrSettings);
 
         this.addFile(multifile.files);
     }
 
     return this;
 });
- */
 
 module.exports = SpineFile;
 
@@ -2405,9 +2382,9 @@ module.exports = SpineFile;
  */
 
 var Class = __webpack_require__(0);
-var CONST = __webpack_require__(3);
-var File = __webpack_require__(4);
-var FileTypesManager = __webpack_require__(5);
+var CONST = __webpack_require__(4);
+var File = __webpack_require__(5);
+var FileTypesManager = __webpack_require__(3);
 var GetFastValue = __webpack_require__(1);
 var IsPlainObject = __webpack_require__(2);
 
@@ -2909,9 +2886,9 @@ module.exports = XHRLoader;
  */
 
 var Class = __webpack_require__(0);
-var CONST = __webpack_require__(3);
-var File = __webpack_require__(4);
-var FileTypesManager = __webpack_require__(5);
+var CONST = __webpack_require__(4);
+var File = __webpack_require__(5);
+var FileTypesManager = __webpack_require__(3);
 var GetFastValue = __webpack_require__(1);
 var GetValue = __webpack_require__(21);
 var IsPlainObject = __webpack_require__(2);
@@ -3414,9 +3391,9 @@ module.exports = MultiFile;
  */
 
 var Class = __webpack_require__(0);
-var CONST = __webpack_require__(3);
-var File = __webpack_require__(4);
-var FileTypesManager = __webpack_require__(5);
+var CONST = __webpack_require__(4);
+var File = __webpack_require__(5);
+var FileTypesManager = __webpack_require__(3);
 var GetFastValue = __webpack_require__(1);
 var IsPlainObject = __webpack_require__(2);
 
