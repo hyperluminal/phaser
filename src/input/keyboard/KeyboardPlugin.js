@@ -41,6 +41,10 @@ var SnapFloor = require('../../math/snap/SnapFloor');
  * ```javascript
  * var spaceBar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
  * ```
+ * 
+ * If you have multiple parallel Scenes, each trying to get keyboard input, be sure to disable capture on them to stop them from
+ * stealing input from another Scene in the list. You can do this with `this.input.keyboard.enabled = false` within the
+ * Scene to stop all input, or `this.input.keyboard.preventDefault = false` to stop a Scene halting input on another Scene.
  *
  * _Note_: Many keyboards are unable to process certain combinations of keys due to hardware limitations known as ghosting.
  * See http://www.html5gamedevs.com/topic/4876-impossible-to-use-more-than-2-keyboard-input-buttons-at-the-same-time/ for more details.
@@ -163,6 +167,54 @@ var KeyboardPlugin = new Class({
          */
         this.time = 0;
 
+        /**
+         * A flag that controls if the non-modified keys, matching those stored in the `captures` array,
+         * have `preventDefault` called on them or not. By default this is `true`.
+         * 
+         * A non-modified key is one that doesn't have a modifier key held down with it. The modifier keys are
+         * shift, control, alt and the meta key (Command on a Mac, the Windows Key on Windows).
+         * Therefore, if the user presses shift + r, it won't prevent this combination, because of the modifier.
+         * However, if the user presses just the r key on its own, it will have its event prevented.
+         * 
+         * You can set this flag to stop any capture key from triggering the default browser action, or if you need
+         * more specific control, you can create Key objects and set the flag on each of those instead.
+         * 
+         * This flag can be set in the Game Config by setting the `input.keyboard.capture` to a `false` boolean, or you
+         * can set it in the Scene Config, in which case the Scene Config setting overrides the Game Config one.
+         *
+         * @name Phaser.Input.Keyboard.KeyboardPlugin#preventDefault
+         * @type {boolean}
+         * @since 3.16.0
+         */
+        this.preventDefault = true;
+
+        /**
+         * An array of Key Code values that will automatically have `preventDefault` called on them,
+         * as long as the `KeyboardPlugin.preventDefault` boolean is set to `true`.
+         * 
+         * By default the array contains: The Space Key, the Cursor Keys, 0 to 9 and A to Z.
+         * 
+         * The key must be non-modified when pressed in order to be captured.
+         * 
+         * A non-modified key is one that doesn't have a modifier key held down with it. The modifier keys are
+         * shift, control, alt and the meta key (Command on a Mac, the Windows Key on Windows).
+         * Therefore, if the user presses shift + r, it won't prevent this combination, because of the modifier.
+         * However, if the user presses just the r key on its own, it will have its event prevented.
+         * 
+         * If you wish to stop capturing the keys, for example switching out to a DOM based element, then
+         * you can toggle the `KeyboardPlugin.preventDefault` boolean at run-time.
+         * 
+         * If you need more specific control, you can create Key objects and set the flag on each of those instead.
+         * 
+         * This array can be populated via the Game Config by setting the `input.keyboard.capture` array, or you
+         * can set it in the Scene Config, in which case the Scene Config array overrides the Game Config one.
+         *
+         * @name Phaser.Input.Keyboard.KeyboardPlugin#captures
+         * @type {integer[]}
+         * @since 3.16.0
+         */
+        this.captures = [];
+
         sceneInputPlugin.pluginEvents.once('boot', this.boot, this);
         sceneInputPlugin.pluginEvents.on('start', this.start, this);
     },
@@ -182,6 +234,8 @@ var KeyboardPlugin = new Class({
 
         this.enabled = GetValue(settings, 'keyboard', config.inputKeyboard);
         this.target = GetValue(settings, 'keyboard.target', config.inputKeyboardEventTarget);
+        this.captures = GetValue(settings, 'keyboard.capture', config.inputKeyboardCapture);
+        this.preventDefault = this.captures.length > 0;
 
         this.sceneInputPlugin.pluginEvents.once('destroy', this.destroy, this);
     },
@@ -242,11 +296,12 @@ var KeyboardPlugin = new Class({
 
             var key = _this.keys[event.keyCode];
 
-            if (key && key.preventDefault)
+            var modified = (event.altKey || event.ctrlKey || event.shiftKey || event.metaKey);
+
+            if ((_this.preventDefault && !modified && _this.captures.indexOf(event.keyCode) > -1) || (key && key.preventDefault))
             {
                 event.preventDefault();
             }
-
         };
 
         this.onKeyHandler = handler;

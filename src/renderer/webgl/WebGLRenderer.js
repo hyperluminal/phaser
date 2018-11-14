@@ -62,8 +62,8 @@ var WebGLRenderer = new Class({
         var gameConfig = game.config;
 
         var contextCreationConfig = {
-            alpha: gameConfig.transparent,
-            depth: false, // enable when 3D is added in the future
+            alpha: true,
+            depth: false,
             antialias: gameConfig.antialias,
             premultipliedAlpha: gameConfig.premultipliedAlpha,
             stencil: true,
@@ -505,15 +505,22 @@ var WebGLRenderer = new Class({
         //  Set it back into the Game, so developers can access it from there too
         this.game.context = gl;
 
-        for (var i = 0; i <= 17; i++)
+        for (var i = 0; i <= 27; i++)
         {
             this.blendModes.push({ func: [ gl.ONE, gl.ONE_MINUS_SRC_ALPHA ], equation: gl.FUNC_ADD });
         }
 
+        //  ADD
         this.blendModes[1].func = [ gl.ONE, gl.DST_ALPHA ];
+
+        //  MULTIPLY
         this.blendModes[2].func = [ gl.DST_COLOR, gl.ONE_MINUS_SRC_ALPHA ];
+
+        //  SCREEN
         this.blendModes[3].func = [ gl.ONE, gl.ONE_MINUS_SRC_COLOR ];
-        this.blendModes[17].func = [ gl.ZERO, gl.ONE_MINUS_SRC_ALPHA ];
+
+        //  ERASE
+        this.blendModes[17] = { func: [ gl.ZERO, gl.ONE_MINUS_SRC_ALPHA ], equation: gl.FUNC_REVERSE_SUBTRACT };
 
         this.glFormats[0] = gl.BYTE;
         this.glFormats[1] = gl.SHORT;
@@ -543,12 +550,13 @@ var WebGLRenderer = new Class({
 
         this.supportedExtensions = exts;
 
-        // Setup initial WebGL state
+        //  Setup initial WebGL state
         gl.disable(gl.DEPTH_TEST);
         gl.disable(gl.CULL_FACE);
 
         gl.enable(gl.BLEND);
-        gl.clearColor(clearColor.redGL, clearColor.greenGL, clearColor.blueGL, 1.0);
+
+        // gl.clearColor(clearColor.redGL, clearColor.greenGL, clearColor.blueGL, 1);
 
         // Initialize all textures to null
         for (var index = 0; index < this.currentTextures.length; ++index)
@@ -1016,7 +1024,7 @@ var WebGLRenderer = new Class({
             this.flush();
 
             gl.enable(gl.BLEND);
-            gl.blendEquation(blendMode.equation);
+            gl.blendEquation(blendMode.equation, blendMode.equation);
 
             if (blendMode.func.length > 2)
             {
@@ -1758,12 +1766,10 @@ var WebGLRenderer = new Class({
         if (this.contextLost) { return; }
 
         var gl = this.gl;
-        var color = this.config.backgroundColor;
         var pipelines = this.pipelines;
 
         if (this.config.clearBeforeRender)
         {
-            gl.clearColor(color.redGL, color.greenGL, color.blueGL, color.alphaGL);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
         }
 

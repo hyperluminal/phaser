@@ -11,17 +11,39 @@
 * If the `setScore` or `getPlayerScore` calls fail, it will return `null` as the score instance, instead of causing a run-time error.
 * You can now pass an object or a string to `setScore` and objects will be automatically stringified.
 
+### Input Updates and Fixes
+
+* The Keyboard Plugin will now call `preventDefault` on all non-modified alphanumeric key presses by default, stopping the keyboard event from hitting the browser. Previously, you had to create `Key` objects to enable this. You can control this at runtime by toggling the `KeyboardPlugin.preventDefault` boolean, or the following config setting.
+* There is a new Game and Scene Config setting `input.keyboard.capture` which is an array of KeyCodes that the Keyboard Plugin will capture all non-modified key events on. By default it is populated with the space key, cursors, 0 - 9 and A - Z. You can also set this in a Scene Config, in which case it will override the Game Config value.
+* If you have multiple parallel Scenes, each trying to get keyboard input, be sure to disable capture on them to stop them from stealing input from another Scene in the list. You can do this with `this.input.keyboard.enabled = false` within the Scene to stop all input, or `this.input.keyboard.preventDefault = false` to stop a Scene halting input on another Scene.
+* The Keyboard Plugin has a new property called `captures` which is an array of keycodes, as populated by the Game Config. Any key code in the array will have `preventDefault` called on it if pressed. Modify this by changing the game config, or altering the array contents at run-time.
+* The Key object has a new boolean `metaKey` which indicates if the Meta Key was held down when the Key was pressed. On a Mac the Meta Key is Command. On a Windows keyboard, it's the Windows key.
+* The Mouse Manager class has been updated to remove some commented out code and refine the `startListeners` method.
+* The following Key Codes have been added, which include some missing alphabet letters in Persian and Arabic: `SEMICOLON_FIREFOX`, `COLON`, `COMMA_FIREFOX_WINDOWS`, `COMMA_FIREFOX`, `BRACKET_RIGHT_FIREFOX` and `BRACKET_LEFT_FIREFOX` (thanks @wmateam)
+* When enabling a Game Object for input it will now use the `width` and `height` properties of the Game Object first, falling back to the frame size if not found. This stops a bug when enabling BitmapText objects for input and it using the font texture as the hit area size, rather than the text itself.
+
 ### New Features
 
 * The data object being sent to the Dynamic Bitmap Text callback now has a new property `parent`, which is a reference to the Bitmap Text instance that owns the data object (thanks ornyth)
 * The WebGL Renderer has a new method `clearPipeline`, which will clear down the current pipeline and reset the blend mode, ready for the context to be passed to a 3rd party library.
 * The WebGL Renderer has a new method `rebindPipeline`, which will rebind the given pipeline instance, reset the blank texture and reset the blend mode. Which is useful for recovering from 3rd party libs that have modified the gl context.
 * Game Objects have a new property called `state`. Use this to track the state of a Game Object during its lifetime. For example, it could move from a state of 'moving', to 'attacking', to 'dead'. Phaser itself will never set this property, although plugins are allowed to.
+* `BlendModes.ERASE` is a new blend mode that will erase the object being drawn. When used in conjunction with a Render Texture it allows for effects that let you erase parts of the texture, in either Canvas or WebGL. When used with a transparent game canvas, it allows you to erase parts of the canvas, showing the web page background through.
+* `BlendModes.SOURCE_IN` is a new Canvas-only blend mode, that allows you to use the `source-in` composite operation when rendering Game Objects.
+* `BlendModes.SOURCE_OUT` is a new Canvas-only blend mode, that allows you to use the `source-out` composite operation when rendering Game Objects.
+* `BlendModes.SOURCE_ATOP` is a new Canvas-only blend mode, that allows you to use the `source-atop` composite operation when rendering Game Objects.
+* `BlendModes.DESTINATION_OVER` is a new Canvas-only blend mode, that allows you to use the `destination-over` composite operation when rendering Game Objects.
+* `BlendModes.DESTINATION_IN` is a new Canvas-only blend mode, that allows you to use the `destination-in` composite operation when rendering Game Objects.
+* `BlendModes.DESTINATION_OUT` is a new Canvas-only blend mode, that allows you to use the `destination-out` composite operation when rendering Game Objects.
+* `BlendModes.DESTINATION_ATOP` is a new Canvas-only blend mode, that allows you to use the `destination-atop` composite operation when rendering Game Objects.
+* `BlendModes.LIGHTER` is a new Canvas-only blend mode, that allows you to use the `lighter` composite operation when rendering Game Objects.
+* `BlendModes.COPY` is a new Canvas-only blend mode, that allows you to use the `copy` composite operation when rendering Game Objects.
+* `BlendModes.XOR` is a new Canvas-only blend mode, that allows you to use the `xor` composite operation when rendering Game Objects.
+* `RenderTexture.erase` is a new method that will take an object, or array of objects, and draw them to the Render Texture using an ERASE blend mode, resulting in them being removed from the Render Texture. This is really handy for making a bitmap masked texture in Canvas or WebGL (without using an actual mask), or for 'cutting away' part of a texture.
 
 ### Updates
 
-* The Mouse Manager class has been updated to remove some commented out code and refine the `startListeners` method.
-* The following Key Codes have been added, which include some missing alphabet letters in Persian and Arabic: `SEMICOLON_FIREFOX`, `COLON`, `COMMA_FIREFOX_WINDOWS`, `COMMA_FIREFOX`, `BRACKET_RIGHT_FIREFOX` and `BRACKET_LEFT_FIREFOX` (thanks @wmateam)
+* The `backgroundColor` property of the Game Config is now used to set the CSS backgroundColor property of the game Canvas element. This avoids a `fillRect` call in Canvas mode and allows for 'punch through' effects to be created. If `transparent` is true, the CSS property is not set.
 * You can now modify `this.physics.world.debugGraphic.defaultStrokeWidth` to set the stroke width of any debug drawn body, previously it was always 1 (thanks @samme)
 * `TextStyle.setFont` has a new optional argument `updateText` which will sets if the text should be automatically updated or not (thanks @DotTheGreat)
 * `ProcessQueue.destroy` now sets the internal `toProcess` counter to zero.
@@ -35,6 +57,8 @@
 * The method `DisplayList.sortGameObjects` has been removed. It has thrown a runtime error since v3.3.0! which no-one even spotted, a good indication of how little the method is used. The display list is automatically sorted anyway, so if you need to sort a small section of it, just use the standard JavaScript Array sort method (thanks ornyth)
 * The method `DisplayList.getTopGameObject` has been removed. It has thrown a runtime error since v3.3.0! which no-one even spotted, a good indication of how little the method is used (thanks ornyth)
 * `WebGLRenderer.setFramebuffer` has a new optional boolean argument `updateScissor`, which will reset the scissor to match the framebuffer size, or clear it.
+* `WebAudioSoundManager.onFocus` will not try to resume the Audio Context if it's still locked.
+* `WebAudioSoundManager.onBlur` will not try to suspend the Audio Context if it's still locked.
 
 ### Bug Fixes
 

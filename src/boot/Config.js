@@ -11,6 +11,7 @@ var GetFastValue = require('../utils/object/GetFastValue');
 var GetValue = require('../utils/object/GetValue');
 var IsPlainObject = require('../utils/object/IsPlainObject');
 var MATH = require('../math/const');
+var NumberArray = require('../utils/array/NumberArray');
 var RND = require('../math/random-data-generator/RandomDataGenerator');
 var NOOP = require('../utils/NOOP');
 var DefaultPlugins = require('../plugins/DefaultPlugins');
@@ -56,13 +57,14 @@ var ValueToColor = require('../display/color/ValueToColor');
  * @typedef {object} MouseInputConfig
  *
  * @property {*} [target=null] - Where the Mouse Manager listens for mouse input events. The default is the game canvas.
- * @property {boolean} [capture=true] - Whether mouse input events have preventDefault() called on them.
+ * @property {boolean} [capture=true] - Whether mouse input events have `preventDefault` called on them.
  */
 
 /**
  * @typedef {object} KeyboardInputConfig
  *
  * @property {*} [target=window] - Where the Keyboard Manager listens for keyboard input events.
+ * @property {(boolean|integer[])} [capture] - `preventDefault` will be called on every non-modified key which has a key code in this array. By default, it's set to all the space key, cursors and all alphanumeric keys. Or, set to 'false' to disable.
  */
 
 /**
@@ -414,6 +416,23 @@ var Config = new Class({
         this.inputKeyboardEventTarget = GetValue(config, 'input.keyboard.target', window);
 
         /**
+         * @const {(boolean|integer[])} Phaser.Boot.Config#inputKeyboardCapture - `preventDefault` will be called on every non-modified key which has a key code in this array. By default, it's set to all alphanumeric keys. Or, set to 'false' to disable.
+         */
+        var defaultCaptures = [ 32, 38, 39, 40, 42 ];
+
+        defaultCaptures = defaultCaptures.concat(NumberArray(48, 57));
+        defaultCaptures = defaultCaptures.concat(NumberArray(65, 90));
+
+        var keyboardCapture = GetValue(config, 'input.keyboard.capture', defaultCaptures);
+
+        if (!Array.isArray(keyboardCapture))
+        {
+            keyboardCapture = [];
+        }
+
+        this.inputKeyboardCapture = keyboardCapture;
+
+        /**
          * @const {(boolean|object)} Phaser.Boot.Config#inputMouse - Enable the Mouse Plugin. This can be disabled in games that don't need mouse input.
          */
         this.inputMouse = GetValue(config, 'input.mouse', true);
@@ -569,7 +588,7 @@ var Config = new Class({
         var bgc = GetValue(config, 'backgroundColor', 0);
 
         /**
-         * @const {Phaser.Display.Color} Phaser.Boot.Config#backgroundColor - The background color of the game canvas. The default is black.
+         * @const {Phaser.Display.Color} Phaser.Boot.Config#backgroundColor - The background color of the game canvas. The default is black. This value is ignored if `transparent` is set to `true`.
          */
         this.backgroundColor = ValueToColor(bgc);
 
