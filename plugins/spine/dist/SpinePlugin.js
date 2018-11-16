@@ -3875,11 +3875,17 @@ var SpineGameObject = new Class({
      * @public
      * @since 3.16.0
      *
-     * @param {string} newSkin - The name of the new skin.
+     * @param {string} skinName - The name of the new skin.
      */
     setSkinByName: function (skinName)
     {
-        this.skeleton.setSkinByName(skinName);
+        var skeleton = this.skeleton;
+
+        skeleton.setSkinByName(skinName);
+
+        skeleton.setSlotsToSetupPose();
+
+        this.state.apply(skeleton);
 
         return this;
     },
