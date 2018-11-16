@@ -40,6 +40,9 @@
 * `BlendModes.COPY` is a new Canvas-only blend mode, that allows you to use the `copy` composite operation when rendering Game Objects.
 * `BlendModes.XOR` is a new Canvas-only blend mode, that allows you to use the `xor` composite operation when rendering Game Objects.
 * `RenderTexture.erase` is a new method that will take an object, or array of objects, and draw them to the Render Texture using an ERASE blend mode, resulting in them being removed from the Render Texture. This is really handy for making a bitmap masked texture in Canvas or WebGL (without using an actual mask), or for 'cutting away' part of a texture.
+* There is a new boolean Game Config property called `customEnvironment`. If set to `true` it will skip the internal Feature checks when working out which type of renderer to create, allowing you to run Phaser under non-native web environments. If using this value, you _must_ set an explicit `renderType` of either CANVAS or WEBGL. It cannot be left as AUTO. Fix #4166 (thanks @jcyuan)
+* `Animation.nextFrame` will advance an animation to the next frame in the sequence instantly, regardless of the animation time or state. You can call this on a Sprite: `sprite.anims.nextFrame()` (thanks rgk25)
+* `Animation.previousFrame` will set an animation to the previous frame in the sequence instantly, regardless of the animation time or state. You can call this on a Sprite: `sprite.anims.previousFrame()` (thanks rgk25)
 
 ### Updates
 
@@ -59,6 +62,7 @@
 * `WebGLRenderer.setFramebuffer` has a new optional boolean argument `updateScissor`, which will reset the scissor to match the framebuffer size, or clear it.
 * `WebAudioSoundManager.onFocus` will not try to resume the Audio Context if it's still locked.
 * `WebAudioSoundManager.onBlur` will not try to suspend the Audio Context if it's still locked.
+* When using `ScenePlugin.add`, to add a new Scene to the Scene Manager, it didn't allow you to include the optional Scene data object. You can now pass this in the call (thanks @kainage)
 
 ### Bug Fixes
 
@@ -81,7 +85,7 @@
 
 Thanks to the following for helping with the Phaser 3 Examples and TypeScript definitions, either by reporting errors, or even better, fixing them:
 
-@guilhermehto @samvieten @darkwebdev
+@guilhermehto @samvieten @darkwebdev @RoryO
 
 ### Phaser Doc Jam
 

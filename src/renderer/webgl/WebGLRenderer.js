@@ -1024,7 +1024,7 @@ var WebGLRenderer = new Class({
             this.flush();
 
             gl.enable(gl.BLEND);
-            gl.blendEquation(blendMode.equation, blendMode.equation);
+            gl.blendEquation(blendMode.equation);
 
             if (blendMode.func.length > 2)
             {
@@ -1795,8 +1795,14 @@ var WebGLRenderer = new Class({
     },
 
     /**
-     * The core render step for a Scene.
+     * The core render step for a Scene Camera.
+     * 
      * Iterates through the given Game Object's array and renders them with the given Camera.
+     * 
+     * This is called by the `CameraManager.render` method. The Camera Manager instance belongs to a Scene, and is invoked
+     * by the Scene Systems.render method.
+     * 
+     * This method is not called if `Camera.visible` is `false`, or `Camera.alpha` is zero.
      *
      * @method Phaser.Renderer.WebGL.WebGLRenderer#render
      * @since 3.0.0
