@@ -7,6 +7,7 @@
 var Class = require('../../utils/Class');
 var Features = require('../../device/Features');
 var NOOP = require('../../utils/Class');
+var Vector2 = require('../../math/Vector2');
 
 //  https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent
 //  https://github.com/WICG/EventListenerOptions/blob/gh-pages/explainer.md
@@ -125,6 +126,10 @@ var MouseManager = new Class({
          * @since 3.0.0
          */
         this.pointerLockChange = NOOP;
+
+        //  Testing ...
+        this.prevPosition = new Vector2();
+        this.position = new Vector2();
 
         inputManager.events.once('boot', this.boot, this);
     },
@@ -246,7 +251,7 @@ var MouseManager = new Class({
                 // Do nothing if event already handled
                 return;
             }
-    
+
             _this.manager.queueMouseMove(event);
     
             if (_this.capture)

@@ -744,6 +744,34 @@ var Game = new Class({
     },
 
     /**
+     * Returns the current game frame.
+     * When the game starts running, the frame is incremented every time Request Animation Frame, or Set Timeout, fires.
+     *
+     * @method Phaser.Game#getFrame
+     * @since 3.16.0
+     * 
+     * @return {number} The current game frame.
+     */
+    getFrame: function ()
+    {
+        return this.loop.frame;
+    },
+
+    /**
+     * Returns the current game timestamp.
+     * When the game starts running, the frame is incremented every time Request Animation Frame, or Set Timeout, fires.
+     *
+     * @method Phaser.Game#getTime
+     * @since 3.16.0
+     * 
+     * @return {number} The current game timestamp.
+     */
+    getTime: function ()
+    {
+        return this.loop.frame.time;
+    },
+
+    /**
      * Game Destroy event.
      * 
      * Listen for it using the event type `destroy`.

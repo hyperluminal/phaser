@@ -1183,7 +1183,6 @@ var Tween = new Class({
         return TWEEN_CONST.COMPLETE;
     },
 
-    //
     /**
      * [description]
      *

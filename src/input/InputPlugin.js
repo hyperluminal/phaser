@@ -406,7 +406,7 @@ var InputPlugin = new Class({
     preUpdate: function ()
     {
         //  Registered input plugins listen for this
-        this.pluginEvents.emit('preUpdate');
+        this.pluginEvents.emit('preupdate');
 
         var removeList = this._pendingRemoval;
         var insertList = this._pendingInsertion;
@@ -548,14 +548,14 @@ var InputPlugin = new Class({
                 total += this.processDownEvents(pointer);
             }
 
-            if (pointer.justUp)
-            {
-                total += this.processUpEvents(pointer);
-            }
-
             if (pointer.justMoved)
             {
                 total += this.processMoveEvents(pointer);
+            }
+
+            if (pointer.justUp)
+            {
+                total += this.processUpEvents(pointer);
             }
 
             if (total > 0 && manager.globalTopOnly)
