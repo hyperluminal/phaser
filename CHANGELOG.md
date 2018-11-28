@@ -62,6 +62,7 @@
 * `Geom.Intersects.PointToLine` has a new optional argument `lineThickness` (which defaults to 1). This allows you to determine if the point intersects a line of a given thickness, where the line-ends are circular (not square).
 * `Geom.Line.GetNearestPoint` is a new static method that will return the nearest point on a line to the given point.
 * `Geom.Line.GetShortestDistance` is a new static method that will return the shortest distance from a line to the given point.
+* `Camera.getBounds` is a new method that will return a rectangle containing the bounds of the camera.
 
 ### Updates
 
@@ -116,6 +117,7 @@
 * `Particle.index` has been removed, as it's no longer required. Particles don't need to keep track of their index any more.
 * The Particle Emitter no longer needs to call the StableSort.inplace during its preUpdate, saving cpu.
 * `Particle.resetPosition` is a new method that is called when a particle dies, preparing it ready for firing again in the future.
+* The Canvas `SetTransform` method would save the context state, but it wasn't restored at the end in the following Game Objects: Dynamic Bitmap Text, Graphics, Arc, Curve, Ellipse, Grid, IsoBox, IsoTriangle, Line, Polygon, Rectangle, Star and Triangle. These now all restore the context, meaning if you're using non-canvas sized cameras in Canvas mode, it will now render beyond just the first custom camera.
 
 ### Examples and TypeScript
 
