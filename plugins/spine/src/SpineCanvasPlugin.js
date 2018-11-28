@@ -28,8 +28,6 @@ var SpineCanvasPlugin = new Class({
 
     function SpineCanvasPlugin (scene, pluginManager)
     {
-        console.log('SpineCanvasPlugin created');
-
         BaseSpinePlugin.call(this, scene, pluginManager, SpineCanvas);
     },
 

@@ -31,8 +31,6 @@ var SpinePlugin = new Class({
 
     function SpinePlugin (scene, pluginManager, SpineRuntime)
     {
-        console.log('BaseSpinePlugin created');
-
         ScenePlugin.call(this, scene, pluginManager);
 
         var game = pluginManager.game;
@@ -60,13 +58,13 @@ var SpinePlugin = new Class({
     spineFileCallback: function (key, jsonURL, atlasURL, jsonXhrSettings, atlasXhrSettings)
     {
         var multifile;
-   
+
         if (Array.isArray(key))
         {
             for (var i = 0; i < key.length; i++)
             {
                 multifile = new SpineFile(this, key[i]);
-    
+
                 this.addFile(multifile.files);
             }
         }
@@ -76,7 +74,7 @@ var SpinePlugin = new Class({
 
             this.addFile(multifile.files);
         }
-        
+
         return this;
     },
 
@@ -88,7 +86,7 @@ var SpinePlugin = new Class({
      *
      * @param {number} x - The horizontal position of this Game Object.
      * @param {number} y - The vertical position of this Game Object.
-     * @param {string} texture - The key of the Texture this Game Object will use to render with, as stored in the Texture Manager.
+     * @param {string} [key] - The key of the Texture this Game Object will use to render with, as stored in the Texture Manager.
      * @param {(string|integer)} [animationName] - The animation to load with.
      * @param {boolean} [loop] - Loop the loaded animation?
      *
@@ -102,24 +100,43 @@ var SpinePlugin = new Class({
 
             this.displayList.add(spineGO);
             this.updateList.add(spineGO);
-        
+
             return spineGO;
         };
 
         return callback;
     },
 
+    /**
+     * Gets the spine runtime.
+     *
+     * @method SpinePlugin#getRuntime
+     * @since 3.16.0
+     *
+     * @return {any} The spine runtime.
+     */
     getRuntime: function ()
     {
         return runtime;
     },
 
+    /**
+     * Creates a spine Skeleton
+     *
+     * @method SpinePlugin#createSkeleton
+     * @since 3.16.0
+     *
+     * @param {string} key - The key of the atlas Texture this Game Object will use to render with, as stored in the Texture Manager.
+     * @param {string} [skeletonJSON] - The animation to load with.
+     *
+     * @return {any} skeletonData & skeleton.
+     */
     createSkeleton: function (key, skeletonJSON)
     {
         var atlas = this.getAtlas(key);
 
         var atlasLoader = new runtime.AtlasAttachmentLoader(atlas);
-        
+
         var skeletonJson = new runtime.SkeletonJson(atlasLoader);
 
         var data = (skeletonJSON) ? skeletonJSON : this.json.get(key);
@@ -127,9 +144,10 @@ var SpinePlugin = new Class({
         var skeletonData = skeletonJson.readSkeletonData(data);
 
         var skeleton = new runtime.Skeleton(skeletonData);
-    
+
         return { skeletonData: skeletonData, skeleton: skeleton };
     },
+
 
     getBounds: function (skeleton)
     {

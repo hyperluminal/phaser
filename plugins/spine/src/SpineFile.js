@@ -31,7 +31,7 @@ var TextFile = require('../../../src/loader/filetypes/TextFile.js');
  * A Spine File suitable for loading by the Loader.
  *
  * These are created when you use the Phaser.Loader.LoaderPlugin#spine method and are not typically created directly.
- * 
+ *
  * For documentation about what all the arguments and configuration options mean please see Phaser.Loader.LoaderPlugin#spine.
  *
  * @class SpineFile
@@ -61,8 +61,7 @@ var SpineFile = new Class({
 
         if (IsPlainObject(key))
         {
-            console.log('plain object ', key);
-            var config = key;
+            config = key;
 
             key = GetFastValue(config, 'key');
             path = GetFastValue(config, 'path');
@@ -83,15 +82,12 @@ var SpineFile = new Class({
         }
         else
         {
-            console.log('object ', key);
-
             json = new JSONFile(loader, key, jsonURL, jsonXhrSettings);
             atlas = new TextFile(loader, key, atlasURL, atlasXhrSettings);
         }
-        console.log('config',config);
         atlas.cache = loader.cacheManager.custom.spine;
 
-        MultiFile.call(this, loader, 'spine', key, [ json, atlas ]); 
+        MultiFile.call(this, loader, 'spine', key, [ json, atlas ]);
 
         this.config.path = path;
         this.config.jsonXhrSettings = jsonXhrSettings;
@@ -210,7 +206,7 @@ var SpineFile = new Class({
  * Adds a spine objects to the current load queue, consisting of json file, atlas file & textures.
  *
  * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
- * 
+ *
  * ```javascript
  * function preload ()
  * {
@@ -225,12 +221,12 @@ var SpineFile = new Class({
  * The typical flow for a Phaser Scene is that you load assets in the Scene's `preload` method and then when the
  * Scene's `create` method is called you are guaranteed that all of those assets are ready for use and have been
  * loaded.
- * 
+ *
  * If you call this from outside of `preload` then you are responsible for starting the Loader afterwards and monitoring
  * its events to know when it's safe to use the asset. Please see the Phaser.Loader.LoaderPlugin class for more details.
  *
  * Phaser expects the atlas data to be provided in a JSON format as exported from Spine.
- * 
+ *
  * Phaser can load all common image types: png, jpg, gif and any other format the browser can natively handle.
  *
  * The key must be a unique String. It is used to add the file to the global Texture Manager upon a successful load.
@@ -239,7 +235,7 @@ var SpineFile = new Class({
  * then remove it from the Texture Manager first, before loading a new one.
  *
  * Instead of passing arguments you can pass a configuration object, such as:
- * 
+ *
  * ```javascript
  * this.load.spine({
  *     key: 'spineboy',

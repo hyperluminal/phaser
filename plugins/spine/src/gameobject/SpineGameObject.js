@@ -21,6 +21,14 @@ var SpineGameObjectRender = require('./SpineGameObjectRender');
  *
  * @class SpineGameObject
  * @extends Phaser.GameObjects.GameObject
+ * @extends Phaser.GameObjects.Components.Alpha
+ * @extends Phaser.GameObjects.Components.BlendMode
+ * @extends Phaser.GameObjects.Components.Depth
+ * @extends Phaser.GameObjects.Components.Flip
+ * @extends Phaser.GameObjects.Components.Transform
+ * @extends Phaser.GameObjects.Components.Visible
+ * @extends Phaser.GameObjects.Components.ScrollFactor
+ *
  * @memberof Phaser.GameObjects
  * @constructor
  * @since 3.16.0
@@ -75,14 +83,23 @@ var SpineGameObject = new Class({
         }
     },
 
-    setSkeletonFromJSON: function (atlasDataKey, skeletonJSON, animationName, loop)
+    /**
+     * Gets a list of the animations available.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#setSkeleton
+     * @public
+     * @since 3.16.0
+     *
+     * @param {string} textureKey - The key of the atlas Texture this Spine Game Object will use to render with, as stored in the Texture Manager.
+     * @param {string} animationName - The animation name.
+     * @param {loop} atlasDataKey - The animation name.
+     * @param {skeletonJSON} skeletonJSON - The animation name.
+     *
+     * @returns {Phaser.GameObjects.SpineGameObject} an array of the animation names.
+     */
+    setSkeleton: function (textureKey, animationName, loop, skeletonJSON)
     {
-        return this.setSkeleton(atlasDataKey, skeletonJSON, animationName, loop);
-    },
-
-    setSkeleton: function (atlasDataKey, animationName, loop, skeletonJSON)
-    {
-        var data = this.plugin.createSkeleton(atlasDataKey, skeletonJSON);
+        var data = this.plugin.createSkeleton(textureKey, skeletonJSON);
 
         this.skeletonData = data.skeletonData;
 
@@ -134,7 +151,7 @@ var SpineGameObject = new Class({
                 //  Animation on Track x ended
                 _this.emit('spine.end', _this, trackEntry);
             },
-            dispose: function(trackEntry)
+            dispose: function (trackEntry)
             {
                 // Animation on Track x disposed
                 _this.emit('spine.dispose', _this, trackEntry);
@@ -217,7 +234,7 @@ var SpineGameObject = new Class({
     setAnimation: function (trackIndex, animationName, loop)
     {
         this.state.setAnimation(trackIndex, animationName, loop);
-        
+
         return this;
     },
 
@@ -270,35 +287,6 @@ var SpineGameObject = new Class({
     },
 
     /**
-     * Removes all animations from the track, leaving skeletons in their previous pose.
-     * It may be desired to use setEmptyAnimations to mix the skeletons back to the setup pose, rather than leaving them in their previous pose.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#clearTrack
-     * @public
-     * @since 3.16.0
-     *
-     * @param {number} trackIndex - The index of the track.
-     */
-    clearTrack: function (trackIndex)
-    {
-        this.state.clearTrack(trackIndex);
-    },
-
-    
-   /**
-     * Removes all animations from all tracks, leaving skeletons in their previous pose.
-     * It may be desired to use setEmptyAnimation to mix the skeletons back to the setup pose, rather than leaving them in their previous pose.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#clearTracks
-     * @public
-     * @since 3.16.0
-     *
-     */
-    clearTracks: function  (){
-        this.state.clearTracks();
-    },
-
-    /**
      * Returns the track entry for the animation currently playing on the track, or null if no animation is currently playing.
      *
      * @method Phaser.GameObjects.SpineGameObject#getCurrent
@@ -307,7 +295,7 @@ var SpineGameObject = new Class({
      *
      * @param {number} trackIndex - The index of the track.
      */
-    getCurrent : function (trackIndex)
+    getCurrent: function (trackIndex)
     {
         return this.state.getCurrent(trackIndex);
     },

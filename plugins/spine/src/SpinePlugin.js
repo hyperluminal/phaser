@@ -31,8 +31,6 @@ var SpineCanvasPlugin = new Class({
 
     function SpineCanvasPlugin (scene, pluginManager)
     {
-        console.log('SpinePlugin created');
-
         BaseSpinePlugin.call(this, scene, pluginManager);
 
         var game = pluginManager.game;
@@ -66,11 +64,7 @@ var SpineCanvasPlugin = new Class({
 
         var atlas = new runtime.TextureAtlas(atlasData, function (path)
         {
-            if (useWebGL)
-            {
-                // return new SpineCanvas.canvas.CanvasTexture(textures.get(path).getSourceImage());
-            }
-            else
+            if (!useWebGL)
             {
                 return new SpineCanvas.canvas.CanvasTexture(textures.get(path).getSourceImage());
             }

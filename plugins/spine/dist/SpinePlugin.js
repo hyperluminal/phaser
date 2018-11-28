@@ -1536,8 +1536,6 @@ var SpineWebGLPlugin = new Class({
 
     function SpineWebGLPlugin (scene, pluginManager)
     {
-        console.log('SpineWebGLPlugin created');
-
         BaseSpinePlugin.call(this, scene, pluginManager, SpineWebGL);
 
         this.gl;
@@ -1634,8 +1632,6 @@ var SpinePlugin = new Class({
 
     function SpinePlugin (scene, pluginManager, SpineRuntime)
     {
-        console.log('BaseSpinePlugin created');
-
         ScenePlugin.call(this, scene, pluginManager);
 
         var game = pluginManager.game;
@@ -1663,13 +1659,13 @@ var SpinePlugin = new Class({
     spineFileCallback: function (key, jsonURL, atlasURL, jsonXhrSettings, atlasXhrSettings)
     {
         var multifile;
-   
+
         if (Array.isArray(key))
         {
             for (var i = 0; i < key.length; i++)
             {
                 multifile = new SpineFile(this, key[i]);
-    
+
                 this.addFile(multifile.files);
             }
         }
@@ -1679,7 +1675,7 @@ var SpinePlugin = new Class({
 
             this.addFile(multifile.files);
         }
-        
+
         return this;
     },
 
@@ -1691,7 +1687,7 @@ var SpinePlugin = new Class({
      *
      * @param {number} x - The horizontal position of this Game Object.
      * @param {number} y - The vertical position of this Game Object.
-     * @param {string} texture - The key of the Texture this Game Object will use to render with, as stored in the Texture Manager.
+     * @param {string} [key] - The key of the Texture this Game Object will use to render with, as stored in the Texture Manager.
      * @param {(string|integer)} [animationName] - The animation to load with.
      * @param {boolean} [loop] - Loop the loaded animation?
      *
@@ -1705,24 +1701,43 @@ var SpinePlugin = new Class({
 
             this.displayList.add(spineGO);
             this.updateList.add(spineGO);
-        
+
             return spineGO;
         };
 
         return callback;
     },
 
+    /**
+     * Gets the spine runtime.
+     *
+     * @method SpinePlugin#getRuntime
+     * @since 3.16.0
+     *
+     * @return {any} The spine runtime.
+     */
     getRuntime: function ()
     {
         return runtime;
     },
 
+    /**
+     * Creates a spine Skeleton
+     *
+     * @method SpinePlugin#createSkeleton
+     * @since 3.16.0
+     *
+     * @param {string} key - The key of the atlas Texture this Game Object will use to render with, as stored in the Texture Manager.
+     * @param {string} [skeletonJSON] - The animation to load with.
+     *
+     * @return {any} The Game Object that was created.
+     */
     createSkeleton: function (key, skeletonJSON)
     {
         var atlas = this.getAtlas(key);
 
         var atlasLoader = new runtime.AtlasAttachmentLoader(atlas);
-        
+
         var skeletonJson = new runtime.SkeletonJson(atlasLoader);
 
         var data = (skeletonJSON) ? skeletonJSON : this.json.get(key);
@@ -1730,9 +1745,10 @@ var SpinePlugin = new Class({
         var skeletonData = skeletonJson.readSkeletonData(data);
 
         var skeleton = new runtime.Skeleton(skeletonData);
-    
+
         return { skeletonData: skeletonData, skeleton: skeleton };
     },
+
 
     getBounds: function (skeleton)
     {
@@ -2100,7 +2116,7 @@ var TextFile = __webpack_require__(23);
  * A Spine File suitable for loading by the Loader.
  *
  * These are created when you use the Phaser.Loader.LoaderPlugin#spine method and are not typically created directly.
- * 
+ *
  * For documentation about what all the arguments and configuration options mean please see Phaser.Loader.LoaderPlugin#spine.
  *
  * @class SpineFile
@@ -2130,8 +2146,7 @@ var SpineFile = new Class({
 
         if (IsPlainObject(key))
         {
-            console.log('plain object ', key);
-            var config = key;
+            config = key;
 
             key = GetFastValue(config, 'key');
             path = GetFastValue(config, 'path');
@@ -2152,15 +2167,12 @@ var SpineFile = new Class({
         }
         else
         {
-            console.log('object ', key);
-
             json = new JSONFile(loader, key, jsonURL, jsonXhrSettings);
             atlas = new TextFile(loader, key, atlasURL, atlasXhrSettings);
         }
-        console.log('config',config);
         atlas.cache = loader.cacheManager.custom.spine;
 
-        MultiFile.call(this, loader, 'spine', key, [ json, atlas ]); 
+        MultiFile.call(this, loader, 'spine', key, [ json, atlas ]);
 
         this.config.path = path;
         this.config.jsonXhrSettings = jsonXhrSettings;
@@ -2279,7 +2291,7 @@ var SpineFile = new Class({
  * Adds a spine objects to the current load queue, consisting of json file, atlas file & textures.
  *
  * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
- * 
+ *
  * ```javascript
  * function preload ()
  * {
@@ -2294,12 +2306,12 @@ var SpineFile = new Class({
  * The typical flow for a Phaser Scene is that you load assets in the Scene's `preload` method and then when the
  * Scene's `create` method is called you are guaranteed that all of those assets are ready for use and have been
  * loaded.
- * 
+ *
  * If you call this from outside of `preload` then you are responsible for starting the Loader afterwards and monitoring
  * its events to know when it's safe to use the asset. Please see the Phaser.Loader.LoaderPlugin class for more details.
  *
  * Phaser expects the atlas data to be provided in a JSON format as exported from Spine.
- * 
+ *
  * Phaser can load all common image types: png, jpg, gif and any other format the browser can natively handle.
  *
  * The key must be a unique String. It is used to add the file to the global Texture Manager upon a successful load.
@@ -2308,7 +2320,7 @@ var SpineFile = new Class({
  * then remove it from the Texture Manager first, before loading a new one.
  *
  * Instead of passing arguments you can pass a configuration object, such as:
- * 
+ *
  * ```javascript
  * this.load.spine({
  *     key: 'spineboy',
@@ -3591,6 +3603,14 @@ var SpineGameObjectRender = __webpack_require__(42);
  *
  * @class SpineGameObject
  * @extends Phaser.GameObjects.GameObject
+ * @extends Phaser.GameObjects.Components.Alpha
+ * @extends Phaser.GameObjects.Components.BlendMode
+ * @extends Phaser.GameObjects.Components.Depth
+ * @extends Phaser.GameObjects.Components.Flip
+ * @extends Phaser.GameObjects.Components.Transform
+ * @extends Phaser.GameObjects.Components.Visible
+ * @extends Phaser.GameObjects.Components.ScrollFactor
+ *
  * @memberof Phaser.GameObjects
  * @constructor
  * @since 3.16.0
@@ -3645,14 +3665,23 @@ var SpineGameObject = new Class({
         }
     },
 
-    setSkeletonFromJSON: function (atlasDataKey, skeletonJSON, animationName, loop)
+    /**
+     * Gets a list of the animations available.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#setSkeleton
+     * @public
+     * @since 3.16.0
+     *
+     * @param {string} textureKey - The key of the atlas Texture this Spine Game Object will use to render with, as stored in the Texture Manager.
+     * @param {string} animationName - The animation name.
+     * @param {loop} atlasDataKey - The animation name.
+     * @param {skeletonJSON} skeletonJSON - The animation name.
+     *
+     * @returns {Phaser.GameObjects.SpineGameObject} an array of the animation names.
+     */
+    setSkeleton: function (textureKey, animationName, loop, skeletonJSON)
     {
-        return this.setSkeleton(atlasDataKey, skeletonJSON, animationName, loop);
-    },
-
-    setSkeleton: function (atlasDataKey, animationName, loop, skeletonJSON)
-    {
-        var data = this.plugin.createSkeleton(atlasDataKey, skeletonJSON);
+        var data = this.plugin.createSkeleton(textureKey, skeletonJSON);
 
         this.skeletonData = data.skeletonData;
 
@@ -3684,25 +3713,30 @@ var SpineGameObject = new Class({
         var _this = this;
 
         this.state.addListener({
-            event: function (trackIndex, event)
+            event: function (trackEntry, event)
             {
                 //  Event on a Track
-                _this.emit('spine.event', _this, trackIndex, event);
+                _this.emit('spine.event', _this, trackEntry, event);
             },
-            complete: function (trackIndex, loopCount)
+            complete: function (trackEntry, loopCount)
             {
                 //  Animation on Track x completed, loop count
-                _this.emit('spine.complete', _this, trackIndex, loopCount);
+                _this.emit('spine.complete', _this, trackEntry, loopCount);
             },
-            start: function (trackIndex)
+            start: function (trackEntry)
             {
                 //  Animation on Track x started
-                _this.emit('spine.start', _this, trackIndex);
+                _this.emit('spine.start', _this, trackEntry);
             },
-            end: function (trackIndex)
+            end: function (trackEntry)
             {
                 //  Animation on Track x ended
-                _this.emit('spine.end', _this, trackIndex);
+                _this.emit('spine.end', _this, trackEntry);
+            },
+            dispose: function (trackEntry)
+            {
+                // Animation on Track x disposed
+                _this.emit('spine.dispose', _this, trackEntry);
             }
         });
 
@@ -3832,6 +3866,20 @@ var SpineGameObject = new Class({
         this.state.setEmptyAnimation(trackIndex, mixDuration);
 
         return this;
+    },
+
+    /**
+     * Returns the track entry for the animation currently playing on the track, or null if no animation is currently playing.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#getCurrent
+     * @public
+     * @since 3.16.0
+     *
+     * @param {number} trackIndex - The index of the track.
+     */
+    getCurrent: function (trackIndex)
+    {
+        return this.state.getCurrent(trackIndex);
     },
 
     /**
@@ -7303,8 +7351,8 @@ var GameObject = new Class({
          * Phaser itself will never modify this value, although plugins may do so.
          *
          * Use this property to track the state of a Game Object during its lifetime. For example, it could move from
-         * a state of 'moving', to 'attacking', to 'dead'. The state value should typically be an integer (ideally mapped to a constant
-         * in your game code), but could also be a string, or any other data-type. It is recommended to keep it light and simple.
+         * a state of 'moving', to 'attacking', to 'dead'. The state value should be an integer (ideally mapped to a constant
+         * in your game code), or a string. These are recommended to keep it light and simple, with fast comparisons.
          * If you need to store complex data about your Game Object, look at using the Data Component instead.
          *
          * @name Phaser.GameObjects.GameObject#state
@@ -7466,6 +7514,30 @@ var GameObject = new Class({
     setName: function (value)
     {
         this.name = value;
+
+        return this;
+    },
+
+    /**
+     * Sets the current state of this Game Object.
+     * 
+     * Phaser itself will never modify the State of a Game Object, although plugins may do so.
+     * 
+     * For example, a Game Object could change from a state of 'moving', to 'attacking', to 'dead'.
+     * The state value should typically be an integer (ideally mapped to a constant
+     * in your game code), but could also be a string. It is recommended to keep it light and simple.
+     * If you need to store complex data about your Game Object, look at using the Data Component instead.
+     *
+     * @method Phaser.GameObjects.GameObject#setState
+     * @since 3.16.0
+     *
+     * @param {(integer|string)} value - The state of the Game Object.
+     *
+     * @return {this} This GameObject.
+     */
+    setState: function (value)
+    {
+        this.state = value;
 
         return this;
     },

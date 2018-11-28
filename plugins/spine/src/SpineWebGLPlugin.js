@@ -29,8 +29,6 @@ var SpineWebGLPlugin = new Class({
 
     function SpineWebGLPlugin (scene, pluginManager)
     {
-        console.log('SpineWebGLPlugin created');
-
         BaseSpinePlugin.call(this, scene, pluginManager, SpineWebGL);
 
         this.gl;
