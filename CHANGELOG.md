@@ -36,6 +36,16 @@
 * `Pointer.getDistanceY` is a new method that will return the horizontal distance between the Pointer's previous and current coordinates. If called while a button is being held down, it will return the distance between the Pointer's current position and it's down position. If called when a Pointer doesn't have a button down, it will return the historic distance between the up and down positions.
 * `Pointer.getDuration` is a new method that will return the duration the Pointer was held down for. If the Pointer has a button pressed down at the time this method is called, it will return the duration since the Pointer's was pressed down. If no button is held down, it will return the last recorded duration, based on the time the Pointer button was released.
 * `Pointer.getAngle` is a new method that will return the angle between the Pointer coordinates. If the Pointer has a button pressed down at the time this method is called, it will return the angle between the Pointer's `downX` and `downY` values and the current position. If no button is held down, it will return the last recorded angle, based on where the Pointer was when the button was released.
+* In previous versions, the VisibilityHandler would create a `mousedown` listener for the game canvas and then call `window.focus` when detected (assuming the game config `autoFocus` property was `true`). Responsibility for this has now been handled to the Mouse Manager `onMouseDown` handler.
+* In previous versions, the VisibilityHandler would create a `mouseout` listener for the game canvas and then set `game.isOver` when detected. Responsibility for this has now been handled to the Mouse Manager, which sets the new Input Manager `isOver` property directly.
+* In previous versions, the VisibilityHandler would create a `mouseover` listener for the game canvas and then set `game.isOver` when detected. Responsibility for this has now been handled to the Mouse Manager, which sets the new Input Manager `isOver` property directly.
+* The `Phaser.Game.isOver` property has been moved. You can now find it in the Input Manager and it's also accessible via the Input Plugin, which means you can do `this.input.isOver` from within a Scene. This makes more sense as it's input related and not a game level property.
+* The Input Plugin has a new event you can listen to: `gameover`, which is triggered whenever the mouse or a pointer is moved over the Game canvas. Listen to it with  `this.input.on('gameover')` from within a Scene.
+* The Input Plugin has a new event you can listen to: `gameout`, which is triggered whenever the mouse or a pointer leaves the Game canvas. Listen to it with  `this.input.on('gameout')` from within a Scene.
+* The Game used to emit a `mouseover` event when the mouse entered the game canvas. This is no longer emitted by the Game itself and can instead be listened for using the new Input Plugin event `gameover`.
+* The Game used to emit a `mouseout` event when the mouse left the game canvas. This is no longer emitted by the Game itself and can instead be listened for using the new Input Plugin event `gameout`.
+* If the `window` object exists (which it will in normal browser environments) new `mouseup` and `touchend` event listeners are bound to it and trigger the normal `mouseup` or `touchend` events within the internal input system. This means if you will now get a `pointerup` event from the Input Plugin even if the pointer is released outside of the game canvas. Pointers will also no longer think they are still 'down' if released outside the canvas and then moved inside again in their new state.
+* The window will now have focus called on it by the Touch Manager, as well as the Mouse Manager, is the `autoFocus` game config property is enabled.
 
 ### New Features
 
@@ -63,10 +73,11 @@
 * `Geom.Line.GetNearestPoint` is a new static method that will return the nearest point on a line to the given point.
 * `Geom.Line.GetShortestDistance` is a new static method that will return the shortest distance from a line to the given point.
 * `Camera.getBounds` is a new method that will return a rectangle containing the bounds of the camera.
+* `Camera.centerOnX` will move the camera horizontally to be centered on the given coordinate, without changing its vertical placement.
+* `Camera.centerOnY` will move the camera vertically to be centered on the given coordinate, without changing its horizontally placement.
 
 ### Updates
 
-* The `backgroundColor` property of the Game Config is now used to set the CSS backgroundColor property of the game Canvas element. This avoids a `fillRect` call in Canvas mode and allows for 'punch through' effects to be created. If `transparent` is true, the CSS property is not set and no background color is drawn in either WebGL or Canvas, allowing the canvas to be fully transparent.
 * You can now modify `this.physics.world.debugGraphic.defaultStrokeWidth` to set the stroke width of any debug drawn body, previously it was always 1 (thanks @samme)
 * `TextStyle.setFont` has a new optional argument `updateText` which will sets if the text should be automatically updated or not (thanks @DotTheGreat)
 * `ProcessQueue.destroy` now sets the internal `toProcess` counter to zero.
