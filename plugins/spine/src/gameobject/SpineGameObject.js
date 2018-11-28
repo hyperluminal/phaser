@@ -114,25 +114,30 @@ var SpineGameObject = new Class({
         var _this = this;
 
         this.state.addListener({
-            event: function (trackIndex, event)
+            event: function (trackEntry, event)
             {
                 //  Event on a Track
-                _this.emit('spine.event', _this, trackIndex, event);
+                _this.emit('spine.event', _this, trackEntry, event);
             },
-            complete: function (trackIndex, loopCount)
+            complete: function (trackEntry, loopCount)
             {
                 //  Animation on Track x completed, loop count
-                _this.emit('spine.complete', _this, trackIndex, loopCount);
+                _this.emit('spine.complete', _this, trackEntry, loopCount);
             },
-            start: function (trackIndex)
+            start: function (trackEntry)
             {
                 //  Animation on Track x started
-                _this.emit('spine.start', _this, trackIndex);
+                _this.emit('spine.start', _this, trackEntry);
             },
-            end: function (trackIndex)
+            end: function (trackEntry)
             {
                 //  Animation on Track x ended
-                _this.emit('spine.end', _this, trackIndex);
+                _this.emit('spine.end', _this, trackEntry);
+            },
+            dispose: function(trackEntry)
+            {
+                // Animation on Track x disposed
+                _this.emit('spine.dispose', _this, trackEntry);
             }
         });
 
@@ -212,7 +217,7 @@ var SpineGameObject = new Class({
     setAnimation: function (trackIndex, animationName, loop)
     {
         this.state.setAnimation(trackIndex, animationName, loop);
-
+        
         return this;
     },
 
@@ -262,6 +267,49 @@ var SpineGameObject = new Class({
         this.state.setEmptyAnimation(trackIndex, mixDuration);
 
         return this;
+    },
+
+    /**
+     * Removes all animations from the track, leaving skeletons in their previous pose.
+     * It may be desired to use setEmptyAnimations to mix the skeletons back to the setup pose, rather than leaving them in their previous pose.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#clearTrack
+     * @public
+     * @since 3.16.0
+     *
+     * @param {number} trackIndex - The index of the track.
+     */
+    clearTrack: function (trackIndex)
+    {
+        this.state.clearTrack(trackIndex);
+    },
+
+    
+   /**
+     * Removes all animations from all tracks, leaving skeletons in their previous pose.
+     * It may be desired to use setEmptyAnimation to mix the skeletons back to the setup pose, rather than leaving them in their previous pose.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#clearTracks
+     * @public
+     * @since 3.16.0
+     *
+     */
+    clearTracks: function  (){
+        this.state.clearTracks();
+    },
+
+    /**
+     * Returns the track entry for the animation currently playing on the track, or null if no animation is currently playing.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#getCurrent
+     * @public
+     * @since 3.16.0
+     *
+     * @param {number} trackIndex - The index of the track.
+     */
+    getCurrent : function (trackIndex)
+    {
+        return this.state.getCurrent(trackIndex);
     },
 
     /**
