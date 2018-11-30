@@ -1730,7 +1730,7 @@ var SpinePlugin = new Class({
      * @param {string} key - The key of the atlas Texture this Game Object will use to render with, as stored in the Texture Manager.
      * @param {string} [skeletonJSON] - The animation to load with.
      *
-     * @return {any} The Game Object that was created.
+     * @return {any} skeletonData & skeleton.
      */
     createSkeleton: function (key, skeletonJSON)
     {
@@ -3833,7 +3833,7 @@ var SpineGameObject = new Class({
      * @param {string} loop - The index of the track.
      * @param {string} delay - The index of the track.
      *
-     * @returns {any} A track entry to allow further customization of animation playback.
+     * @returns {spine.trackEntry} A track entry to allow further customization of animation playback.
      */
     addAnimation: function (trackIndex, animationName, loop, delay)
     {
@@ -3860,6 +3860,8 @@ var SpineGameObject = new Class({
      *
      * @param {number} trackIndex - The index of the track.
      * @param {number} mixDuration - The index of the track.
+     *
+     * @returns {Phaser.GameObjects.SpineGameObject}
      */
     setEmptyAnimation: function (trackIndex, mixDuration)
     {
@@ -3876,6 +3878,8 @@ var SpineGameObject = new Class({
      * @since 3.16.0
      *
      * @param {number} trackIndex - The index of the track.
+     *
+     * @returns {spine.trackEntry}
      */
     getCurrent: function (trackIndex)
     {
@@ -3892,6 +3896,8 @@ var SpineGameObject = new Class({
      * @since 3.16.0
      *
      * @param {number} trackIndex - The index of the track.
+     *
+     * @returns {Phaser.GameObjects.SpineGameObject}
      */
     clearTrack: function (trackIndex)
     {
@@ -3908,6 +3914,9 @@ var SpineGameObject = new Class({
      * @method Phaser.GameObjects.SpineGameObject#clearTracks
      * @public
      * @since 3.16.0
+     *
+     * @returns {Phaser.GameObjects.SpineGameObject}
+     *
      */
     clearTracks: function ()
     {
@@ -3924,6 +3933,9 @@ var SpineGameObject = new Class({
      * @since 3.16.0
      *
      * @param {string} skinName - The name of the new skin.
+     *
+     * @returns {boolean} True if any animations were applied.
+     *
      */
     setSkinByName: function (skinName)
     {
@@ -3933,19 +3945,20 @@ var SpineGameObject = new Class({
 
         skeleton.setSlotsToSetupPose();
 
-        this.state.apply(skeleton);
-
-        return this;
+        return this.state.apply(skeleton);
     },
 
     /**
-     * Sets a skin.
+     * Sets a skin
      *
      * @method Phaser.GameObjects.SpineGameObject#setSkin
      * @public
      * @since 3.16.0
      *
      * @param {spine.Skin} newSkin - The new skin.
+     *
+     * @returns {Phaser.GameObjects.SpineGameObject}
+     *
      */
     setSkin: function (newSkin)
     {
@@ -3970,6 +3983,9 @@ var SpineGameObject = new Class({
      * @param {string} fromName - The name state to mix from.
      * @param {string} toName - The name of the state to mix to.
      * @param {string} duration - The duration of the mix.
+     *
+     * @returns {Phaser.GameObjects.SpineGameObject}
+     *
      */
     setMix: function (fromName, toName, duration)
     {
@@ -3979,13 +3995,16 @@ var SpineGameObject = new Class({
     },
 
     /**
-     * Find a bone on this skeleton by name
+     * Finds a bone by comparing each bone's name. It is more efficient to cache the results of this method than to call it multiple times.
      *
      * @method Phaser.GameObjects.SpineGameObject#findBone
      * @public
      * @since 3.16.0
      *
      * @param {string} boneName - The name of the bone.
+     *
+     * @returns {spine.Bone|null}
+     *
      */
     findBone: function (boneName)
     {
@@ -3993,27 +4012,16 @@ var SpineGameObject = new Class({
     },
 
     /**
-     * Find a bone index on this skeleton by name
-     *
-     * @method Phaser.GameObjects.SpineGameObject#findBoneIndex
-     * @public
-     * @since 3.16.0
-     *
-     * @param {string} boneName - The name of the bone.
-     */
-    findBoneIndex: function (boneName)
-    {
-        return this.skeleton.findBoneIndex(boneName);
-    },
-
-    /**
-     * Find a slot index by name
+     * Finds a slot by comparing each slot's name. It is more efficient to cache the results of this method than to call it multiple times.
      *
      * @method Phaser.GameObjects.SpineGameObject#findSlot
      * @public
      * @since 3.16.0
      *
      * @param {string} slotName - The name of the slot.
+     *
+     * @returns {spine.SlotData|null}
+     *
      */
     findSlot: function (slotName)
     {
@@ -4021,17 +4029,19 @@ var SpineGameObject = new Class({
     },
 
     /**
-     * Find the given slot's index
+     * The skeleton's slots.
      *
-     * @method Phaser.GameObjects.SpineGameObject#findSlotIndex
+     * @method Phaser.GameObjects.SpineGameObject#getSlots
      * @public
      * @since 3.16.0
      *
-     * @param {string} slotName - The name of the slot.
+     *
+     * @returns {list<spine.SlotData>}
+     *
      */
-    findSlotIndex: function (slotName)
+    getSlots: function ()
     {
-        return this.skeleton.findSlotIndex(slotName);
+        return this.skeleton.slots;
     },
 
     /**
