@@ -1439,18 +1439,17 @@ var FacebookInstantGamesPlugin = new Class({
         }
 
         var _this = this;
-        var catalog = this.catalog;
 
         FBInstant.payments.getCatalogAsync().then(function (data)
         {
-            catalog = [];
+            _this.catalog = [];
 
             data.forEach(function (item)
             {
-                catalog.push(Product(item));
+                _this.catalog.push(Product(item));
             });
 
-            _this.emit('getcatalog', catalog);
+            _this.emit('getcatalog', _this.catalog);
 
         }).catch(function (e)
         {
@@ -1535,18 +1534,17 @@ var FacebookInstantGamesPlugin = new Class({
         }
 
         var _this = this;
-        var purchases = this.purchases;
-
+        
         FBInstant.payments.getPurchasesAsync().then(function (data)
         {
-            purchases = [];
+            _this.purchases = [];
 
             data.forEach(function (item)
             {
-                purchases.push(Purchase(item));
+                _this.purchases.push(Purchase(item));
             });
 
-            _this.emit('getpurchases', purchases);
+            _this.emit('getpurchases', _this.purchases);
 
         }).catch(function (e)
         {
