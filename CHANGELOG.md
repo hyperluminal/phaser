@@ -10,16 +10,83 @@
 * `Leaderboard.getPlayerScore` now only populates the `playerScore` property if the entry isn't `null`.
 * If the `setScore` or `getPlayerScore` calls fail, it will return `null` as the score instance, instead of causing a run-time error.
 * You can now pass an object or a string to `setScore` and objects will be automatically stringified.
+* The `preloadAds` method will now only create an AdInstance object if the interstitial `loadSync` promise resolves.
+* The `preloadVideoAds` method will now only create an AdInstance object if the interstitial `loadSync` promise resolves.
+* The `preloadAds` method will now emit the `adsnofill` event, if there are no ads in the inventory to load.
+* The `preloadVideoAds` method will now emit the `adsnofill` event, if there are no ads in the inventory to load.
+* The `showAd` method will now emit the `adsnotloaded` event, if there are no ads loaded matching the given Placement ID.
+* The `showVideo` method will now emit the `adsnotloaded` event, if there are no ads loaded matching the given Placement ID.
+* Showing an ad will emit the `adfinished` event when the ad is closed, previously this event was called `showad` but the new name better reflects what has happened.
+* The Facebook Plugin is now available in the `Phaser.Scene` class template under the `facebook` property (thanks @bryanwood)
 
-### Input - New Features, Updates and Fixes
+### Keyboard Input - New Features
 
-* The Keyboard Plugin will now call `preventDefault` on all non-modified alphanumeric key presses by default, stopping the keyboard event from hitting the browser. Previously, you had to create `Key` objects to enable this. You can control this at runtime by toggling the `KeyboardPlugin.preventDefault` boolean, or the `keyboard.capture` config setting.
-* There is a new Game and Scene Config setting `input.keyboard.capture` which is an array of KeyCodes that the Keyboard Plugin will capture all non-modified key events on. By default it is populated with the space key, cursors, 0 - 9 and A - Z. You can also set this in a Scene Config, in which case it will override the Game Config value.
-* If you have multiple parallel Scenes, each trying to get keyboard input, be sure to disable capture on them to stop them from stealing input from another Scene in the list. You can do this with `this.input.keyboard.enabled = false` within the Scene to stop all input, or `this.input.keyboard.preventDefault = false` to stop a Scene halting input on another Scene.
-* The Keyboard Plugin has a new property called `captures` which is an array of keycodes, as populated by the Game Config. Any key code in the array will have `preventDefault` called on it if pressed. Modify this by changing the game config, or altering the array contents at run-time.
-* The Key object has a new boolean `metaKey` which indicates if the Meta Key was held down when the Key was pressed. On a Mac the Meta Key is Command. On a Windows keyboard, it's the Windows key.
-* The Mouse Manager class has been updated to remove some commented out code and refine the `startListeners` method.
+The specificity of the Keyboard events has been changed to allow you more control over event handling. Previously, the Keyboard Plugin would emit the global `keydown_CODE` event first (where CODE was a keycode string, like `keydown_A`), then it would emit the global `keydown` event. In previous versions, `Key` objects, created via `this.input.keyboard.addKey()`, didn't emit events.
+
+The `Key` class now extends EventEmitter and emits two new events directly: `down` and `up`. This means you can listen for an event from a Key you've created, i.e.: `yourKey.on('up', handler)`.
+
+The order has also now changed. If it exists, the Key object will dispatch its `down` event first. Then the Keyboard Plugin will dispatch `keydown_CODE` and finally the least specific of them all, `keydown` will be dispatched.
+
+You also now have the ability to cancel this at any stage either on a local or global level. All events handlers are sent an event object which you can call `event.stopImmediatePropagation()` on. This will immediately stop any further listeners from being invoked in the current Scene. Therefore, if you call `stopImmediatePropagation()` in the `Key.on` handler, then the Keyboard Plugin will not emit either the `keydown_CODE` or `keydown` global events. You can also call `stopImmediatePropagation()` during the `keydown_CODE` handler, to stop it reaching the global `keydown` handler. As `keydown` is last, calling it there has no effect. 
+
+There is also the `stopPropagation()` function. This works in the same way as `stopImmediatePropagation` but instead of being local, it works across all of the Scenes in your game. For example, if you had 3 active Scenes (A, B and C, with A at the top of the Scene list), all listening for the same key, calling `stopPropagation()` in Scene A would stop the event from reaching any handlers in Scenes B or C. Remember that events flow down the Scene list from top to bottom. So, the top-most rendering Scene in the Scene list has priority over any Scene below it.
+
+All the above also works for `keyup` events.
+
+New in 3.16 is the ability to receive a global `keydown` or `keyup` event from any key on the keyboard. Previously, it would only emit the event if it came from one of the keys listed in the KeyCodes file. Now, those global events will fire for any key, regardless of location.
+
+#### Keyboard Captures
+
+Key capturing is the way in which you stop a keyboard DOM event from activating anything else in the browser by calling `preventDefault` on it. For example, in tall web pages, pressing the SPACE BAR causes the page to scroll down. Obviously, if this is also the fire or jump button in your game, you don't want this to happen. So the key needs to be 'captured' to prevent it. Equally, you may wish to also capture the arrow keys, for similar reasons. Key capturing is done on a global level. If you set-up the capture of a key in one Scene, it will be captured globally across the whole game.
+
+In 3.16 you now do this using the new `KeyboardPlugin.addCapture` method. This takes keycodes as its argument. You can either pass in a single key code (i.e. 32 for the Space Bar), an array of key codes, or a comma-delimited string - in which case the string is parsed and each code it can work out is captured.
+
+To remove a capture you can use the `KeyboardPlugin.removeCapture` method, which takes the same style arguments as adding captures. To clear all captures call `KeyboardPlugin.clearCaptures`. Again, remember that these actions are global.
+
+You can also temporarily enable and disable capturing using `KeyboardPlugin.enableGlobalCapture` and `KeyboardPlugin.disableGlobalCapture`. This means if you set-up a bunch of key captures, but then need to disable them all for a while (perhaps you swap focus to a DOM text field), you can call `disableGlobalCapture` to do this, and when finished in the DOM you can enable captures again with `enableGlobalCapture`, without having to clear and re-create them all.
+
+Default captures can be defined in the Game Config in the `input.keyboard.captures` object. The captures are actually stored in the `KeyboardManager` class. The `KeyboardPlugin` is just a proxy to methods in the Keyboard Manager, but is how you should interface with it.
+
+* `KeyboardPlugin.addCapture` is a new method that allows you to define a set of keycodes to have the default browser behaviors disabled on.
+* `KeyboardPlugin.removeCapture` is a new method that removes specific previously set key captures.
+* `KeyboardPlugin.clearCaptures` is a new method that removes all key captures.
+* `KeyboardPlugin.getCaptures` is a new method that returns an array of all current key captures.
+* `KeyboardPlugin.enableGlobalCapture` is a new method that enables any key captures that have been created.
+* `KeyboardPlugin.disableGlobalCapture` is a new method that disables any key captures that have been created, without removing them from the captures list.
+* `KeyboardPlugin.addKey` has a new boolean argument `enableCapture`, which is true by default, that will add a key capture for the Key being created.
+* `KeyboardPlugin.addKeys` has a new boolean argument `enableCapture`, which is true by default, that will add a key capture for any Key created by the method.
+
+#### Other Keyboard Updates and Fixes
+
+* There is a new class called `KeyboardManager`. This class is created by the global Input Manager, if keyboard access has been enabled in the Game config. It's responsible for handling all browser keyboard events. Previously, the `KeyboardPlugin` did this. Which meant that every Scene that had its own Keyboard Plugin was binding more native keyboard events. This was causing problems with parallel Scenes when needing to capture keys. the `KeyboardPlugin` class still exists, and is still the main point of interface when you call `this.input.keyboard` in a Scene, but DOM event handling responsibility has been taken away from it. This means there's no only 
+one set of bindings ever created, which makes things a lot cleaner.
+* There is a new Game and Scene Config setting `input.keyboard.capture` which is an array of KeyCodes that the Keyboard Plugin will capture all non-modified key events on. By default it is empty. You can populate it in the config, or use the new capture methods.
+* The Keyboard Manager will now call `preventDefault` only on non-modified key presses, stopping the keyboard event from hitting the browser. Previously, capturing the R key, for example, would block a CTRL+R page reload, but it now ignores it because of the key modifier.
+* `Key.emitOnRepeat` is a new boolean property that controls if the Key will continuously emit a `down` event while being held down (true), or emit the event just once, on first press, and then skip future events (false).
+* `Key.setEmitOnRepeat` is a new chainable method for setting the `emitOnRepeat` property.
+* The `KeyboardPlugin.addKeys` method has a new optional boolean `emitOnRepeat` which sets that property on all Key objects it creates as part of the call. It defaults to `false`.
+* The `KeyboardPlugin.addKey` method has a new optional boolean `emitOnRepeat` which sets that property on the Key object it creates. It defaults to `false`.
+* The `Key` class now extends EventEmitter and emits two events directly: `down` and `up`. This means you can listen for an event from a Key you've created, i.e.: `yourKey.on('up', handler)`.
 * The following Key Codes have been added, which include some missing alphabet letters in Persian and Arabic: `SEMICOLON_FIREFOX`, `COLON`, `COMMA_FIREFOX_WINDOWS`, `COMMA_FIREFOX`, `BRACKET_RIGHT_FIREFOX` and `BRACKET_LEFT_FIREFOX` (thanks @wmateam)
+* `Key.onDown` is a new method that handles the Key being pressed down, including down repeats.
+* `Key.onUp` is a new method that handles the Key being released.
+* `Key.destroy` is a new method that handles Key instance destruction. It is called automatically in `KeyboardPlugin.destroy`.
+* The `Key.preventDefault` property has been removed. This is now handled by the global keyboard capture methods.
+* `Key.metaKey` is a new boolean property which indicates if the Meta Key was held down when the Key was pressed. On a Mac the Meta Key is Command. On a Windows keyboard, it's the Windows key.
+* `InputManager.keyboard` is a new property that instantiates the global Keyboard Manager, if enabled in the game config.
+* The `KeyboardPlugin.addKey` method has a new boolean property `enableCapture` which automatically prevents default on the Key being created.
+* The `KeyboardPlugin.addKeys` method has a new boolean property `enableCapture` which automatically prevents default on Keys being created.
+* `Phaser.Input.Keyboard.ProcessKeyDown` has been removed as it's no longer required, `Key.onDown` handles it instead.
+* `Phaser.Input.Keyboard.ProcessKeyUp` has been removed as it's no longer required, `Key.onUp` handles it instead.
+* The Keyboard Manager has a property called `captures` which is an array of keycodes, as populated by the Game Config. Any key code in the array will have `preventDefault` called on it if pressed.
+* `KeyboardPlugin.manager` is a new property that references the Keyboard Manager and is used internally.
+* `KeyboardPlugin.target` has been removed as it's no longer used by the class.
+* `KeyboardPlugin.queue` has been removed as it's no longer used by the class.
+* `KeyboardPlugin.onKeyHandler` has been removed as it's no longer used by the class.
+
+### Mouse and Touch Input - New Features, Updates and Fixes
+
+* The Mouse Manager class has been updated to remove some commented out code and refine the `startListeners` method.
 * When enabling a Game Object for input it will now use the `width` and `height` properties of the Game Object first, falling back to the frame size if not found. This stops a bug when enabling BitmapText objects for input and it using the font texture as the hit area size, rather than the text itself.
 * `Pointer.smoothFactor` is a float-value that allows you to automatically apply smoothing to the Pointer position as it moves. This is ideal when you want something smoothly tracking a pointer in a game, or are need a smooth drawing motion for an art package. The default value is zero, meaning disabled. Set to a small number, such as 0.2, to enable.
 * `Config.inputSmoothFactor` is a new property that allows you to set the smoothing factor for all Pointers the game creators. The default value is zero, which is disabled. Set in the game config as `input: { smoothFactor: value }`.
@@ -46,9 +113,14 @@
 * The Game used to emit a `mouseout` event when the mouse left the game canvas. This is no longer emitted by the Game itself and can instead be listened for using the new Input Plugin event `gameout`.
 * If the `window` object exists (which it will in normal browser environments) new `mouseup` and `touchend` event listeners are bound to it and trigger the normal `mouseup` or `touchend` events within the internal input system. This means if you will now get a `pointerup` event from the Input Plugin even if the pointer is released outside of the game canvas. Pointers will also no longer think they are still 'down' if released outside the canvas and then moved inside again in their new state.
 * The window will now have focus called on it by the Touch Manager, as well as the Mouse Manager, is the `autoFocus` game config property is enabled.
+* The Input Plugin has a new event you can listen to: `pointerdownoutside`, which is triggered whenever the mouse or a pointer is pressed down while outside of the Game canvas. Listen to it with  `this.input.on('pointerdownoutside')` from within a Scene.
+* The Input Plugin has a new event you can listen to: `pointerupoutside`, which is triggered whenever the mouse or a pointer is released while outside of the Game canvas. Listen to it with  `this.input.on('pointerupoutside')` from within a Scene.
+* `Pointer.downElement` is a new property that holds the target of the DOM Event that triggered when the Pointer was pressed down. If this is within the game, this will be the game canvas element.
+* `Pointer.upElement` is a new property that holds the target of the DOM Event that triggered when the Pointer was released. If this is within the game, this will be the game canvas element.
 
 ### New Features
 
+* You can now load external Scene files using the new `load.sceneFile` method. This allows you to dynamically load a Scene into the Scene Manager of your game, and swap to it at will. Please see the documentation and examples for further details.
 * The data object being sent to the Dynamic Bitmap Text callback now has a new property `parent`, which is a reference to the Bitmap Text instance that owns the data object (thanks ornyth)
 * The WebGL Renderer has a new method `clearPipeline`, which will clear down the current pipeline and reset the blend mode, ready for the context to be passed to a 3rd party library.
 * The WebGL Renderer has a new method `rebindPipeline`, which will rebind the given pipeline instance, reset the blank texture and reset the blend mode. Which is useful for recovering from 3rd party libs that have modified the gl context.
@@ -75,6 +147,22 @@
 * `Camera.getBounds` is a new method that will return a rectangle containing the bounds of the camera.
 * `Camera.centerOnX` will move the camera horizontally to be centered on the given coordinate, without changing its vertical placement.
 * `Camera.centerOnY` will move the camera vertically to be centered on the given coordinate, without changing its horizontally placement.
+* `AnimationManager.exists` is a new method that will check to see if an Animation using the given key already exists or not and returns a boolean.
+* `animationstart-key` is a new Animation key specific event emitted by a Game Object. For example, if you had an animation with a key of 'explode' you can now listen for `animationstart-explode`.
+* `animationrestart-key` is a new Animation key specific event emitted by a Game Object. For example, if you had an animation with a key of 'explode' you can now listen for `animationrestart-explode`.
+* `animationcomplete-key` is a new Animation key specific event emitted by a Game Object. For example, if you had an animation with a key of 'explode' you can now listen for `animationcomplete-explode`.
+* `animationupdate-key` is a new Animation key specific event emitted by a Game Object. For example, if you had an animation with a key of 'explode' you can now listen for `animationupdate-explode`.
+* The Animation class now extends the Event Emitter and dispatches events itself. This allows you to listen for events from a specific Animation, rather than via a Game Object. This is handy, for example, if you had an explosion animation that you wanted to trigger a sound effect when it started. You can now listen for the events from the Animation object directly.
+* The Animation class now emits the `start` event when played (either forward, or in reverse) by any Game Object.
+* The Animation class now emits the `restart` event when it restarts playing on any Game Object.
+* The Animation class now emits the `complete` event when it finishes playing on any Game Object.
+* The Animation Component has a new method called `chain` which allows you to line-up another animation to start playing as soon as the current one stops, no matter how it stops (either by reaching its natural end, or directly by having stop called on it). You can chain a new animation at any point, including before the current one starts playing, during it, or when it ends (via its `animationcomplete` callback). Chained animations are specific to a Game Object, meaning different Game Objects can have different chained animations without impacting the global animation they're playing.
+* `CanvasTexture.drawFrame` is a new method that allows you to draw a texture frame to the CanvasTexture based on the texture key and frame given.
+* `CanvasTexture.getIndex` is a new method that will take an x/y coordinate and return the Image Data index offset used to retrieve the pixel values.
+* `CanvasTexture.getPixels` is a new method that will take a region as an x/y and width/height and return all of the pixels in that region from the CanvasTexture.
+* `CanvasTexture.setPixel` is a new method that sets the given pixel in the CanvasTexture to the color and alpha values provided.
+* `CanvasTexture.getData` is a new method that will extract an ImageData block from the CanvasTexture from the region given.
+* `CanvasTexture.putData` is a new method that will put an ImageData block at the given coordinates in a CanvasTexture.
 
 ### Updates
 
@@ -96,11 +184,26 @@
 * When using `ScenePlugin.add`, to add a new Scene to the Scene Manager, it didn't allow you to include the optional Scene data object. You can now pass this in the call (thanks @kainage)
 * `Graphics.stroke` is a new alias for the `strokePath` method, to keep the calls consistent with the Canvas Rendering Context API.
 * `Graphics.fill` is a new alias for the `fillPath` method, to keep the calls consistent with the Canvas Rendering Context API.
+* `LoaderPlugin.sceneManager` is a new property that is a reference to the global Scene Manager, useful for Plugins.
+* Whenever `Camera.roundPixels` was enabled it would use a bitwise operation to truncate the float (`x |= 0`) - this has been replaced across all files that used it, with a call to `Math.round` instead. This gives far better results when zooming cameras both in and out of a Scene, stopping thin gaps appearing between closely packed Game Objects.
+* `AnimationManager.create` will now return a boolean `false` if the given key is invalid (i.e. undefined or falsey).
+* `AnimationManager.create` will no longer raise a console warning if the animation key is already in use. Instead, it will return the animation belonging to that key. A brand new animation will only be created if the key isn't already in use. When this happens, the `add` event is emitted by the Animation Manager. If no event is emitted, the animation already existed.
+* `ArcadePhysics.Body.destroy` will now only add itself to the World `pendingDestroy` list if the world property exists. This prevents `Cannot read property 'pendingDestroy' of undefined` errors if you try to delete a physics body in a callback and then immediately change Scene (which tells the physics work to also delete all bodies)
+* The Animation Component `restart` method has had is sole `key` argument removed. Previously, you had to pass in the key of the animation you wished to reverse, but now you can just call the method directly, and as long as there is an animation playing, it will automatically start playing in reverse, without the nee for a key (the way it should have been originally)
+* `Animation.play` and `playReverse` will now accept either a string-based key of the animation to play (like before), or you can pass in an Animation instance, and it will play that animation.
+* `CanvasTexture.clear` now has 4 new optional arguments: `x, y, width, height` which allow you to define the region of the texture to be cleared. If not provided it will clear the whole texture, which is the same behavior as before.
+* EarCut, the polygon triangulation library used by the Graphics and WebGL classes, has been upgraded from 2.1.1 to 2.1.4. 2.1.2 fixed a few race conditions where bad input would cause an error. 2.1.3 improved performance for bigger inputs (5-12%) and 2.1.4 fixed a race condition that could lead to a freeze on degenerate input.
+* `TextureTintPipeline.batchQuad` and `batchTri` have two new optional arguments `texture` and `unit` which are used to re-set the batch texture should the method cause a batch flush.
+* `TextureTintPipeline.requireTextureBatch` is a new internal method that helps speed-up the creation of texture batches. It is used in conjunction with `setTexture2D` and `pushBatch`.
+* `TextureTintPipeline.flush` and `TextureTintPipeline.pushBatch` have been optimized to handle zero based texture units as priority. They've also been refactored to avoid creation of empty texture batches.
+* The `WebGLRenderer.setTexture2D` method has a new optional argument `flush` which controls if the pipeline is flushed if the given texture is new, or not. This is used internally to skip flushing during an existing flush.
+* The Tilemap Layer `width` and `height` properties are now based on the tilemap tile sizes multiplied by the layer dimensions. This corrects an issue with layer sizes being wrong if you called `setBaseTileSize` on a Map.
 
 ### Bug Fixes
 
 * The Rectangle Shape object wouldn't render if it didn't have a stroke, or any other objects on the display list (thanks mliko)
 * When using a font string instead of setting `fontFamily`, `fontSize` and `fontStyle` in either `Text.setStyle` or `setFont`, the style properties wouldn't get set. This isn't a problem while creating the text object, only if modifying it later (thanks @DotTheGreat)
+* `Text.toJSON` wasn't saving the font style when using the "font" shorthand to create it. It now saves it correctly. Fix #4141 (thanks @divillysausages)
 * Disabling camera bounds and then moving the camera to an area in a Tilemap that did not have any tile information would throw an `Uncaught Reference error` as it tried to access tiles that did not exist (thanks @Siyalatas)
 * Fixed an issue where Sprite Sheets being extracted from a texture atlas would fail if the sheet was either just a single column or single row of sprites. Fix #4096 (thanks @Cirras)
 * If you created an Arcade Physics Group without passing a configuration object, and passing an array of non-standard children, it would throw a classType runtime error. It now creates a default config object correctly (thanks @pierpo)
@@ -129,20 +232,28 @@
 * The Particle Emitter no longer needs to call the StableSort.inplace during its preUpdate, saving cpu.
 * `Particle.resetPosition` is a new method that is called when a particle dies, preparing it ready for firing again in the future.
 * The Canvas `SetTransform` method would save the context state, but it wasn't restored at the end in the following Game Objects: Dynamic Bitmap Text, Graphics, Arc, Curve, Ellipse, Grid, IsoBox, IsoTriangle, Line, Polygon, Rectangle, Star and Triangle. These now all restore the context, meaning if you're using non-canvas sized cameras in Canvas mode, it will now render beyond just the first custom camera.
+* `Utils.Array.MoveUp` wouldn't let you move an array element to the top-most index in the array. This also impacted `Container.moveUp`.
+* The Texture Tint Pipeline had a logic error that would cause every 2001st quad to either be invisible, or pick-up the texture of the 2000th quad by mistake. The `batchQuad` and `batchTri` methods how handle re-assigning the batch texture if they cause a batch flush as part of their process.
+* Rotating Sprites that used a Normal Map wouldn't rotate the normal map with it, causing the lighting effects to become irregular. The normal map vectors are now rotated correctly (thanks @sercant for the PR and @fazzamatazz and @ysraelJMM for the report)
+* Changing `scaleX` or `scaleY` on a `MatterImage` or `MatterSprite` would cause the body scale to become distorted as the setters didn't use the correct factor when resetting the initial scale. Fix #4206 (thanks @YannCaron)
+* `StaticBody.reset` in Arcade Physics would ignore the `x` and `y` values given to it. If given, they're now used to reset the parent Game Object before the body is updated. Fix #4224 (thanks @samme)
+* Static Tilemap Layers wouldn't render correctly if the layer used a tileset with a different size to the base map data (set via `setBaseTileSize`). They now render correctly in WebGL and Canvas, regardless of the base tile size.
 
 ### Examples and TypeScript
 
 Thanks to the following for helping with the Phaser 3 Examples and TypeScript definitions, either by reporting errors, or even better, fixing them:
 
-@guilhermehto @samvieten @darkwebdev @RoryO
+@guilhermehto @samvieten @darkwebdev @RoryO @snowbillr @slothyrulez @jcyuan
 
 ### Phaser Doc Jam
 
-The [Phaser Doc Jam](http://docjam.phaser.io) is an on-going effort to ensure that the Phaser 3 API has 100% documentation coverage. Thanks to the monumental effort of myself and the following people we're now really close to that goal! My thanks to:
+The Phaser Doc Jam was a community-backed effort to try and get the Phaser 3 API documentation to 100% coverage. The Doc Jam is now over and I offer my thanks to the following who helped with docs in this release:
 
-16patsle - @icbat - @gurungrahul2 - @samme - @telinc1 - anandu pavanan - blackhawx - candelibas - Diego Romero - Elliott Wallace - eric - Georges Gabereau - Haobo Zhang - henriacle - madclaws - marc136 - Mihail Ilinov - naum303 - NicolasRoehm - rejacobson - Robert Kowalski - rootasjey - scottwestover - stetso - therealsamf - Tigran - willblackmore - zenwaichi
+16patsle - @gurungrahul2 - @icbat - @samme - @telinc1 - anandu pavanan - blackhawx - candelibas - Diego Romero - doronlinder - Elliott Wallace - eric - Georges Gabereau - Haobo Zhang - henriacle - jak6jak - Jake Jensen - James Van Roose - JamesSkemp - joelahoover - Joey - madclaws - marc136 - Mihail Ilinov - naum303 - NicolasRoehm - nuane - rejacobson - Robert Kowalski - rodri042 - rootasjey - sawamara - scottwestover - sir13tommy - stetso - therealsamf - Tigran - willblackmore - zenwaichi
 
-If you'd like to help finish off the last parts of documentation then take a look at the [Doc Jam site](http://docjam.phaser.io).
+Also, the following helped with the docs outside of the Doc Jam:
+
+@bryanwood @jestarray @matosummer @tfelix @imilo
 
 ## Version 3.15.1 - Batou - 16th October 2018
 
