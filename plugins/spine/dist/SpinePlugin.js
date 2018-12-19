@@ -3654,8 +3654,22 @@ var SpineGameObject = new Class({
         this.state = null;
         this.stateData = null;
 
+        /**
+         * Draw debug info for the spine object
+         *
+         * @name Phaser.GameObjects.SpineGameObject#drawDebug
+         * @type {boolean}
+         * @since 3.16.0
+         */
         this.drawDebug = false;
 
+        /**
+         * The timeScale used for spine runtime
+         *
+         * @name Phaser.GameObjects.SpineGameObject#timeScale
+         * @type {number}
+         * @since 3.16.0
+         */
         this.timeScale = 1;
 
         this.setPosition(x, y);
