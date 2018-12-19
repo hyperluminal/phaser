@@ -462,6 +462,7 @@ var FacebookInstantGamesPlugin = new Class({
             FBInstant.payments.onReady(function ()
             {
                 _this.paymentsReady = true;
+                _this.emit('paymentsready');
 
             }).catch(function (e)
             {
@@ -1498,6 +1499,7 @@ var FacebookInstantGamesPlugin = new Class({
         {
             var purchase = Purchase(data);
 
+            _this.purchases.push(purchase); //add it to the list of purchases until consumed
             _this.emit('purchase', purchase);
 
         }).catch(function (e)
@@ -1567,14 +1569,14 @@ var FacebookInstantGamesPlugin = new Class({
      * If they cannot, i.e. it's not in the list of supported APIs, or the request
      * was rejected, it will emit a `consumepurchasefail` event instead.
      *
-     * @method Phaser.FacebookInstantGamesPlugin#consumePurchases
+     * @method Phaser.FacebookInstantGamesPlugin#consumePurchase
      * @since 3.13.0
      * 
      * @param {string} purchaseToken - The purchase token of the purchase that should be consumed.
      * 
      * @return {this} This Facebook Instant Games Plugin instance.
      */
-    consumePurchases: function (purchaseToken)
+    consumePurchase: function (purchaseToken)
     {
         if (!this.paymentsReady)
         {
@@ -1586,6 +1588,19 @@ var FacebookInstantGamesPlugin = new Class({
         FBInstant.payments.consumePurchaseAsync(purchaseToken).then(function ()
         {
             _this.emit('consumepurchase', purchaseToken);
+
+            let index = -1;
+            for (var i =0 ; i < _this.purchases.length; i++) {
+                if(_this.purchases[i].purchaseToken === purchaseToken)
+                {
+                    index = i;
+                    break;
+                }
+            }
+            if(index >= 0)
+            {
+                _this.purchases.splice(index, 1);
+            }
 
         }).catch(function (e)
         {
