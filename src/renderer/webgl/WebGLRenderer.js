@@ -616,6 +616,14 @@ var WebGLRenderer = new Class({
         this.pipelines.TextureTintPipeline.currentFrame = blank;
 
         this.blankTexture = blank;
+
+        var gl = this.gl;
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        gl.enable(gl.SCISSOR_TEST);
+
+        this.setPipeline(this.pipelines.TextureTintPipeline);
     },
 
     /**
@@ -798,7 +806,7 @@ var WebGLRenderer = new Class({
      * @param {string} pipelineName - A unique string-based key for the pipeline.
      * @param {Phaser.Renderer.WebGL.WebGLPipeline} pipelineInstance - A pipeline instance which must extend WebGLPipeline.
      *
-     * @return {Phaser.Renderer.WebGL.WebGLPipeline} The pipline instance that was passed.
+     * @return {Phaser.Renderer.WebGL.WebGLPipeline} The pipeline instance that was passed.
      */
     addPipeline: function (pipelineName, pipelineInstance)
     {
@@ -828,18 +836,21 @@ var WebGLRenderer = new Class({
      * @param {integer} y - The y position of the scissor.
      * @param {integer} width - The width of the scissor.
      * @param {integer} height - The height of the scissor.
+     * @param {integer} [drawingBufferHeight] - Optional drawingBufferHeight override value.
      *
      * @return {integer[]} An array containing the scissor values.
      */
-    pushScissor: function (x, y, width, height)
+    pushScissor: function (x, y, width, height, drawingBufferHeight)
     {
+        if (drawingBufferHeight === undefined) { drawingBufferHeight = this.drawingBufferHeight; }
+
         var scissorStack = this.scissorStack;
 
         var scissor = [ x, y, width, height ];
 
         scissorStack.push(scissor);
 
-        this.setScissor(x, y, width, height);
+        this.setScissor(x, y, width, height, drawingBufferHeight);
 
         this.currentScissor = scissor;
 
@@ -856,28 +867,32 @@ var WebGLRenderer = new Class({
      * @param {integer} y - The y position of the scissor.
      * @param {integer} width - The width of the scissor.
      * @param {integer} height - The height of the scissor.
+     * @param {integer} [drawingBufferHeight] - Optional drawingBufferHeight override value.
      */
-    setScissor: function (x, y, width, height)
+    setScissor: function (x, y, width, height, drawingBufferHeight)
     {
         var gl = this.gl;
 
         var current = this.currentScissor;
 
-        var cx = current[0];
-        var cy = current[1];
-        var cw = current[2];
-        var ch = current[3];
+        var setScissor = (width > 0 && height > 0);
 
-        if (cx !== x || cy !== y || cw !== width || ch !== height)
+        if (current && setScissor)
         {
+            var cx = current[0];
+            var cy = current[1];
+            var cw = current[2];
+            var ch = current[3];
+
+            setScissor = (cx !== x || cy !== y || cw !== width || ch !== height);
+        }
+
+        if (setScissor)
+        {
+            this.flush();
+
             // https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/scissor
-
-            if (width > 0 && height > 0)
-            {
-                this.flush();
-
-                gl.scissor(x, (this.drawingBufferHeight - y - height), width, height);
-            }
+            gl.scissor(x, (drawingBufferHeight - y - height), width, height);
         }
     },
 
@@ -1773,8 +1788,15 @@ var WebGLRenderer = new Class({
         var gl = this.gl;
         var pipelines = this.pipelines;
 
+        //  Make sure we are bound to the main frame buffer
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
         if (this.config.clearBeforeRender)
         {
+            var clearColor = this.config.backgroundColor;
+
+            gl.clearColor(clearColor.redGL, clearColor.greenGL, clearColor.blueGL, 1);
+
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
         }
 
