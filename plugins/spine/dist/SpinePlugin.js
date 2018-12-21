@@ -16184,7 +16184,7 @@ var spine;
 					for (var i_8 = 0; i_8 < listeners.length; i_8++) {
 						listeners[i_8].down(_this.currTouch.x, _this.currTouch.y);
 					}
-					console.log("Start " + _this.currTouch.x + ", " + _this.currTouch.y);
+					
 					_this.lastX = _this.currTouch.x;
 					_this.lastY = _this.currTouch.y;
 					_this.buttonDown = true;
@@ -16203,7 +16203,7 @@ var spine;
 							for (var i_9 = 0; i_9 < listeners.length; i_9++) {
 								listeners[i_9].up(x, y);
 							}
-							console.log("End " + x + ", " + y);
+							
 							_this.lastX = x;
 							_this.lastY = y;
 							_this.buttonDown = false;
@@ -16226,7 +16226,7 @@ var spine;
 							for (var i_10 = 0; i_10 < listeners.length; i_10++) {
 								listeners[i_10].up(x, y);
 							}
-							console.log("End " + x + ", " + y);
+							
 							_this.lastX = x;
 							_this.lastY = y;
 							_this.buttonDown = false;
@@ -16250,7 +16250,7 @@ var spine;
 							for (var i_11 = 0; i_11 < listeners.length; i_11++) {
 								listeners[i_11].dragged(x, y);
 							}
-							console.log("Drag " + x + ", " + y);
+							
 							_this.lastX = _this.currTouch.x = x;
 							_this.lastY = _this.currTouch.y = y;
 							break;
