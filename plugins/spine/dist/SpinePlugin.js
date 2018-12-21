@@ -16184,7 +16184,6 @@ var spine;
 					for (var i_8 = 0; i_8 < listeners.length; i_8++) {
 						listeners[i_8].down(_this.currTouch.x, _this.currTouch.y);
 					}
-					
 					_this.lastX = _this.currTouch.x;
 					_this.lastY = _this.currTouch.y;
 					_this.buttonDown = true;
