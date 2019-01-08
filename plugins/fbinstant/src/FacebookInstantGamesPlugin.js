@@ -18,35 +18,35 @@ var Purchase = require('./Purchase');
  * @classdesc
  * The Facebook Instant Games Plugin for Phaser 3 provides a seamless bridge between Phaser
  * and the Facebook Instant Games API version 6.2.
- * 
+ *
  * You can access this plugin via the `facebook` property in a Scene, i.e:
- * 
+ *
  * ```javascript
  * this.facebook.getPlatform();
  * ```
- * 
+ *
  * If this is unavailable please check to make sure you're using a build of Phaser that has
  * this plugin within it. You can quickly check this by looking at the dev tools console
  * header - the Phaser version number will have `-FB` after it if this plugin is loaded.
  *
  * If you are building your own version of Phaser then use this Webpack DefinePlugin flag:
- * 
+ *
  * `"typeof PLUGIN_FBINSTANT": JSON.stringify(true)`
- * 
+ *
  * You will find that every Instant Games API method has a mapping in this plugin.
  * For a full list please consult either the plugin documentation, or the 6.2 SDK documentation
  * at https://developers.facebook.com/docs/games/instant-games/sdk/fbinstant6.2
- * 
+ *
  * Internally this plugin uses its own Data Manager to handle seamless user data updates and provides
  * handy functions for advertisement displaying, opening share dialogs, logging, leaderboards, purchase API requests,
  * loader integration and more.
- * 
+ *
  * To get started with Facebook Instant Games you will need to register on Facebook and create a new Instant
  * Game app that has its own unique app ID. Facebook have also provided a dashboard interface for setting up
  * various features for your game, including leaderboards, ad requests and the payments API. There are lots
  * of guides on the Facebook Developers portal to assist with setting these
  * various systems up: https://developers.facebook.com/docs/games/instant-games/guides
- * 
+ *
  * For more details follow the Quick Start guide here: https://developers.facebook.com/docs/games/instant-games
  *
  * @class FacebookInstantGamesPlugin
@@ -158,12 +158,12 @@ var FacebookInstantGamesPlugin = new Class({
         /**
          * The current context in which your game is running. This can be either `null` or
          * one of:
-         * 
+         *
          * `POST` - The game is running inside of a Facebook post.
          * `THREAD` - The game is running inside a Facebook Messenger thread.
          * `GROUP` - The game is running inside a Facebook Group.
          * `SOLO` - This is the default context, the player is the only participant.
-         * 
+         *
          * This value is populated automatically during boot.
          *
          * @name Phaser.FacebookInstantGamesPlugin#contextType
@@ -357,7 +357,7 @@ var FacebookInstantGamesPlugin = new Class({
     /**
      * Call this method from your `Scene.preload` in order to sync the load progress
      * of the Phaser Loader with the Facebook Instant Games loader display, i.e.:
-     * 
+     *
      * ```javascript
      * this.facebook.showLoadProgress(this);
      * this.facebook.once('startgame', this.startGame, this);
@@ -367,7 +367,7 @@ var FacebookInstantGamesPlugin = new Class({
      * @since 3.13.0
      *
      * @param {Phaser.Scene} scene - The Scene for which you want to show loader progress for.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     showLoadProgress: function (scene)
@@ -389,7 +389,7 @@ var FacebookInstantGamesPlugin = new Class({
 
                 FBInstant.startGameAsync().then(this.gameStarted.bind(this));
             }
-            
+
         }, this);
 
         return this;
@@ -400,7 +400,7 @@ var FacebookInstantGamesPlugin = new Class({
      * if you used the `showLoadProgress` method. If your game doesn't need to
      * load any assets, or you're managing the load yourself, then call this
      * method directly to start the API running.
-     * 
+     *
      * When the API has finished starting this plugin will emit a `startgame` event
      * which you should listen for.
      *
@@ -476,9 +476,9 @@ var FacebookInstantGamesPlugin = new Class({
      *
      * @method Phaser.FacebookInstantGamesPlugin#checkAPI
      * @since 3.13.0
-     * 
+     *
      * @param {string} api - The API to check for, i.e. `player.getID`.
-     * 
+     *
      * @return {boolean} `true` if the API is supported, otherwise `false`.
      */
     checkAPI: function (api)
@@ -497,12 +497,12 @@ var FacebookInstantGamesPlugin = new Class({
      * Returns the unique identifier for the current game context. This represents a specific context
      * that the game is being played in (for example, a particular messenger conversation or facebook post).
      * The identifier will be null if game is being played in a solo context.
-     * 
+     *
      * It is only populated if `contextGetID` is in the list of supported APIs.
      *
      * @method Phaser.FacebookInstantGamesPlugin#getID
      * @since 3.13.0
-     * 
+     *
      * @return {string} The context ID.
      */
     getID: function ()
@@ -517,17 +517,17 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Returns the current context in which your game is running. This can be either `null` or one of:
-     * 
+     *
      * `POST` - The game is running inside of a Facebook post.
      * `THREAD` - The game is running inside a Facebook Messenger thread.
      * `GROUP` - The game is running inside a Facebook Group.
      * `SOLO` - This is the default context, the player is the only participant.
-     * 
+     *
      * It is only populated if `contextGetType` is in the list of supported APIs.
      *
      * @method Phaser.FacebookInstantGamesPlugin#getType
      * @since 3.13.0
-     * 
+     *
      * @return {?string} The context type.
      */
     getType: function ()
@@ -548,7 +548,7 @@ var FacebookInstantGamesPlugin = new Class({
      *
      * @method Phaser.FacebookInstantGamesPlugin#getLocale
      * @since 3.13.0
-     * 
+     *
      * @return {?string} The current locale.
      */
     getLocale: function ()
@@ -567,7 +567,7 @@ var FacebookInstantGamesPlugin = new Class({
      *
      * @method Phaser.FacebookInstantGamesPlugin#getPlatform
      * @since 3.13.0
-     * 
+     *
      * @return {?string} The current platform.
      */
     getPlatform: function ()
@@ -586,7 +586,7 @@ var FacebookInstantGamesPlugin = new Class({
      *
      * @method Phaser.FacebookInstantGamesPlugin#getSDKVersion
      * @since 3.13.0
-     * 
+     *
      * @return {?string} The sdk version.
      */
     getSDKVersion: function ()
@@ -605,7 +605,7 @@ var FacebookInstantGamesPlugin = new Class({
      *
      * @method Phaser.FacebookInstantGamesPlugin#getPlayerID
      * @since 3.13.0
-     * 
+     *
      * @return {?string} The player ID.
      */
     getPlayerID: function ()
@@ -624,7 +624,7 @@ var FacebookInstantGamesPlugin = new Class({
      *
      * @method Phaser.FacebookInstantGamesPlugin#getPlayerName
      * @since 3.13.0
-     * 
+     *
      * @return {?string} The player's localized display name.
      */
     getPlayerName: function ()
@@ -645,7 +645,7 @@ var FacebookInstantGamesPlugin = new Class({
      *
      * @method Phaser.FacebookInstantGamesPlugin#getPlayerPhotoURL
      * @since 3.13.0
-     * 
+     *
      * @return {?string} The player's photo url.
      */
     getPlayerPhotoURL: function ()
@@ -660,12 +660,12 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Load the player's photo and store it in the Texture Manager, ready for use in-game.
-     * 
+     *
      * This method works by using a Scene Loader instance and then asking the Loader to
      * retrieve the image.
-     * 
+     *
      * When complete the plugin will emit a `photocomplete` event, along with the key of the photo.
-     * 
+     *
      * ```javascript
      * this.facebook.loadPlayerPhoto(this, 'player').once('photocomplete', function (key) {
      *   this.add.image(x, y, 'player);
@@ -674,10 +674,10 @@ var FacebookInstantGamesPlugin = new Class({
      *
      * @method Phaser.FacebookInstantGamesPlugin#loadPlayerPhoto
      * @since 3.13.0
-     * 
+     *
      * @param {Phaser.Scene} scene - The Scene that will be responsible for loading this photo.
      * @param {string} key - The key to use when storing the photo in the Texture Manager.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     loadPlayerPhoto: function (scene, key)
@@ -685,15 +685,15 @@ var FacebookInstantGamesPlugin = new Class({
         if (this.playerPhotoURL)
         {
             scene.load.setCORS('anonymous');
-    
+
             scene.load.image(key, this.playerPhotoURL);
-    
+
             scene.load.once('filecomplete-image-' + key, function ()
             {
                 this.emit('photocomplete', key);
 
             }, this);
-    
+
             scene.load.start();
         }
 
@@ -702,18 +702,18 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Checks if the current player can subscribe to the game bot.
-     * 
+     *
      * It makes an async call to the API, so the result isn't available immediately.
-     * 
+     *
      * If they can subscribe, the `playerCanSubscribeBot` property is set to `true`
      * and this plugin will emit the `cansubscribebot` event.
-     * 
+     *
      * If they cannot, i.e. it's not in the list of supported APIs, or the request
      * was rejected, it will emit a `cansubscribebotfail` event instead.
      *
      * @method Phaser.FacebookInstantGamesPlugin#canSubscribeBot
      * @since 3.13.0
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     canSubscribeBot: function ()
@@ -743,17 +743,17 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Subscribes the current player to the game bot.
-     * 
+     *
      * It makes an async call to the API, so the result isn't available immediately.
-     * 
+     *
      * If they are successfully subscribed this plugin will emit the `subscribebot` event.
-     * 
+     *
      * If they cannot, i.e. it's not in the list of supported APIs, or the request
      * was rejected, it will emit a `subscribebotfail` event instead.
      *
      * @method Phaser.FacebookInstantGamesPlugin#subscribeBot
      * @since 3.13.0
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     subscribeBot: function ()
@@ -781,17 +781,17 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Gets the associated data from the player based on the given key, or array of keys.
-     * 
+     *
      * The data is requested in an async call, so the result isn't available immediately.
-     * 
+     *
      * When the call completes the data is set into this plugins Data Manager and the
      * `getdata` event will be emitted.
      *
      * @method Phaser.FacebookInstantGamesPlugin#getData
      * @since 3.13.0
-     * 
+     *
      * @param {(string|string[])} keys - The key/s of the data to retrieve.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     getData: function (keys)
@@ -827,24 +827,24 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Set data to be saved to the designated cloud storage of the current player. The game can store up to 1MB of data for each unique player.
-     * 
+     *
      * The data save is requested in an async call, so the result isn't available immediately.
-     * 
+     *
      * Data managed via this plugins Data Manager instance is automatically synced with Facebook. However, you can call this
      * method directly if you need to replace the data object directly.
-     * 
+     *
      * When the APIs `setDataAsync` call resolves it will emit the `savedata` event from this plugin. If the call fails for some
      * reason it will emit `savedatafail` instead.
-     * 
+     *
      * The call resolving does not necessarily mean that the input has already been persisted. Rather, it means that the data was valid and
      * has been scheduled to be saved. It also guarantees that all values that were set are now available in `getData`.
      *
      * @method Phaser.FacebookInstantGamesPlugin#saveData
      * @since 3.13.0
-     * 
+     *
      * @param {object} data - An object containing a set of key-value pairs that should be persisted to cloud storage.
      * The object must contain only serializable values - any non-serializable values will cause the entire modification to be rejected.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     saveData: function (data)
@@ -873,16 +873,16 @@ var FacebookInstantGamesPlugin = new Class({
      * This function is expensive, and should primarily be used for critical changes where persistence needs to be immediate
      * and known by the game. Non-critical changes should rely on the platform to persist them in the background.
      * NOTE: Calls to player.setDataAsync will be rejected while this function's result is pending.
-     * 
+     *
      * Data managed via this plugins Data Manager instance is automatically synced with Facebook. However, you can call this
      * method directly if you need to flush the data directly.
-     * 
+     *
      * When the APIs `flushDataAsync` call resolves it will emit the `flushdata` event from this plugin. If the call fails for some
      * reason it will emit `flushdatafail` instead.
      *
      * @method Phaser.FacebookInstantGamesPlugin#flushData
      * @since 3.13.0
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     flushData: function ()
@@ -908,19 +908,19 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Retrieve stats from the designated cloud storage of the current player.
-     * 
+     *
      * The data is requested in an async call, so the result isn't available immediately.
-     * 
+     *
      * When the call completes the `getstats` event will be emitted along with the data object returned.
-     * 
+     *
      * If the call fails, i.e. it's not in the list of supported APIs, or the request was rejected,
      * it will emit a `getstatsfail` event instead.
      *
      * @method Phaser.FacebookInstantGamesPlugin#getStats
      * @since 3.13.0
-     * 
+     *
      * @param {string[]} [keys] - An optional array of unique keys to retrieve stats for. If the function is called without it, it will fetch all stats.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     getStats: function (keys)
@@ -946,22 +946,22 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Save the stats of the current player to the designated cloud storage.
-     * 
+     *
      * Stats in the Facebook Instant Games API are purely numerical values paired with a string-based key. Only numbers can be saved as stats,
      * all other data types will be ignored.
-     * 
+     *
      * The data is requested in an async call, so the result isn't available immediately.
-     * 
+     *
      * When the call completes the `savestats` event will be emitted along with the data object returned.
-     * 
+     *
      * If the call fails, i.e. it's not in the list of supported APIs, or the request was rejected,
      * it will emit a `savestatsfail` event instead.
      *
      * @method Phaser.FacebookInstantGamesPlugin#saveStats
      * @since 3.13.0
-     * 
+     *
      * @param {object} data - An object containing a set of key-value pairs that should be persisted to cloud storage as stats. Note that only numerical values are stored.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     saveStats: function (data)
@@ -997,12 +997,12 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Increment the stats of the current player and save them to the designated cloud storage.
-     * 
+     *
      * Stats in the Facebook Instant Games API are purely numerical values paired with a string-based key. Only numbers can be saved as stats,
      * all other data types will be ignored.
-     * 
+     *
      * The data object provided for this call should contain offsets for how much to modify the stats by:
-     * 
+     *
      * ```javascript
      * this.facebook.incStats({
      *     level: 1,
@@ -1010,19 +1010,19 @@ var FacebookInstantGamesPlugin = new Class({
      *     rank: -1
      * });
      * ```
-     * 
+     *
      * The data is requested in an async call, so the result isn't available immediately.
-     * 
+     *
      * When the call completes the `incstats` event will be emitted along with the data object returned.
-     * 
+     *
      * If the call fails, i.e. it's not in the list of supported APIs, or the request was rejected,
      * it will emit a `incstatsfail` event instead.
      *
      * @method Phaser.FacebookInstantGamesPlugin#incStats
      * @since 3.13.0
-     * 
+     *
      * @param {object} data - An object containing a set of key-value pairs indicating how much to increment each stat in cloud storage. Note that only numerical values are processed.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     incStats: function (data)
@@ -1058,16 +1058,16 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Sets the data associated with the individual gameplay session for the current context.
-     * 
+     *
      * This function should be called whenever the game would like to update the current session data.
-     * 
+     *
      * This session data may be used to populate a variety of payloads, such as game play webhooks.
      *
      * @method Phaser.FacebookInstantGamesPlugin#saveSession
      * @since 3.13.0
-     * 
+     *
      * @param {object} data - An arbitrary data object, which must be less than or equal to 1000 characters when stringified.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     saveSession: function (data)
@@ -1093,23 +1093,23 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * This invokes a dialog to let the user share specified content, either as a message in Messenger or as a post on the user's timeline.
-     * 
+     *
      * A blob of data can be attached to the share which every game session launched from the share will be able to access via the `this.entryPointData` property.
-     * 
+     *
      * This data must be less than or equal to 1000 characters when stringified.
-     * 
+     *
      * When this method is called you should consider your game paused. Listen out for the `resume` event from this plugin to know when the dialog has been closed.
-     * 
+     *
      * The user may choose to cancel the share action and close the dialog. The resulting `resume` event will be dispatched regardless if the user actually shared the content or not.
      *
      * @method Phaser.FacebookInstantGamesPlugin#openShare
      * @since 3.13.0
-     * 
+     *
      * @param {string} text - A text message to be shared.
      * @param {string} key - The key of the texture to use as the share image.
      * @param {string} [frame] - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
      * @param {object} [sessionData] - A blob of data to attach to the share.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     openShare: function (text, key, frame, sessionData)
@@ -1119,23 +1119,23 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * This invokes a dialog to let the user invite a friend to play this game, either as a message in Messenger or as a post on the user's timeline.
-     * 
+     *
      * A blob of data can be attached to the share which every game session launched from the share will be able to access via the `this.entryPointData` property.
-     * 
+     *
      * This data must be less than or equal to 1000 characters when stringified.
-     * 
+     *
      * When this method is called you should consider your game paused. Listen out for the `resume` event from this plugin to know when the dialog has been closed.
-     * 
+     *
      * The user may choose to cancel the share action and close the dialog. The resulting `resume` event will be dispatched regardless if the user actually shared the content or not.
      *
      * @method Phaser.FacebookInstantGamesPlugin#openInvite
      * @since 3.13.0
-     * 
+     *
      * @param {string} text - A text message to be shared.
      * @param {string} key - The key of the texture to use as the share image.
      * @param {string} [frame] - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
      * @param {object} [sessionData] - A blob of data to attach to the share.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     openInvite: function (text, key, frame, sessionData)
@@ -1145,23 +1145,23 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * This invokes a dialog to let the user share specified content, either as a message in Messenger or as a post on the user's timeline.
-     * 
+     *
      * A blob of data can be attached to the share which every game session launched from the share will be able to access via the `this.entryPointData` property.
-     * 
+     *
      * This data must be less than or equal to 1000 characters when stringified.
-     * 
+     *
      * When this method is called you should consider your game paused. Listen out for the `resume` event from this plugin to know when the dialog has been closed.
-     * 
+     *
      * The user may choose to cancel the share action and close the dialog. The resulting `resume` event will be dispatched regardless if the user actually shared the content or not.
      *
      * @method Phaser.FacebookInstantGamesPlugin#openRequest
      * @since 3.13.0
-     * 
+     *
      * @param {string} text - A text message to be shared.
      * @param {string} key - The key of the texture to use as the share image.
      * @param {string} [frame] - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
      * @param {object} [sessionData] - A blob of data to attach to the share.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     openRequest: function (text, key, frame, sessionData)
@@ -1171,23 +1171,23 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * This invokes a dialog to let the user share specified content, either as a message in Messenger or as a post on the user's timeline.
-     * 
+     *
      * A blob of data can be attached to the share which every game session launched from the share will be able to access via the `this.entryPointData` property.
-     * 
+     *
      * This data must be less than or equal to 1000 characters when stringified.
-     * 
+     *
      * When this method is called you should consider your game paused. Listen out for the `resume` event from this plugin to know when the dialog has been closed.
-     * 
+     *
      * The user may choose to cancel the share action and close the dialog. The resulting `resume` event will be dispatched regardless if the user actually shared the content or not.
      *
      * @method Phaser.FacebookInstantGamesPlugin#openChallenge
      * @since 3.13.0
-     * 
+     *
      * @param {string} text - A text message to be shared.
      * @param {string} key - The key of the texture to use as the share image.
      * @param {string} [frame] - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
      * @param {object} [sessionData] - A blob of data to attach to the share.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     openChallenge: function (text, key, frame, sessionData)
@@ -1201,13 +1201,13 @@ var FacebookInstantGamesPlugin = new Class({
      * @method Phaser.FacebookInstantGamesPlugin#_share
      * @private
      * @since 3.13.0
-     * 
+     *
      * @param {string} intent - ("INVITE" | "REQUEST" | "CHALLENGE" | "SHARE") Indicates the intent of the share.
      * @param {string} text - A text message to be shared.
      * @param {string} key - The key of the texture to use as the share image.
      * @param {string} [frame] - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
      * @param {object} [sessionData] - A blob of data to attach to the share.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     _share: function (intent, text, key, frame, sessionData)
@@ -1254,10 +1254,10 @@ var FacebookInstantGamesPlugin = new Class({
      *
      * @method Phaser.FacebookInstantGamesPlugin#isSizeBetween
      * @since 3.13.0
-     * 
+     *
      * @param {integer} [min] - The minimum bound of the context size query.
      * @param {integer} [max] - The maximum bound of the context size query.
-     * 
+     *
      * @return {object} The Context Size Response object in the format: `{answer: boolean, minSize: number?, maxSize: number?}`.
      */
     isSizeBetween: function (min, max)
@@ -1273,14 +1273,14 @@ var FacebookInstantGamesPlugin = new Class({
     /**
      * Request a switch into a specific context. If the player does not have permission to enter that context,
      * or if the player does not provide permission for the game to enter that context, this will emit a `switchfail` event.
-     * 
+     *
      * Otherwise, the plugin will emit the `switch` event when the game has switched into the specified context.
      *
      * @method Phaser.FacebookInstantGamesPlugin#switchContext
      * @since 3.13.0
-     * 
+     *
      * @param {string} contextID - The ID of the desired context.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     switchContext: function (contextID)
@@ -1316,9 +1316,9 @@ var FacebookInstantGamesPlugin = new Class({
      *
      * @method Phaser.FacebookInstantGamesPlugin#chooseContext
      * @since 3.13.0
-     * 
+     *
      * @param {string} contextID - The ID of the desired context.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     chooseContext: function (options)
@@ -1351,9 +1351,9 @@ var FacebookInstantGamesPlugin = new Class({
      *
      * @method Phaser.FacebookInstantGamesPlugin#createContext
      * @since 3.13.0
-     * 
+     *
      * @param {string} playerID - ID of the player.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     createContext: function (playerID)
@@ -1381,18 +1381,18 @@ var FacebookInstantGamesPlugin = new Class({
     /**
      * Fetches an array of ConnectedPlayer objects containing information about active players
      * (people who played the game in the last 90 days) that are connected to the current player.
-     * 
+     *
      * It makes an async call to the API, so the result isn't available immediately.
-     * 
+     *
      * If they are successfully subscribed this plugin will emit the `players` event along
      * with the player data.
-     * 
+     *
      * If they cannot, i.e. it's not in the list of supported APIs, or the request
      * was rejected, it will emit a `playersfail` event instead.
      *
      * @method Phaser.FacebookInstantGamesPlugin#getPlayers
      * @since 3.13.0
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     getPlayers: function ()
@@ -1418,18 +1418,18 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Fetches the game's product catalog.
-     * 
+     *
      * It makes an async call to the API, so the result isn't available immediately.
-     * 
+     *
      * If they are successfully subscribed this plugin will emit the `getcatalog` event along
      * with the catalog data.
-     * 
+     *
      * If they cannot, i.e. it's not in the list of supported APIs, or the request
      * was rejected, it will emit a `getcatalogfail` event instead.
      *
      * @method Phaser.FacebookInstantGamesPlugin#getCatalog
      * @since 3.13.0
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     getCatalog: function ()
@@ -1462,21 +1462,21 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Begins the purchase flow for a specific product.
-     * 
+     *
      * It makes an async call to the API, so the result isn't available immediately.
-     * 
+     *
      * If they are successfully subscribed this plugin will emit the `purchase` event along
      * with the purchase data.
-     * 
+     *
      * If they cannot, i.e. it's not in the list of supported APIs, or the request
      * was rejected, it will emit a `purchasefail` event instead.
      *
      * @method Phaser.FacebookInstantGamesPlugin#purchase
      * @since 3.13.0
-     * 
+     *
      * @param {string} productID - The identifier of the product to purchase.
      * @param {string} [developerPayload] - An optional developer-specified payload, to be included in the returned purchase's signed request.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     purchase: function (productID, developerPayload)
@@ -1514,18 +1514,18 @@ var FacebookInstantGamesPlugin = new Class({
      * Fetches all of the player's unconsumed purchases. The game must fetch the current player's purchases
      * as soon as the client indicates that it is ready to perform payments-related operations,
      * i.e. at game start. The game can then process and consume any purchases that are waiting to be consumed.
-     * 
+     *
      * It makes an async call to the API, so the result isn't available immediately.
-     * 
+     *
      * If they are successfully subscribed this plugin will emit the `getpurchases` event along
      * with the purchase data.
-     * 
+     *
      * If they cannot, i.e. it's not in the list of supported APIs, or the request
      * was rejected, it will emit a `getpurchasesfail` event instead.
      *
      * @method Phaser.FacebookInstantGamesPlugin#getPurchases
      * @since 3.13.0
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     getPurchases: function ()
@@ -1536,7 +1536,7 @@ var FacebookInstantGamesPlugin = new Class({
         }
 
         var _this = this;
-        
+
         FBInstant.payments.getPurchasesAsync().then(function (data)
         {
             _this.purchases = [];
@@ -1560,20 +1560,20 @@ var FacebookInstantGamesPlugin = new Class({
      * Consumes a specific purchase belonging to the current player. Before provisioning a product's effects to the player,
      * the game should request the consumption of the purchased product. Once the purchase is successfully consumed,
      * the game should immediately provide the player with the effects of their purchase.
-     * 
+     *
      * It makes an async call to the API, so the result isn't available immediately.
-     * 
+     *
      * If they are successfully subscribed this plugin will emit the `consumepurchase` event along
      * with the purchase data.
-     * 
+     *
      * If they cannot, i.e. it's not in the list of supported APIs, or the request
      * was rejected, it will emit a `consumepurchasefail` event instead.
      *
      * @method Phaser.FacebookInstantGamesPlugin#consumePurchase
      * @since 3.13.0
-     * 
+     *
      * @param {string} purchaseToken - The purchase token of the purchase that should be consumed.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     consumePurchase: function (purchaseToken)
@@ -1614,11 +1614,11 @@ var FacebookInstantGamesPlugin = new Class({
      * Informs Facebook of a custom update that occurred in the game.
      * This will temporarily yield control to Facebook and Facebook will decide what to do based on what the update is.
      * Once Facebook returns control to the game the plugin will emit an `update` or `upatefail` event.
-     * 
+     *
      * It makes an async call to the API, so the result isn't available immediately.
-     * 
+     *
      * The `text` parameter is an update payload with the following structure:
-     * 
+     *
      * ```
      * text: {
      *     default: 'X just invaded Y\'s village!',
@@ -1633,14 +1633,14 @@ var FacebookInstantGamesPlugin = new Class({
      *
      * @method Phaser.FacebookInstantGamesPlugin#update
      * @since 3.13.0
-     * 
+     *
      * @param {string} cta - The call to action text.
      * @param {object} text - The text object.
      * @param {string} key - The key of the texture to use as the share image.
      * @param {(string|integer)} [frame] - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
      * @param {string} template - The update template key.
      * @param {object} updateData - The update data object payload.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     update: function (cta, text, key, frame, template, updateData)
@@ -1652,11 +1652,11 @@ var FacebookInstantGamesPlugin = new Class({
      * Informs Facebook of a leaderboard update that occurred in the game.
      * This will temporarily yield control to Facebook and Facebook will decide what to do based on what the update is.
      * Once Facebook returns control to the game the plugin will emit an `update` or `upatefail` event.
-     * 
+     *
      * It makes an async call to the API, so the result isn't available immediately.
-     * 
+     *
      * The `text` parameter is an update payload with the following structure:
-     * 
+     *
      * ```
      * text: {
      *     default: 'X just invaded Y\'s village!',
@@ -1671,14 +1671,14 @@ var FacebookInstantGamesPlugin = new Class({
      *
      * @method Phaser.FacebookInstantGamesPlugin#updateLeaderboard
      * @since 3.13.0
-     * 
+     *
      * @param {string} cta - The call to action text.
      * @param {object} text - The text object.
      * @param {string} key - The key of the texture to use as the share image.
      * @param {(string|integer)} [frame] - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
      * @param {string} template - The update template key.
      * @param {object} updateData - The update data object payload.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     updateLeaderboard: function (cta, text, key, frame, template, updateData)
@@ -1692,7 +1692,7 @@ var FacebookInstantGamesPlugin = new Class({
      * @method Phaser.FacebookInstantGamesPlugin#_update
      * @private
      * @since 3.13.0
-     * 
+     *
      * @param {string} action - The update action.
      * @param {string} cta - The call to action text.
      * @param {object} text - The text object.
@@ -1700,7 +1700,7 @@ var FacebookInstantGamesPlugin = new Class({
      * @param {(string|integer)} [frame] - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
      * @param {string} template - The update template key.
      * @param {object} updateData - The update data object payload.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     _update: function (action, cta, text, key, frame, template, updateData)
@@ -1751,20 +1751,20 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Request that the client switch to a different Instant Game.
-     * 
+     *
      * It makes an async call to the API, so the result isn't available immediately.
-     * 
+     *
      * If the game switches successfully this plugin will emit the `switchgame` event and the client will load the new game.
-     * 
+     *
      * If they cannot, i.e. it's not in the list of supported APIs, or the request
      * was rejected, it will emit a `switchgamefail` event instead.
      *
      * @method Phaser.FacebookInstantGamesPlugin#switchGame
      * @since 3.13.0
-     * 
+     *
      * @param {string} appID - The Application ID of the Instant Game to switch to. The application must be an Instant Game, and must belong to the same business as the current game.
      * @param {object} [data] - An optional data payload. This will be set as the entrypoint data for the game being switched to. Must be less than or equal to 1000 characters when stringified.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     switchGame: function (appID, data)
@@ -1802,17 +1802,17 @@ var FacebookInstantGamesPlugin = new Class({
     /**
      * Prompts the user to create a shortcut to the game if they are eligible to.
      * Can only be called once per session.
-     * 
+     *
      * It makes an async call to the API, so the result isn't available immediately.
-     * 
+     *
      * If the user choose to create a shortcut this plugin will emit the `shortcutcreated` event.
-     * 
+     *
      * If they cannot, i.e. it's not in the list of supported APIs, or the request
-     * was rejected, it will emit a `shortcutcreatedfail` event instead.
+     * was rejected, it will emit a `shortcutfailed` event instead.
      *
      * @method Phaser.FacebookInstantGamesPlugin#createShortcut
      * @since 3.13.0
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     createShortcut: function ()
@@ -1831,6 +1831,9 @@ var FacebookInstantGamesPlugin = new Class({
                 {
                     _this.emit('shortcutfailed', e);
                 });
+            }else
+            {
+                _this.emit('shortcutfailed');
             }
         });
 
@@ -1850,16 +1853,16 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Log an app event with FB Analytics.
-     * 
+     *
      * See https://developers.facebook.com/docs/javascript/reference/v2.8#app_events for more details about FB Analytics.
      *
      * @method Phaser.FacebookInstantGamesPlugin#log
      * @since 3.13.0
-     * 
+     *
      * @param {string} name - Name of the event. Must be 2 to 40 characters, and can only contain '_', '-', ' ', and alphanumeric characters.
      * @param {number} [value] - An optional numeric value that FB Analytics can calculate a sum with.
      * @param {object} [params] - An optional object that can contain up to 25 key-value pairs to be logged with the event. Keys must be 2 to 40 characters, and can only contain '_', '-', ' ', and alphanumeric characters. Values must be less than 100 characters in length.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     log: function (name, value, params)
@@ -1881,18 +1884,18 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Attempt to create an instance of an interstitial ad.
-     * 
+     *
      * If the instance is created successfully then the ad is preloaded ready for display in-game via the method `showAd()`.
-     * 
+     *
      * If the ad loads it will emit the `adloaded` event, passing the AdInstance as the only parameter.
-     * 
+     *
      * If the ad cannot be displayed because there was no inventory to fill it, it will emit the `adsnofill` event.
      *
      * @method Phaser.FacebookInstantGamesPlugin#preloadAds
      * @since 3.13.0
-     * 
+     *
      * @param {(string|string[])} placementID - The ad placement ID, or an array of IDs, as created in your Audience Network settings within Facebook.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     preloadAds: function (placementID)
@@ -1967,18 +1970,18 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Attempt to create an instance of an rewarded video ad.
-     * 
+     *
      * If the instance is created successfully then the ad is preloaded ready for display in-game via the method `showVideo()`.
-     * 
+     *
      * If the ad loads it will emit the `adloaded` event, passing the AdInstance as the only parameter.
-     * 
+     *
      * If the ad cannot be displayed because there was no inventory to fill it, it will emit the `adsnofill` event.
      *
      * @method Phaser.FacebookInstantGamesPlugin#preloadVideoAds
      * @since 3.13.0
-     * 
+     *
      * @param {(string|string[])} placementID - The ad placement ID, or an array of IDs, as created in your Audience Network settings within Facebook.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     preloadVideoAds: function (placementID)
@@ -2053,16 +2056,16 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Displays a previously loaded interstitial ad.
-     * 
+     *
      * If the ad is successfully displayed this plugin will emit the `adfinished` event, with the AdInstance object as its parameter.
-     * 
+     *
      * If the ad cannot be displayed, it will emit the `adsnotloaded` event.
      *
      * @method Phaser.FacebookInstantGamesPlugin#showAd
      * @since 3.13.0
-     * 
+     *
      * @param {string} placementID - The ad placement ID to display.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     showAd: function (placementID)
@@ -2091,7 +2094,7 @@ var FacebookInstantGamesPlugin = new Class({
                     {
                         _this.emit('adratelimited', ad);
                     }
-                    
+
                     _this.emit('adshowerror', e, ad);
                 });
             }
@@ -2102,16 +2105,16 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Displays a previously loaded interstitial video ad.
-     * 
+     *
      * If the ad is successfully displayed this plugin will emit the `adfinished` event, with the AdInstance object as its parameter.
-     * 
+     *
      * If the ad cannot be displayed, it will emit the `adsnotloaded` event.
      *
      * @method Phaser.FacebookInstantGamesPlugin#showVideo
      * @since 3.13.0
-     * 
+     *
      * @param {string} placementID - The ad placement ID to display.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     showVideo: function (placementID)
@@ -2140,7 +2143,7 @@ var FacebookInstantGamesPlugin = new Class({
                     {
                         _this.emit('adratelimited', ad);
                     }
-                    
+
                     _this.emit('adshowerror', e, ad);
                 });
             }
@@ -2153,18 +2156,18 @@ var FacebookInstantGamesPlugin = new Class({
      * Attempts to match the current player with other users looking for people to play with.
      * If successful, a new Messenger group thread will be created containing the matched players and the player will
      * be context switched to that thread. This plugin will also dispatch the `matchplayer` event, containing the new context ID and Type.
-     * 
+     *
      * The default minimum and maximum number of players in one matched thread are 2 and 20 respectively,
      * depending on how many players are trying to get matched around the same time.
-     * 
+     *
      * The values can be changed in `fbapp-config.json`. See the Bundle Config documentation for documentation about `fbapp-config.json`.
      *
      * @method Phaser.FacebookInstantGamesPlugin#matchPlayer
      * @since 3.13.0
-     * 
+     *
      * @param {string} [matchTag] - Optional extra information about the player used to group them with similar players. Players will only be grouped with other players with exactly the same tag. The tag must only include letters, numbers, and underscores and be 100 characters or less in length.
      * @param {boolean} [switchImmediately=false] - Optional extra parameter that specifies whether the player should be immediately switched to the new context when a match is found. By default this will be false which will mean the player needs explicitly press play after being matched to switch to the new context.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     matchPlayer: function (matchTag, switchImmediately)
@@ -2192,16 +2195,16 @@ var FacebookInstantGamesPlugin = new Class({
 
     /**
      * Fetch a specific leaderboard belonging to this Instant Game.
-     * 
+     *
      * The data is requested in an async call, so the result isn't available immediately.
-     * 
+     *
      * When the call completes the `getleaderboard` event will be emitted along with a Leaderboard object instance.
      *
      * @method Phaser.FacebookInstantGamesPlugin#getLeaderboard
      * @since 3.13.0
-     * 
+     *
      * @param {string} name - The name of the leaderboard. Each leaderboard for an Instant Game must have its own distinct name.
-     * 
+     *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
     getLeaderboard: function (name)
