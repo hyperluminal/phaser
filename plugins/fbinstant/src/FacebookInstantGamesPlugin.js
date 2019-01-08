@@ -1314,10 +1314,20 @@ var FacebookInstantGamesPlugin = new Class({
      * the client will attempt to switch into that context, and emit the `choose` event if successful.
      * Otherwise, if the player exits the menu or the client fails to switch into the new context, the `choosefail` event will be emitted.
      *
+     * The `options` parameter is an update payload with the following structure:
+     *
+     * ```
+     * options: {
+     *     filters: ['NEW_CONTEXT_ONLY'],
+     *     minSize: 2,
+     *     maxSixe: 20
+     * }
+     * ```
+     *
      * @method Phaser.FacebookInstantGamesPlugin#chooseContext
      * @since 3.13.0
      *
-     * @param {string} contextID - The ID of the desired context.
+     * @param {object} options - The ID of the desired context.
      *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
@@ -1360,6 +1370,7 @@ var FacebookInstantGamesPlugin = new Class({
     {
         if (!this.checkAPI('contextCreateAsync'))
         {
+            _this.emit('createfail');
             return this;
         }
 
