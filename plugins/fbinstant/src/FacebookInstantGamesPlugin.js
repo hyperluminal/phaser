@@ -1646,17 +1646,27 @@ var FacebookInstantGamesPlugin = new Class({
      * @since 3.13.0
      *
      * @param {string} cta - The call to action text.
-     * @param {object} text - The text object.
+     * @param {object|string} text - The text object.
      * @param {string} key - The key of the texture to use as the share image.
      * @param {(string|integer)} [frame] - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
      * @param {string} template - The update template key.
      * @param {object} updateData - The update data object payload.
+     * @param {string} [strategy] - Specifies how the update should be delivered. This can be one of the following:
+     * 'IMMEDIATE' - The update should be posted immediately.
+     * 'LAST' - The update should be posted when the game session ends. The most recent update sent using the 'LAST' strategy will be the one sent.
+     * 'IMMEDIATE_CLEAR' - The update is posted immediately, and clears any other pending updates (such as those sent with the 'LAST' strategy).
+     * If no strategy is specified, we default to 'IMMEDIATE'.
+     *
+     * @param {string} [notification] - Specifies notification setting for the custom update.
+     * This can be 'NO_PUSH' or 'PUSH', and defaults to 'NO_PUSH'.
+     * Use push notification only for updates that are high-signal and immediately actionable for the recipients.
+     * Also note that push notification is not always guaranteed, depending on user setting and platform policies.
      *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
-    update: function (cta, text, key, frame, template, updateData)
+    update: function (cta, text, key, frame, template, updateData, strategy, notification)
     {
-        return this._update('CUSTOM', cta, text, key, frame, template, updateData);
+        return this._update('CUSTOM', cta, text, key, frame, template, updateData, strategy, notification);
     },
 
     /**
@@ -1666,7 +1676,7 @@ var FacebookInstantGamesPlugin = new Class({
      *
      * It makes an async call to the API, so the result isn't available immediately.
      *
-     * The `text` parameter is an update payload with the following structure:
+     * The `text` parameter, if not a string is an object with the following structure:
      *
      * ```
      * text: {
@@ -1684,7 +1694,7 @@ var FacebookInstantGamesPlugin = new Class({
      * @since 3.13.0
      *
      * @param {string} cta - The call to action text.
-     * @param {object} text - The text object.
+     * @param {object|string} text - The text object.
      * @param {string} key - The key of the texture to use as the share image.
      * @param {(string|integer)} [frame] - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
      * @param {string} template - The update template key.
@@ -1706,15 +1716,25 @@ var FacebookInstantGamesPlugin = new Class({
      *
      * @param {string} action - The update action.
      * @param {string} cta - The call to action text.
-     * @param {object} text - The text object.
+     * @param {object|string} text - The text object.
      * @param {string} key - The key of the texture to use as the share image.
      * @param {(string|integer)} [frame] - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
      * @param {string} template - The update template key.
      * @param {object} updateData - The update data object payload.
+     * @param {string} [strategy] - Specifies how the update should be delivered. This can be one of the following:
+     * 'IMMEDIATE' - The update should be posted immediately.
+     * 'LAST' - The update should be posted when the game session ends. The most recent update sent using the 'LAST' strategy will be the one sent.
+     * 'IMMEDIATE_CLEAR' - The update is posted immediately, and clears any other pending updates (such as those sent with the 'LAST' strategy).
+     * If no strategy is specified, we default to 'IMMEDIATE'.
+     *
+     * @param {string} [notification] - Specifies notification setting for the custom update.
+     * This can be 'NO_PUSH' or 'PUSH', and defaults to 'NO_PUSH'.
+     * Use push notification only for updates that are high-signal and immediately actionable for the recipients.
+     * Also note that push notification is not always guaranteed, depending on user setting and platform policies.
      *
      * @return {this} This Facebook Instant Games Plugin instance.
      */
-    _update: function (action, cta, text, key, frame, template, updateData)
+    _update: function (action, cta, text, key, frame, template, updateData, strategy, notification)
     {
         if (!this.checkAPI('shareAsync'))
         {
@@ -1735,6 +1755,16 @@ var FacebookInstantGamesPlugin = new Class({
             var imageData = this.game.textures.getBase64(key, frame);
         }
 
+        if(strategy === undefined)
+        {
+            strategy = 'IMMEDIATE';
+        }
+
+        if(notification === undefined)
+        {
+            notification = 'NO_PUSH';
+        }
+
         var payload = {
             action: action,
             cta: cta,
@@ -1742,8 +1772,8 @@ var FacebookInstantGamesPlugin = new Class({
             text: text,
             template: template,
             data: updateData,
-            strategy: 'IMMEDIATE',
-            notification: 'NO_PUSH'
+            strategy: strategy,
+            notification: notification
         };
 
         var _this = this;
