@@ -56,17 +56,19 @@ var CreateRenderer = function (game)
         CanvasPool.disableSmoothing();
     }
 
+    var baseSize = game.scale.baseSize;
+
     //  Does the game config provide its own canvas element to use?
     if (config.canvas)
     {
         game.canvas = config.canvas;
 
-        game.canvas.width = game.scale.canvasWidth;
-        game.canvas.height = game.scale.canvasHeight;
+        game.canvas.width = baseSize.width;
+        game.canvas.height = baseSize.height;
     }
     else
     {
-        game.canvas = CanvasPool.create(game, game.scale.canvasWidth, game.scale.canvasHeight, config.renderType);
+        game.canvas = CanvasPool.create(game, baseSize.width, baseSize.height, config.renderType);
     }
 
     //  Does the game config provide some canvas css styles to use?
