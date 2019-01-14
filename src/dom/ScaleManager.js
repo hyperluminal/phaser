@@ -99,8 +99,6 @@ var ScaleManager = new Class({
     preBoot: function ()
     {
         //  Parse the config to get the scaling values we need
-        console.log('preBoot');
-
         this.parseConfig(this.game.config);
 
         this.game.events.once('boot', this.boot, this);
@@ -109,8 +107,6 @@ var ScaleManager = new Class({
     //  Fires BEFORE the canvas has been created
     parseConfig: function (config)
     {
-        console.log('parseConfig');
-
         this.setParent(config.parent, config.expandParent);
 
         var width = config.width;
@@ -173,8 +169,6 @@ var ScaleManager = new Class({
 
     setParent: function (parent, canExpandParent)
     {
-        console.log('setParent');
-
         var target;
 
         if (parent !== '')
@@ -221,8 +215,6 @@ var ScaleManager = new Class({
     {
         var DOMRect = this.parent.getBoundingClientRect();
 
-        console.log('dom', DOMRect.width, DOMRect.height);
-
         var resolution = this.resolution;
 
         this.parentSize.setSize(DOMRect.width * resolution, DOMRect.height * resolution);
@@ -231,8 +223,6 @@ var ScaleManager = new Class({
     //  Fires AFTER the canvas has been created and added to the DOM
     boot: function ()
     {
-        console.log('boot');
-
         this.canvas = this.game.canvas;
 
         var DOMRect = this.parent.getBoundingClientRect();
@@ -241,8 +231,6 @@ var ScaleManager = new Class({
         {
             DOMRect.height = this.getInnerHeight();
         }
-
-        console.log('dom', DOMRect.width, DOMRect.height);
 
         this.parentSize.setSize(DOMRect.width, DOMRect.height);
 
@@ -265,8 +253,6 @@ var ScaleManager = new Class({
 
     updateScale: function ()
     {
-        console.log('updateScale');
-
         this.getParentBounds();
 
         var style = this.canvas.style;
@@ -439,7 +425,7 @@ var ScaleManager = new Class({
         var axis = Math.abs(window.orientation);
 
         var size = { w: 0, h: 0 };
-        
+
         var ruler = document.createElement('div');
 
         ruler.setAttribute('style', 'position: fixed; height: 100vh; width: 0; top: 0');
