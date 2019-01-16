@@ -1600,7 +1600,7 @@ var FacebookInstantGamesPlugin = new Class({
         {
             _this.emit('consumepurchase', purchaseToken);
 
-            let index = -1;
+            var index = -1;
             for (var i =0 ; i < _this.purchases.length; i++) {
                 if(_this.purchases[i].purchaseToken === purchaseToken)
                 {
