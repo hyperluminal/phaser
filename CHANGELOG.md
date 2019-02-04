@@ -21,15 +21,51 @@
 * Fixed the `Leaderboard.getScores` method to now take the arguments into account. Fix #4271 (thanks @Oramy)
 * Fixed an API validation error in the `chooseContext` method. Fix #4248 (thanks @yadurajiv)
 
+### Important Changes to the Input System
+
+In Phaser 3.15 and earlier the Input system worked using an event queue. All native DOM input events, such as from the Mouse, Touch or Keyboard, were picked up by event handlers and stored in a queue within the Input Manager. This queue was then processed during the next game step, all the events were dealt with and then it was cleared, ready to receive more events. As they were processed, the internal Phaser events such as `pointerdown` or `keyup` were dispatched to your game code.
+
+This worked fine in that you were able to guarantee _exactly_ when the events would arrive, because it was always at the same time in the game step. However, it had the side effect of you not being able to do things like open external browser windows, or go into Full Screen mode, during your event handlers - because they weren't "real" events, so didn't pass the browser security checks. To this end, methods like `addUpCallback` were added to try and provide this support (although it was never possible for keyboard events).
+
+In 3.16 this has changed. The DOM Events now trigger the respective internal events immediately, in the same invocation. So if you click on the canvas, the `pointerdown` event you receive in your game is still part of the 'native' event handler, so you're now free to do things like go into full screen mode, or open external windows, without any browser warnings or work-arounds.
+
+It does, however, mean that the point at which these handlers are called is no longer always consistent, and is no longer bound to the speed of the Request Animation Frame update. We've tested as much as possible, and so far, things carry on working as before. We've noticed a slight increase in responsiveness, due to the removal of the fractional delay in processing the events, which feels good. However, if for whatever reason this change has broken your game then you're able to easily switch back to the previous version. In your Game Config, create an `input` object and give it the property `queue: true`. This will tell Phaser to use the legacy event queue system.
+
+Please note that we _will_ remove this legacy system in the near future. So, please try and adapt your games to use the new system. If you've found an edge-case where something breaks because of it, please report it so we can look into it.
+
+As a result of this change, the following are now deprecated:
+
+* `InputPlugin.addUpCallback` method.
+* `InputPlugin.addDownCallback` method.
+* `InputPlugin.addMoveCallback` method.
+* `InputManager.queue` property.
+* `InputManager.domCallbacks` property.
+* `InputManager._hasUpCallback` property.
+* `InputManager._hasDownCallback` property.
+* `InputManager._hasMoveCallback` property.
+* `InputManager.processDomCallbacks` method.
+* `InputManager.addUpCallback` method.
+* `InputManager.addDownCallback` method.
+* `InputManager.addMoveCallback` method.
+
+### keydown and keyup changes
+
+Due to unification across the event system, the `keydown_` and `keyup_` dynamic event strings have changed.
+
+* In all cases the `keydown_KEY` event name has changed to `keydown-KEY`. Note the change from an underscore to a hyphen.
+* In all cases the `keyup_KEY` event name has changed to `keyup-KEY`. Note the change from an underscore to a hyphen.
+
+You should update your game code accordingly.
+
 ### Keyboard Input - New Features
 
-The specificity of the Keyboard events has been changed to allow you more control over event handling. Previously, the Keyboard Plugin would emit the global `keydown_CODE` event first (where CODE was a keycode string, like `keydown_A`), then it would emit the global `keydown` event. In previous versions, `Key` objects, created via `this.input.keyboard.addKey()`, didn't emit events.
+The specificity of the Keyboard events has been changed to allow you more control over event handling. Previously, the Keyboard Plugin would emit the global `keydown-CODE` event first (where CODE was a keycode string, like `keydown-A`), then it would emit the global `keydown` event. In previous versions, `Key` objects, created via `this.input.keyboard.addKey()`, didn't emit events.
 
 The `Key` class now extends EventEmitter and emits two new events directly: `down` and `up`. This means you can listen for an event from a Key you've created, i.e.: `yourKey.on('up', handler)`.
 
 The order has also now changed. If it exists, the Key object will dispatch its `down` event first. Then the Keyboard Plugin will dispatch `keydown_CODE` and finally the least specific of them all, `keydown` will be dispatched.
 
-You also now have the ability to cancel this at any stage either on a local or global level. All event handlers are sent an event object which you can call `event.stopImmediatePropagation()` on. This will immediately stop any further listeners from being invoked in the current Scene. Therefore, if you call `stopImmediatePropagation()` in the `Key.on` handler, then the Keyboard Plugin will not emit either the `keydown_CODE` or `keydown` global events. You can also call `stopImmediatePropagation()` during the `keydown_CODE` handler, to stop it reaching the global `keydown` handler. As `keydown` is last, calling it there has no effect. 
+You also now have the ability to cancel this at any stage either on a local or global level. All event handlers are sent an event object which you can call `event.stopImmediatePropagation()` on. This will immediately stop any further listeners from being invoked in the current Scene. Therefore, if you call `stopImmediatePropagation()` in the `Key.on` handler, then the Keyboard Plugin will not emit either the `keydown-CODE` or `keydown` global events. You can also call `stopImmediatePropagation()` during the `keydown-CODE` handler, to stop it reaching the global `keydown` handler. As `keydown` is last, calling it there has no effect. 
 
 There is also the `stopPropagation()` function. This works in the same way as `stopImmediatePropagation` but instead of being local, it works across all of the Scenes in your game. For example, if you had 3 active Scenes (A, B and C, with A at the top of the Scene list), all listening for the same key, calling `stopPropagation()` in Scene A would stop the event from reaching any handlers in Scenes B or C. Remember that events flow down the Scene list from top to bottom. So, the top-most rendering Scene in the Scene list has priority over any Scene below it.
 
@@ -64,6 +100,7 @@ Default captures can be defined in the Game Config in the `input.keyboard.captur
 one set of bindings ever created, which makes things a lot cleaner.
 * There is a new Game and Scene Config setting `input.keyboard.capture` which is an array of KeyCodes that the Keyboard Plugin will capture all non-modified key events on. By default it is empty. You can populate it in the config, or use the new capture methods.
 * The Keyboard Manager will now call `preventDefault` only on non-modified key presses, stopping the keyboard event from hitting the browser. Previously, capturing the R key, for example, would block a CTRL+R page reload, but it now ignores it because of the key modifier.
+* If the browser Window loses focus, either from switching to another app, or another tab, all active Keys will be reset. This prevents issues with keys still reporting as being held down after leaving the game and returning to it again. Fix #4134 (thanks @Simplonium)
 * `Key.emitOnRepeat` is a new boolean property that controls if the Key will continuously emit a `down` event while being held down (true), or emit the event just once, on first press, and then skip future events (false).
 * `Key.setEmitOnRepeat` is a new chainable method for setting the `emitOnRepeat` property.
 * The `KeyboardPlugin.addKeys` method has a new optional boolean `emitOnRepeat` which sets that property on all Key objects it creates as part of the call. It defaults to `false`.
@@ -85,6 +122,8 @@ one set of bindings ever created, which makes things a lot cleaner.
 * `KeyboardPlugin.target` has been removed as it's no longer used by the class.
 * `KeyboardPlugin.queue` has been removed as it's no longer used by the class.
 * `KeyboardPlugin.onKeyHandler` has been removed as it's no longer used by the class.
+* `KeyboardPlugin.startListeners` has been removed as it's no longer used by the class.
+* `KeyboardPlugin.stopListeners` has been removed as it's no longer used by the class.
 
 ### Mouse and Touch Input - New Features, Updates and Fixes
 
@@ -123,16 +162,59 @@ one set of bindings ever created, which makes things a lot cleaner.
 * `InputPlugin.setDragState` is a new internal method that sets the drag state for the given Pointer.
 * `InputPlugin.getDragState` is a new internal method that gets the drag state for the given Pointer.
 * Draggable Game Objects would not work if you had multiple Scenes running in parallel, with draggable objects in both of them. Only the top-most Scene would work fully. Items in the bottom Scene would never finish their drag cycle, causing them to get stuck. Fix #4249 #4278 (thanks @probt @iArePJ)
+* `Pointer.leftButtonDown` will now return an actual boolean, rather than the result of the bitwise op (which still evaluated as a boolean, but this is cleaner).
+* `Pointer.rightButtonDown` will now return an actual boolean, rather than the result of the bitwise op (which still evaluated as a boolean, but this is cleaner).
+* `Pointer.middleButtonDown` will now return an actual boolean, rather than the result of the bitwise op (which still evaluated as a boolean, but this is cleaner).
+* `Pointer.backButtonDown` will now return an actual boolean, rather than the result of the bitwise op (which still evaluated as a boolean, but this is cleaner).
+* `Pointer.forwardButtonDown` will now return an actual boolean, rather than the result of the bitwise op (which still evaluated as a boolean, but this is cleaner).
+* `Pointer.up`, `Pointer.move` and `Pointer.down` now use `in` to check for the existance of the `buttons` property on the event, causing it to be set even if equal to zero, which it is when there are no buttons down. This also fixes an issue where the buttons didn't update during a move event (thanks @SonnyCampbell @rexrainbow)
 
 ### Changes as a result of the new Scale Manager
 
-* If you set the Game Config property `zoom` to be > 1 then it will automatically enable `pixelArt` mode, unless you set it to `false` in the config.
+* If you set the Game Config property `zoom` to be > 1 then it will automatically enable `pixelArt` mode, unless you set `pixelArt: false` in the config.
 * There is a new property in the Game Config called `autoRound`, which controls if the canvas size and style sizes are passed through Math.floor or not. On some devices this can help with performance and anti-aliasing. The default is `false` (turned off).
 * The Game Config property `autoResize` has been removed as it's now redundant.
 * The WebGL and Canvas Renderers no longer change the Canvas size in their `resize` methods. They just update internal properties.
 * The WebGL and Canvas Renderers now read the `width`, `height` and `resolution` values from the Scale Manager, not the Game Config.
 * `CameraManager.baseScale` property has been removed as it's no longer used anywhere.
 * The BaseCamera and Camera `preRender` methods now only take a resolution argument and use it internally for their transforms.
+* `InputManager.scaleManager` is a new property that is a reference to the Scale Manager. This is populated in the `boot` method.
+* The `InputManager.transformX` method has been removed. This is now available in the ScaleManager.
+* The `InputManager.transformY` method has been removed. This is now available in the ScaleManager.
+* The `InputManager.scale` property has been removed. This is now available in the ScaleManager under `displayScale`.
+* The `InputManager.resize` method has been removed as this process is now handled by the ScaleManager.
+* The `InputManager.bounds` property has been removed as this process is now handled by the ScaleManager.
+* The `InputManager.updateBounds` method has been removed as this process is now handled by the ScaleManager.
+* The `InputManager.getOffsetX` method has been removed as it's no longer required.
+* The `InputManager.getOffsetY` method has been removed as it's no longer required.
+* The `InputManager.getScaleX` method has been removed as it's no longer required.
+* The `InputManager.getScaleY` method has been removed as it's no longer required.
+* The `SceneManager.resize` method has been removed as it's no longer required.
+* The `Scene.Systems.resize` method has been removed as it's no longer required.
+* Scenes will no longer dispatch the `resize` event. You should now listen for this event from the Scale Manager instead.
+* `BaseCamera.config` has been removed as it's no longer required.
+* `BaseCamera.scaleManager` is a new property that references the Scale Manager and is used internally for size checks.
+* The `Game.resize` method has been removed as it's no longer required. You should now call `ScaleManager.resize` instead.
+* The Game will no longer dispatch the `resize` event. You should now listen for this event from the Scale Manager instead.
+
+### Important Namespace Changes
+
+* The `Phaser.Boot` namespace has been renamed to `Phaser.Core`. As a result, the `boot` folder has been renamed to `core`. This  impacts the `TimeStep` class and `VisibilityHandler` function, which have been moved to be under the new namespace.
+* The `Phaser.Animations` namespace was incorrectly exposed in the Phaser entrypoints as `Animation` (note the lack of plural). This means that if you are creating any custom classes that extend Animation objects using the Phaser namespace, then please update them from `Phaser.Animation` to `Phaser.Animations`, i.e. `Phaser.Animation.AnimationFrame` to `Phaser.Animations.AnimationFrame`. This doesn't impact you if you created animations directly via the Animation Manager.
+* The keyed Data Manager change data event string has changed from `changedata_` to `changedata-` to keep it consistent with other keyed events. Note the change from `_` to `-`.
+* The Keyboard Plugin `keydown` dynamic event string has changed from `keydown_` to `keydown-` to keep it consistent with other keyed events. Note the change from `_` to `-`.
+* The Keyboard Plugin `keyup` dynamic event string has changed from `keyup_` to `keyup-` to keep it consistent with other keyed events. Note the change from `_` to `-`.
+* The `texturesready` event emitted by the Texture Manager has been renamed to `ready`.
+* The `loadcomplete` event emitted by the Loader Plugin has been renamed to `postprocess` to be reflect what it's used for.
+* Game Objects used to emit a `collide` event if they had an Arcade Physics Body with `onCollide` set, that collided with a Tile. This has changed. The event has been renamed to `tilecollide` and you should now listen for this event from the Arcade Physics World itself: `this.physics.world.on('tilecollide')`. Game Objects no longer emit this event.
+* Game Objects used to emit an `overlap` event if they had an Arcade Physics Body with `onOverlap` set, that overlapped with a Tile. This has changed. The event has been renamed to `tileoverlap` and you should now listen for this event from the Arcade Physics World itself: `this.physics.world.on('tileoverlap')`. Game Objects no longer emit this event.
+* The function `Phaser.Physics.Impact.SeperateX` has been renamed to `SeparateX` to correct the spelling mistake.
+* The function `Phaser.Physics.Impact.SeperateY` has been renamed to `SeparateY` to correct the spelling mistake.
+* The `ended` event in `WebAudioSound` has been renamed to `complete` to make it more consistent with the rest of the API.
+* The `ended` event in `HTML5AudioSound` has been renamed to `complete` to make it more consistent with the rest of the API.
+* The `Phaser.Utils.Objects` namespace was incorrectly exposed in the Phaser entrypoints as `Object` (note the lack of plural), this has now been fixed so all associated functions are properly namespaced.
+* `Phaser.GameObjects.Blitter.Bob` has been renamed to `Phaser.GameObjects.Bob` to avoid namespace conflicts in TypeScript.
+* `Phaser.GameObjects.Text.TextStyle` has been renamed to `Phaser.GameObjects.TextStyle` to avoid namespace conflicts in TypeScript.
 
 ### New Features
 
@@ -180,6 +262,27 @@ one set of bindings ever created, which makes things a lot cleaner.
 * `CanvasTexture.getData` is a new method that will extract an ImageData block from the CanvasTexture from the region given.
 * `CanvasTexture.putData` is a new method that will put an ImageData block at the given coordinates in a CanvasTexture.
 * `Line.Extend` is a new static function that allows you extend the start and/or end points of a Line by the given amounts.
+* `Vector2.LEFT` is a new constant that can be used in Vector comparison operations (thanks @Aedalus)
+* `Vector2.RIGHT` is a new constant that can be used in Vector comparison operations (thanks @Aedalus)
+* `Vector2.UP` is a new constant that can be used in Vector comparison operations (thanks @Aedalus)
+* `Vector2.DOWN` is a new constant that can be used in Vector comparison operations (thanks @Aedalus)
+* `Vector2.ONE` is a new constant that can be used in Vector comparison operations (thanks @Aedalus)
+* `Vector3.ZERO` is a new constant that can be used in Vector comparison operations (thanks @Aedalus)
+* `Vector3.LEFT` is a new constant that can be used in Vector comparison operations (thanks @Aedalus)
+* `Vector3.RIGHT` is a new constant that can be used in Vector comparison operations (thanks @Aedalus)
+* `Vector3.UP` is a new constant that can be used in Vector comparison operations (thanks @Aedalus)
+* `Vector3.DOWN` is a new constant that can be used in Vector comparison operations (thanks @Aedalus)
+* `Vector3.FORWARD` is a new constant that can be used in Vector comparison operations (thanks @Aedalus)
+* `Vector3.BACK` is a new constant that can be used in Vector comparison operations (thanks @Aedalus)
+* `Vector3.ONE` is a new constant that can be used in Vector comparison operations (thanks @Aedalus)
+* Geometery Mask has a new property called `invertAlpha` in WebGL, which works in the same way as the flag on the Bitmap Mask and allows you to invert the function of the stencil buffer, i.e. non-drawn shapes become invisible, and drawn shapes visible (thanks @tfelix)
+* The Arcade Physics Body has a new property `maxSpeed` which limits the vector length of the Body velocity. You can set it via the method `setMaxSpeed` and it is applied in the `World.computeVelocity` method (thanks @Edwin222 @rexrainbow)
+* `WebGLRenderer.snapshotArea` is a new method that allows you to grab an image of the given region of the canvas during the post-render step and have it sent to your defined callback. This is the same as `snapshot` except you control the area being grabbed, so is more efficient if you only need a smaller area.
+* `WebGLRenderer.snapshotPixel` is a new method that allows you to grab a single pixel from the game canvas, post-render. It returns the result as a `Color` object to your specified callback.
+* `CanvasRenderer.snapshotArea` is a new method that allows you to grab an image of the given region of the canvas during the post-render step and have it sent to your defined callback. This is the same as `snapshot` except you control the area being grabbed, so is more efficient if you only need a smaller area.
+* `CanvasRenderer.snapshotPixel` is a new method that allows you to grab a single pixel from the game canvas, post-render. It returns the result as a `Color` object to your specified callback.
+* `SceneManager.getScenes` is a new method that will return all current Scenes being managed by the Scene Manager. You can optionally return only active scenes and reverse the order in which they are returned in the array.
+* `DOM.GetTarget` is a new helper function that will return a reference to a DOM Element based on the given string or node.
 
 ### Updates
 
@@ -222,6 +325,22 @@ one set of bindings ever created, which makes things a lot cleaner.
 * `Map.set` will now update an existing value if you provide it with a key that already exists within the Map. Previously, if you tried to set the value of a key that existed it would be skipped.
 * `MatterSprite` would set its `type` property to be `Image`. It now sets it to be `Sprite` as it should do.
 * `Matter.TileBody.setFromTileCollision` no longer checks if the shape is concave or convex before modifying the vertices, as the update to the Matter.js lib in 3.12 stopped this from working with Tiled collision shapes.
+* The Scene `transitionstart` event is now dispatched by the Target Scene of a transition, regardless if the Scene has a `create` method or not. Previously, it was only dispatched if the Scene had a create method.
+* The Loader will now allow an XHR status of 0 as success too. Normally only status 200 would be accepted as success, but 0 is returned when a file is loaded from the local filesystem (file://). This happens, for example, when opening the index.html of a game in a browser directly, or when using Cordova on iOS. Fix #3464 (thanks @Ithamar)
+* `Tween.restart` now returns the Tween instance (thanks @rexrainbow)
+* `Tween.play` now returns the Tween instance (thanks @rexrainbow)
+* `Tween.seek` now returns the Tween instance (thanks @rexrainbow)
+* `Tween.complete` now returns the Tween instance (thanks @rexrainbow)
+* `Tween.stop` now returns the Tween instance (thanks @rexrainbow)
+* `List.sort` now has an optional parameter `handler` which allows you to provide your own sort handling function (thanks @jcyuan)
+* `Container.sort` now has an optional parameter `handler` which allows you to provide your own sort handling function (thanks @jcyuan)
+* The WebGLRenderer method `canvasToTexture` will now only set the filter to be `NEAREST` if `antialias` is disabled in the game config (i.e. when running in pixelArt mode). This means that Text objects, and other Canvas backed textures, now render with anti-aliasing if everything else does. You can disable this on a per-object basis by calling `texture.setFilter(1)` on them.
+* `CanvasRenderer.snapshotCallback`, `snapshotType` and `snapshotEncoder` have all been removed as they are no longer required.
+* `CanvasRenderer.snapshotState` is a new object that contains the snapshot configuration data, the same as the WebGL Renderer.
+* The signature of the `WebGLSnapshot` function has changed. It now takes a Snapshot Configuration object as the second parameter.
+* The signature of the `CanvasSnapshot` function has changed. It now takes a Snapshot Configuration object as the second parameter.
+* A Tween Timeline will now set it's internal destroy state _before_ calling either the `onComplete` callback or sending the `COMPLETE` event. This means you can now call methods that will change the state of the Timeline, such as `play`, during the callback handlers, where-as before doing this would have had the internal state changed immediately, preventing it (thanks Lucas Knight)
+* The `AddToDOM` method has had the `overflowHidden` argument removed. The DOM element the canvas is inserted into no longer has `overflow: hidden` applied to its style. If you wish to have this, please add it directly via CSS.
 
 ### Bug Fixes
 
@@ -271,6 +390,15 @@ one set of bindings ever created, which makes things a lot cleaner.
 * `CanvasTexture.destroy` is a new method that specifically handles the destruction of the CanvasTexture and all of its associated typed arrays. This prevents a memory leak when creating and destroying lots of RenderTextures (which are CanvasTexture backed). Fix #4239 (thanks @sjb933)
 * The Alpha, Flip and Origin components have been removed from the Mesh Game Object (and by extension, Quad as well) as they are not used in the renderer and should be manipulated via the Mesh properties. Fix #4188 (thanks @enriqueto)
 * The `processDomCallbacks` method in the Input Manager wasn't correctly clearing the `once` arrays. Responsibility for this has now been passed to the queue methods `queueTouchStart`, `queueTouchMove`, `queueTouchEnd`, `queueMouseDown`, `queueMouseMove` and `queueMouseUp`. Fix #4257 (thanks @iArePJ)
+* Arcade Physics now manages when `postUpdate` should be applied better, stopping it from gaining a zero delta during a further check in the same frame. This fixes various issues, including the mass collision test demo. Fix #4154 (thanks @samme)
+* Arcade Physics could trigger a `collide` event on a Body even if it performing an overlap check, if the `onCollide` property was true (thanks @samme)
+* TileSprites no longer cause a crash when using the Headless mode renderer. Fix #4297 (thanks @clesquir)
+* The WebGLRenderer will now apply a transparent background if `transparent = true` in the game config (thanks @gomachan7)
+* `List.sort` was missing the scope required for the sort handler, this is now correctly provided internally. Fix #4241 (thanks @jcyuan)
+* `Container.sort` was missing the scope required for the sort handler, this is now correctly provided internally. Fix #4241 (thanks @jcyuan)
+* `DataManager.pop` would emit the DataManager instance, instead of the parent, as the first event argument. It now emits the parent as it should do. Fix #4186 (thanks @gadelan)
+* The `GetValue` function wasn't checking for the existance of '.' in the config property name correctly, causing the branch to always be taken (thanks @kyranet)
+* Safari had permission problems playing HTML5 Audio files on Mac OS. Due to the changes in the input event system audio now plays properly based on user interactions. You still can't play it automatically, though, it will always require a user gesture to begin. Fix #4217 (thanks @increpare)
 
 ### Examples and TypeScript
 
@@ -286,7 +414,7 @@ The Phaser Doc Jam was a community-backed effort to try and get the Phaser 3 API
 
 Also, the following helped with the docs outside of the Doc Jam:
 
-@bryanwood @jestarray @matosummer @tfelix @imilo @BigZaphod @OmarShehata @16patsle @jcyuan @iam13islucky
+@bryanwood @jestarray @matosummer @tfelix @imilo @BigZaphod @OmarShehata @16patsle @jcyuan @iam13islucky @FractalBobz Endre
 
 ## Version 3.15.1 - Batou - 16th October 2018
 

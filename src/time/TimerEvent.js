@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -288,7 +288,7 @@ var TimerEvent = new Class({
      * @method Phaser.Time.TimerEvent#remove
      * @since 3.0.0
      *
-     * @param {function} dispatchCallback - If `true` (by default `false`), the function of the Timer Event will be called before its removal from its Clock.
+     * @param {boolean} [dispatchCallback] - If `true` (by default `false`), the function of the Timer Event will be called before its removal from its Clock.
      */
     remove: function (dispatchCallback)
     {

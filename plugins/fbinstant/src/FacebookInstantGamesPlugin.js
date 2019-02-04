@@ -1648,7 +1648,7 @@ var FacebookInstantGamesPlugin = new Class({
      * @param {string} cta - The call to action text.
      * @param {object|string} text - The text object.
      * @param {string} key - The key of the texture to use as the share image.
-     * @param {(string|integer)} [frame] - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
+     * @param {?(string|integer)} frame - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
      * @param {string} template - The update template key.
      * @param {object} updateData - The update data object payload.
      * @param {string} [strategy] - Specifies how the update should be delivered. This can be one of the following:
@@ -1696,7 +1696,7 @@ var FacebookInstantGamesPlugin = new Class({
      * @param {string} cta - The call to action text.
      * @param {object|string} text - The text object.
      * @param {string} key - The key of the texture to use as the share image.
-     * @param {(string|integer)} [frame] - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
+     * @param {?(string|integer)} frame - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
      * @param {string} template - The update template key.
      * @param {object} updateData - The update data object payload.
      *
@@ -1718,7 +1718,7 @@ var FacebookInstantGamesPlugin = new Class({
      * @param {string} cta - The call to action text.
      * @param {object|string} text - The text object.
      * @param {string} key - The key of the texture to use as the share image.
-     * @param {(string|integer)} [frame] - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
+     * @param {?(string|integer)} frame - The frame of the texture to use as the share image. Set to `null` if you don't require a frame, but do need to set session data.
      * @param {string} template - The update template key.
      * @param {object} updateData - The update data object payload.
      * @param {string} [strategy] - Specifies how the update should be delivered. This can be one of the following:

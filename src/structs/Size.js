@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -160,11 +160,11 @@ var Size = new Class({
      * 
      * It can be a number from 0 to 4, or a Size constant:
      * 
-     * 0) NONE = Do not make the size fit the aspect ratio. Change the ratio when the size changes.
-     * 1) WIDTH_CONTROLS_HEIGHT = The height is automatically adjusted based on the width.
-     * 2) HEIGHT_CONTROLS_WIDTH = The width is automatically adjusted based on the height.
-     * 3) FIT = The width and height are automatically adjusted to fit inside the given target area, while keeping the aspect ratio. Depending on the aspect ratio there may be some space inside the area which is not covered.
-     * 4) ENVELOPE = The width and height are automatically adjusted to make the size cover the entire target area while keeping the aspect ratio. This may extend further out than the target size.
+     * 0. NONE = Do not make the size fit the aspect ratio. Change the ratio when the size changes.
+     * 1. WIDTH_CONTROLS_HEIGHT = The height is automatically adjusted based on the width.
+     * 2. HEIGHT_CONTROLS_WIDTH = The width is automatically adjusted based on the height.
+     * 3. FIT = The width and height are automatically adjusted to fit inside the given target area, while keeping the aspect ratio. Depending on the aspect ratio there may be some space inside the area which is not covered.
+     * 4. ENVELOP = The width and height are automatically adjusted to make the size cover the entire target area while keeping the aspect ratio. This may extend further out than the target size.
      * 
      * Calling this method automatically recalculates the `width` and the `height`, if required.
      * 
@@ -226,7 +226,7 @@ var Size = new Class({
      * WIDTH_CONTROLS_HEIGHT - The parent clamps just the width.
      * HEIGHT_CONTROLS_WIDTH - The parent clamps just the height.
      * FIT - The parent clamps whichever axis is required to ensure the size fits within it.
-     * ENVELOPE - The parent is used to ensure the size fully envelopes the parent.
+     * ENVELOP - The parent is used to ensure the size fully envelops the parent.
      * 
      * Calling this method automatically calls `setSize`.
      *
@@ -312,7 +312,7 @@ var Size = new Class({
      * If minimum and/or maximum dimensions have been specified, the values given to this method will be clamped into
      * that range prior to adjustment, but may still exceed them depending on the aspect mode.
      * 
-     * If this Size component has a parent set, and the aspect mode is `fit` or `envelope`, then the given sizes will
+     * If this Size component has a parent set, and the aspect mode is `fit` or `envelop`, then the given sizes will
      * be clamped to the range specified by the parent.
      *
      * @method Phaser.Structs.Size#setSize
@@ -350,10 +350,51 @@ var Size = new Class({
                 this.constrain(width, height, true);
                 break;
 
-            case Size.ENVELOPE:
+            case Size.ENVELOP:
                 this.constrain(width, height, false);
                 break;
         }
+
+        return this;
+    },
+
+    /**
+     * Sets a new aspect ratio, overriding what was there previously.
+     * 
+     * It then calls `setSize` immediately using the current dimensions.
+     *
+     * @method Phaser.Structs.Size#setAspectRatio
+     * @since 3.16.0
+     *
+     * @param {number} ratio - The new aspect ratio.
+     *
+     * @return {this} This Size component instance.
+     */
+    setAspectRatio: function (ratio)
+    {
+        this.aspectRatio = ratio;
+
+        return this.setSize(this._width, this._height);
+    },
+
+    /**
+     * Sets a new width and height for this Size component and updates the aspect ratio based on them.
+     * 
+     * It _doesn't_ change the `aspectMode` and still factors in size limits such as the min max and parent bounds.
+     *
+     * @method Phaser.Structs.Size#resize
+     * @since 3.16.0
+     *
+     * @param {number} width - The new width of the Size component.
+     * @param {number} [height=width] - The new height of the Size component. If not given, it will use the `width`.
+     *
+     * @return {this} This Size component instance.
+     */
+    resize: function (width, height)
+    {
+        this._width = this.getNewWidth(SnapFloor(width, this.snapTo.x));
+        this._height = this.getNewHeight(SnapFloor(height, this.snapTo.y));
+        this.aspectRatio = (this._height === 0) ? 1 : this._width / this._height;
 
         return this;
     },
@@ -377,7 +418,7 @@ var Size = new Class({
 
         if (checkParent && this._parent && value > this._parent.width)
         {
-            value = this._parent.width;
+            value = Math.max(this.minWidth, this._parent.width);
         }
 
         return value;
@@ -402,7 +443,7 @@ var Size = new Class({
 
         if (checkParent && this._parent && value > this._parent.height)
         {
-            value = this._parent.height;
+            value = Math.max(this.minHeight, this._parent.height);
         }
 
         return value;
@@ -422,7 +463,7 @@ var Size = new Class({
      *
      * @param {number} [width=0] - The new width of the Size component.
      * @param {number} [height] - The new height of the Size component. If not given, it will use the width value.
-     * @param {boolean} [fit=true] - Perform a `fit` (true) constraint, or an `envelope` (false) constraint.
+     * @param {boolean} [fit=true] - Perform a `fit` (true) constraint, or an `envelop` (false) constraint.
      *
      * @return {this} This Size component instance.
      */
@@ -501,14 +542,14 @@ var Size = new Class({
     },
 
     /**
-     * The current `width` and `height` are adjusted to fit inside the given dimensions, while keeping the aspect ratio.
+     * The current `width` and `height` are adjusted so that they fully envlop the given dimensions, while keeping the aspect ratio.
      * 
      * The size may extend further out than the target area if the aspect ratios differ.
      * 
      * If this Size component has a parent set, then the values are clamped so that it never exceeds the parent
      * on the longest axis.
      *
-     * @method Phaser.Structs.Size#fitTo
+     * @method Phaser.Structs.Size#envelop
      * @since 3.16.0
      *
      * @param {number} [width=0] - The new width of the Size component.
@@ -516,7 +557,7 @@ var Size = new Class({
      *
      * @return {this} This Size component instance.
      */
-    envelope: function (width, height)
+    envelop: function (width, height)
     {
         return this.constrain(width, height, false);
     },
@@ -566,6 +607,26 @@ var Size = new Class({
     toString: function ()
     {
         return '[{ Size (width=' + this._width + ' height=' + this._height + ' aspectRatio=' + this.aspectRatio + ' aspectMode=' + this.aspectMode + ') }]';
+    },
+
+    /**
+     * Copies the aspect mode, aspect ratio, width and height from this Size component
+     * to the given Size component. Note that the parent, if set, is not copied across.
+     *
+     * @method Phaser.Structs.Size#copy
+     * @since 3.16.0
+     * 
+     * @param {Phaser.Structs.Size} destination - The Size component to copy the values to.
+     *
+     * @return {Phaser.Structs.Size} The updated destination Size component.
+     */
+    copy: function (destination)
+    {
+        destination.setAspectMode(this.aspectMode);
+
+        destination.aspectRatio = this.aspectRatio;
+
+        return destination.setSize(this.width, this.height);
     },
 
     /**
@@ -685,11 +746,11 @@ Size.FIT = 3;
 /**
  * The width and height are automatically adjusted to make the size cover the entire target area while keeping the aspect ratio. This may extend further out than the target size.
  * 
- * @name Phaser.Structs.Size.ENVELOPE
+ * @name Phaser.Structs.Size.ENVELOP
  * @constant
  * @type {integer}
  * @since 3.16.0
  */
-Size.ENVELOPE = 4;
+Size.ENVELOP = 4;
 
 module.exports = Size;

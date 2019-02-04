@@ -1,15 +1,15 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
-var VisualBounds = require('./VisualBounds');
+var CONST = require('../scale/const');
 
-var GetScreenOrientation = function (primaryFallback)
+var GetScreenOrientation = function (width, height)
 {
     var screen = window.screen;
-    var orientation = screen.orientation || screen.mozOrientation || screen.msOrientation;
+    var orientation = (screen) ? screen.orientation || screen.mozOrientation || screen.msOrientation : false;
 
     if (orientation && typeof orientation.type === 'string')
     {
@@ -22,35 +22,28 @@ var GetScreenOrientation = function (primaryFallback)
         return orientation;
     }
 
-    var PORTRAIT = 'portrait-primary';
-    var LANDSCAPE = 'landscape-primary';
-    
-    if (primaryFallback === 'screen')
+    if (screen)
     {
-        return (screen.height > screen.width) ? PORTRAIT : LANDSCAPE;
+        return (screen.height > screen.width) ? CONST.PORTRAIT : CONST.LANDSCAPE;
     }
-    else if (primaryFallback === 'viewport')
-    {
-        return (VisualBounds.height > VisualBounds.width) ? PORTRAIT : LANDSCAPE;
-    }
-    else if (primaryFallback === 'window.orientation' && typeof window.orientation === 'number')
+    else if (typeof window.orientation === 'number')
     {
         //  This may change by device based on "natural" orientation.
-        return (window.orientation === 0 || window.orientation === 180) ? PORTRAIT : LANDSCAPE;
+        return (window.orientation === 0 || window.orientation === 180) ? CONST.PORTRAIT : CONST.LANDSCAPE;
     }
     else if (window.matchMedia)
     {
         if (window.matchMedia('(orientation: portrait)').matches)
         {
-            return PORTRAIT;
+            return CONST.PORTRAIT;
         }
         else if (window.matchMedia('(orientation: landscape)').matches)
         {
-            return LANDSCAPE;
+            return CONST.LANDSCAPE;
         }
     }
-
-    return (VisualBounds.height > VisualBounds.width) ? PORTRAIT : LANDSCAPE;
+    
+    return (height > width) ? CONST.PORTRAIT : CONST.LANDSCAPE;
 };
 
 module.exports = GetScreenOrientation;

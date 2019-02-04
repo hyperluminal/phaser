@@ -1,12 +1,15 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
 var Class = require('../../utils/Class');
 var EventEmitter = require('eventemitter3');
+var Events = require('./events');
+var GameEvents = require('../../core/events');
 var GetValue = require('../../utils/object/GetValue');
+var InputEvents = require('../events');
 var InputPluginCache = require('../InputPluginCache');
 var Key = require('./keys/Key');
 var KeyCodes = require('./keys/KeyCodes');
@@ -31,7 +34,7 @@ var SnapFloor = require('../../math/snap/SnapFloor');
  * Or, to listen for a specific key:
  * 
  * ```javascript
- * this.input.keyboard.on('keydown_A', callback, context);
+ * this.input.keyboard.on('keydown-A', callback, context);
  * ```
  *
  * You can also create Key objects, which you can then poll in your game loop:
@@ -68,6 +71,15 @@ var KeyboardPlugin = new Class({
     function KeyboardPlugin (sceneInputPlugin)
     {
         EventEmitter.call(this);
+
+        /**
+         * A reference to the core game, so we can listen for visibility events.
+         *
+         * @name Phaser.Input.Keyboard.KeyboardPlugin#game
+         * @type {Phaser.Game}
+         * @since 3.16.0
+         */
+        this.game = sceneInputPlugin.systems.game;
 
         /**
          * A reference to the Scene that this Input Plugin is responsible for.
@@ -144,8 +156,8 @@ var KeyboardPlugin = new Class({
          */
         this.time = 0;
 
-        sceneInputPlugin.pluginEvents.once('boot', this.boot, this);
-        sceneInputPlugin.pluginEvents.on('start', this.start, this);
+        sceneInputPlugin.pluginEvents.once(InputEvents.BOOT, this.boot, this);
+        sceneInputPlugin.pluginEvents.on(InputEvents.START, this.start, this);
     },
 
     /**
@@ -169,7 +181,7 @@ var KeyboardPlugin = new Class({
             this.addCaptures(captures);
         }
 
-        this.sceneInputPlugin.pluginEvents.once('destroy', this.destroy, this);
+        this.sceneInputPlugin.pluginEvents.once(InputEvents.DESTROY, this.destroy, this);
     },
 
     /**
@@ -183,9 +195,18 @@ var KeyboardPlugin = new Class({
      */
     start: function ()
     {
-        this.startListeners();
+        if (this.sceneInputPlugin.manager.useQueue)
+        {
+            this.sceneInputPlugin.pluginEvents.on(InputEvents.UPDATE, this.update, this);
+        }
+        else
+        {
+            this.sceneInputPlugin.manager.events.on(InputEvents.MANAGER_PROCESS, this.update, this);
+        }
 
-        this.sceneInputPlugin.pluginEvents.once('shutdown', this.shutdown, this);
+        this.sceneInputPlugin.pluginEvents.once(InputEvents.SHUTDOWN, this.shutdown, this);
+
+        this.game.events.on(GameEvents.BLUR, this.resetKeys, this);
     },
 
     /**
@@ -199,32 +220,6 @@ var KeyboardPlugin = new Class({
     isActive: function ()
     {
         return (this.enabled && this.scene.sys.isActive());
-    },
-
-    /**
-     * Starts the Keyboard Event listeners running.
-     * This is called automatically and does not need to be manually invoked.
-     *
-     * @method Phaser.Input.Keyboard.KeyboardPlugin#startListeners
-     * @private
-     * @since 3.10.0
-     */
-    startListeners: function ()
-    {
-        this.sceneInputPlugin.pluginEvents.on('update', this.update, this);
-    },
-
-    /**
-     * Stops the Keyboard Event listeners.
-     * This is called automatically and does not need to be manually invoked.
-     *
-     * @method Phaser.Input.Keyboard.KeyboardPlugin#stopListeners
-     * @private
-     * @since 3.10.0
-     */
-    stopListeners: function ()
-    {
-        this.sceneInputPlugin.pluginEvents.off('update', this.update);
     },
 
     /**
@@ -720,16 +715,18 @@ var KeyboardPlugin = new Class({
 
                 if (!event.cancelled && (!key || !repeat))
                 {
-                    //  keydown_code event
                     if (KeyMap[code])
                     {
+                        this.emit(Events.KEY_DOWN + KeyMap[code], event);
+
+                        //  Deprecated, kept in for compatibility with 3.15
+                        //  To be removed by 3.20.
                         this.emit('keydown_' + KeyMap[code], event);
                     }
 
                     if (!event.cancelled)
                     {
-                        //  keydown event
-                        this.emit(event.type, event);
+                        this.emit(Events.ANY_KEY_DOWN, event);
                     }
                 }
             }
@@ -743,16 +740,18 @@ var KeyboardPlugin = new Class({
 
                 if (!event.cancelled)
                 {
-                    //  keyup_code event
                     if (KeyMap[code])
                     {
+                        this.emit(Events.KEY_UP + KeyMap[code], event);
+
+                        //  Deprecated, kept in for compatibility with 3.15
+                        //  To be removed by 3.20.
                         this.emit('keyup_' + KeyMap[code], event);
                     }
 
                     if (!event.cancelled)
                     {
-                        //  keyup event
-                        this.emit(event.type, event);
+                        this.emit(Events.ANY_KEY_UP, event);
                     }
                 }
             }
@@ -809,7 +808,16 @@ var KeyboardPlugin = new Class({
     {
         this.resetKeys();
 
-        this.stopListeners();
+        if (this.sceneInputPlugin.manager.useQueue)
+        {
+            this.sceneInputPlugin.pluginEvents.off(InputEvents.UPDATE, this.update, this);
+        }
+        else
+        {
+            this.sceneInputPlugin.manager.events.off(InputEvents.MANAGER_PROCESS, this.update, this);
+        }
+
+        this.game.events.off(GameEvents.BLUR, this.resetKeys);
 
         this.removeAllListeners();
 

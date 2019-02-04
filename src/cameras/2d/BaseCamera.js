@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -8,6 +8,7 @@ var Class = require('../../utils/Class');
 var Components = require('../../gameobjects/components');
 var DegToRad = require('../../math/DegToRad');
 var EventEmitter = require('eventemitter3');
+var Events = require('./events');
 var Rectangle = require('../../geom/rectangle/Rectangle');
 var TransformMatrix = require('../../gameobjects/components/TransformMatrix');
 var ValueToColor = require('../../display/color/ValueToColor');
@@ -119,14 +120,13 @@ var BaseCamera = new Class({
         this.sceneManager;
 
         /**
-         * A reference to the Game Config.
+         * A reference to the Game Scale Manager.
          *
-         * @name Phaser.Cameras.Scene2D.BaseCamera#config
-         * @type {object}
-         * @readonly
-         * @since 3.12.0
+         * @name Phaser.Cameras.Scene2D.BaseCamera#scaleManager
+         * @type {Phaser.Scale.ScaleManager}
+         * @since 3.16.0
          */
-        this.config;
+        this.scaleManager;
 
         /**
          * The Camera ID. Assigned by the Camera Manager and used to handle camera exclusion.
@@ -150,11 +150,14 @@ var BaseCamera = new Class({
         this.name = '';
 
         /**
+         * This property is un-used in v3.16.
+         * 
          * The resolution of the Game, used in most Camera calculations.
          *
          * @name Phaser.Cameras.Scene2D.BaseCamera#resolution
          * @type {number}
          * @readonly
+         * @deprecated
          * @since 3.12.0
          */
         this.resolution = 1;
@@ -952,12 +955,8 @@ var BaseCamera = new Class({
             displayHeight
         );
 
-        matrix.loadIdentity();
-        matrix.scale(resolution, resolution);
-        matrix.translate(this.x + originX, this.y + originY);
-        matrix.rotate(this.rotation);
-        matrix.scale(zoom, zoom);
-        matrix.translate(-(originX / resolution), -(originY / resolution));
+        matrix.applyITRS(this.x + originX, this.y + originY, this.rotation, zoom, zoom);
+        matrix.translate(-originX, -originY);
     },
 
     /**
@@ -1276,10 +1275,10 @@ var BaseCamera = new Class({
 
         this.scene = scene;
 
-        this.config = scene.sys.game.config;
         this.sceneManager = scene.sys.game.scene;
+        this.scaleManager = scene.sys.scale;
 
-        var res = this.config.resolution;
+        var res = this.scaleManager.resolution;
 
         this.resolution = res;
 
@@ -1479,12 +1478,12 @@ var BaseCamera = new Class({
      */
     updateSystem: function ()
     {
-        if (!this.config)
+        if (!this.scaleManager)
         {
             return;
         }
 
-        var custom = (this._x !== 0 || this._y !== 0 || this.config.width !== this._width || this.config.height !== this._height);
+        var custom = (this._x !== 0 || this._y !== 0 || this.scaleManager.width !== this._width || this.scaleManager.height !== this._height);
 
         var sceneManager = this.sceneManager;
 
@@ -1504,13 +1503,6 @@ var BaseCamera = new Class({
     },
 
     /**
-     * This event is fired when a camera is destroyed by the Camera Manager.
-     *
-     * @event CameraDestroyEvent
-     * @param {Phaser.Cameras.Scene2D.BaseCamera} camera - The camera that was destroyed.
-     */
-
-    /**
      * Destroys this Camera instance and its internal properties and references.
      * Once destroyed you cannot use this Camera again, even if re-added to a Camera Manager.
      * 
@@ -1520,12 +1512,12 @@ var BaseCamera = new Class({
      * rather than calling this method directly.
      *
      * @method Phaser.Cameras.Scene2D.BaseCamera#destroy
-     * @fires CameraDestroyEvent
+     * @fires Phaser.Cameras.Scene2D.Events#DESTROY
      * @since 3.0.0
      */
     destroy: function ()
     {
-        this.emit('cameradestroy', this);
+        this.emit(Events.DESTROY, this);
 
         this.removeAllListeners();
 
@@ -1542,7 +1534,7 @@ var BaseCamera = new Class({
         this._bounds = null;
 
         this.scene = null;
-        this.config = null;
+        this.scaleManager = null;
         this.sceneManager = null;
     },
 

@@ -1,12 +1,13 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
 var CircleContains = require('../../geom/circle/Contains');
 var Class = require('../../utils/Class');
 var CONST = require('./const');
+var Events = require('./events');
 var RadToDeg = require('../../math/RadToDeg');
 var Rectangle = require('../../geom/rectangle/Rectangle');
 var RectangleContains = require('../../geom/rectangle/Contains');
@@ -436,6 +437,19 @@ var Body = new Class({
          * @since 3.0.0
          */
         this.maxVelocity = new Vector2(10000, 10000);
+
+        /**
+         * The maximum speed this Body is allowed to reach.
+         * 
+         * If not negative it limits the scalar value of speed.
+         * 
+         * Any negative value means no maximum is being applied.
+         * 
+         * @name Phaser.Physics.Arcade.Body#maxSpeed
+         * @type {number}
+         * @since 3.16.0 
+         */
+        this.maxSpeed = -1;
 
         /**
          * If this Body is `immovable` and in motion, `friction` is the proportion of this Body's motion received by the riding Body on each axis, relative to 1.
@@ -946,7 +960,7 @@ var Body = new Class({
 
             if (this.collideWorldBounds && this.checkWorldBounds() && this.onWorldBounds)
             {
-                this.world.emit('worldbounds', this, this.blocked.up, this.blocked.down, this.blocked.left, this.blocked.right);
+                this.world.emit(Events.WORLD_BOUNDS, this, this.blocked.up, this.blocked.down, this.blocked.left, this.blocked.right);
             }
         }
 
@@ -1549,6 +1563,23 @@ var Body = new Class({
     setMaxVelocity: function (x, y)
     {
         this.maxVelocity.set(x, y);
+
+        return this;
+    },
+
+    /**
+     * Sets the maximum speed the Body can move.
+     *
+     * @method Phaser.Physics.Arcade.Body#setMaxSpeed
+     * @since 3.16.0
+     *
+     * @param {number} value - The maximum speed value, in pixels per second. Set to a negative value to disable.
+     *
+     * @return {Phaser.Physics.Arcade.Body} This Body object.
+     */
+    setMaxSpeed: function (value)
+    {
+        this.maxSpeed = value;
 
         return this;
     },

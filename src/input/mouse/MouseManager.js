@@ -1,11 +1,12 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
 var Class = require('../../utils/Class');
 var Features = require('../../device/Features');
+var InputEvents = require('../events');
 var NOOP = require('../../utils/Class');
 
 //  https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent
@@ -148,7 +149,7 @@ var MouseManager = new Class({
          */
         this.pointerLockChange = NOOP;
 
-        inputManager.events.once('boot', this.boot, this);
+        inputManager.events.once(InputEvents.MANAGER_BOOT, this.boot, this);
     },
 
     /**
