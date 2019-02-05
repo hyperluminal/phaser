@@ -127,7 +127,7 @@ var SpinePlugin = new Class({
      * @since 3.16.0
      *
      * @param {string} key - The key of the atlas Texture this Game Object will use to render with, as stored in the Texture Manager.
-     * @param {string} [skeletonJSON] - The animation to load with.
+     * @param {string} [skeletonJSON] - the skeletonJSON file to read skeleton data from, if undefined then will get json with key provided
      *
      * @return {any} skeletonData & skeleton.
      */

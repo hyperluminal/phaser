@@ -98,7 +98,7 @@ var SpineGameObject = new Class({
     },
 
     /**
-     * Gets a list of the animations available.
+     * Sets the spine skeleton.
      *
      * @method Phaser.GameObjects.SpineGameObject#setSkeleton
      * @public
@@ -106,10 +106,10 @@ var SpineGameObject = new Class({
      *
      * @param {string} textureKey - The key of the atlas Texture this Spine Game Object will use to render with, as stored in the Texture Manager.
      * @param {string} animationName - The animation name.
-     * @param {loop} atlasDataKey - The animation name.
-     * @param {skeletonJSON} skeletonJSON - The animation name.
+     * @param {boolean} loop - loop the animation?
+     * @param {skeletonJSON} [skeletonJSON] - The skeletonJSON file to read skeleton data from, if undefined then will get json with textureKey provided
      *
-     * @returns {Phaser.GameObjects.SpineGameObject} an array of the animation names.
+     * @returns {Phaser.GameObjects.SpineGameObject} the spine game object.
      */
     setSkeleton: function (textureKey, animationName, loop, skeletonJSON)
     {

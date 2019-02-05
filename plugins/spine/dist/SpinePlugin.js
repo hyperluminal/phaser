@@ -100,7 +100,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -338,7 +338,7 @@ module.exports = Class;
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -381,7 +381,7 @@ module.exports = GetFastValue;
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -437,11 +437,15 @@ module.exports = IsPlainObject;
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
 var types = {};
+
+/**
+ * @namespace Phaser.Loader.FileTypesManager
+ */
 
 var FileTypesManager = {
 
@@ -451,7 +455,7 @@ var FileTypesManager = {
      * Loops through the local types object and injects all of them as
      * properties into the LoaderPlugin instance.
      *
-     * @method Phaser.Loader.FileTypesManager.register
+     * @method Phaser.Loader.FileTypesManager.install
      * @since 3.0.0
      * 
      * @param {Phaser.Loader.LoaderPlugin} loader - The LoaderPlugin to install the types into.
@@ -502,7 +506,7 @@ module.exports = FileTypesManager;
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -654,16 +658,17 @@ module.exports = FILE_CONST;
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
 var Class = __webpack_require__(0);
 var CONST = __webpack_require__(4);
+var Events = __webpack_require__(36);
 var GetFastValue = __webpack_require__(1);
-var GetURL = __webpack_require__(17);
+var GetURL = __webpack_require__(47);
 var MergeXHRSettings = __webpack_require__(6);
-var XHRLoader = __webpack_require__(19);
+var XHRLoader = __webpack_require__(49);
 var XHRSettings = __webpack_require__(7);
 
 /**
@@ -969,7 +974,9 @@ var File = new Class({
      */
     onLoad: function (xhr, event)
     {
-        var success = !(event.target && event.target.status !== 200);
+        var localFileOk = ((xhr.responseURL && xhr.responseURL.indexOf('file://') === 0 && event.target.status === 0));
+
+        var success = !(event.target && event.target.status !== 200) || localFileOk;
 
         //  Handle HTTP status codes of 4xx and 5xx as errors, even if xhr.onerror was not called.
         if (xhr.readyState === 4 && xhr.status >= 400 && xhr.status <= 599)
@@ -988,6 +995,7 @@ var File = new Class({
      * @method Phaser.Loader.File#onError
      * @since 3.0.0
      *
+     * @param {XMLHttpRequest} xhr - The XMLHttpRequest that caused this onload event.
      * @param {ProgressEvent} event - The DOM ProgressEvent that resulted from this error.
      */
     onError: function ()
@@ -1001,6 +1009,7 @@ var File = new Class({
      * Called during the file load progress. Is sent a DOM ProgressEvent.
      *
      * @method Phaser.Loader.File#onProgress
+     * @fires Phaser.Loader.Events#FILE_PROGRESS
      * @since 3.0.0
      *
      * @param {ProgressEvent} event - The DOM ProgressEvent.
@@ -1014,7 +1023,7 @@ var File = new Class({
 
             this.percentComplete = Math.min((this.bytesLoaded / this.bytesTotal), 1);
 
-            this.loader.emit('fileprogress', this, this.percentComplete);
+            this.loader.emit(Events.FILE_PROGRESS, this, this.percentComplete);
         }
     },
 
@@ -1103,64 +1112,12 @@ var File = new Class({
     },
 
     /**
-     * You can listen for this event from the LoaderPlugin. It is dispatched _every time_
-     * a file loads and is sent 3 arguments, which allow you to identify the file:
-     *
-     * ```javascript
-     * this.load.on('filecomplete', function (key, type, data) {
-     *     // Your handler code
-     * });
-     * ```
-     * 
-     * @event Phaser.Loader.File#fileCompleteEvent
-     * @param {string} key - The key of the file that just loaded and finished processing.
-     * @param {string} type - The type of the file that just loaded and finished processing.
-     * @param {any} data - The data of the file.
-     */
-
-    /**
-     * You can listen for this event from the LoaderPlugin. It is dispatched only once per
-     * file and you have to use a special listener handle to pick it up.
-     * 
-     * The string of the event is based on the file type and the key you gave it, split up
-     * using hyphens.
-     * 
-     * For example, if you have loaded an image with a key of `monster`, you can listen for it
-     * using the following:
-     *
-     * ```javascript
-     * this.load.on('filecomplete-image-monster', function (key, type, data) {
-     *     // Your handler code
-     * });
-     * ```
-     *
-     * Or, if you have loaded a texture atlas with a key of `Level1`:
-     * 
-     * ```javascript
-     * this.load.on('filecomplete-atlas-Level1', function (key, type, data) {
-     *     // Your handler code
-     * });
-     * ```
-     * 
-     * Or, if you have loaded a sprite sheet with a key of `Explosion` and a prefix of `GAMEOVER`:
-     * 
-     * ```javascript
-     * this.load.on('filecomplete-spritesheet-GAMEOVERExplosion', function (key, type, data) {
-     *     // Your handler code
-     * });
-     * ```
-     * 
-     * @event Phaser.Loader.File#singleFileCompleteEvent
-     * @param {any} data - The data of the file.
-     */
-
-    /**
      * Called once the file has been added to its cache and is now ready for deletion from the Loader.
      * It will emit a `filecomplete` event from the LoaderPlugin.
      *
      * @method Phaser.Loader.File#pendingDestroy
-     * @fires Phaser.Loader.File#fileCompleteEvent
-     * @fires Phaser.Loader.File#singleFileCompleteEvent
+     * @fires Phaser.Loader.Events#FILE_COMPLETE
+     * @fires Phaser.Loader.Events#FILE_KEY_COMPLETE
      * @since 3.7.0
      */
     pendingDestroy: function (data)
@@ -1170,8 +1127,8 @@ var File = new Class({
         var key = this.key;
         var type = this.type;
 
-        this.loader.emit('filecomplete', key, type, data);
-        this.loader.emit('filecomplete-' + type + '-' + key, key, type, data);
+        this.loader.emit(Events.FILE_COMPLETE, key, type, data);
+        this.loader.emit(Events.FILE_KEY_COMPLETE + type + '-' + key, key, type, data);
 
         this.loader.flagForRemoval(this);
     },
@@ -1251,11 +1208,11 @@ module.exports = File;
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
-var Extend = __webpack_require__(18);
+var Extend = __webpack_require__(48);
 var XHRSettings = __webpack_require__(7);
 
 /**
@@ -1299,7 +1256,7 @@ module.exports = MergeXHRSettings;
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -1377,7 +1334,7 @@ module.exports = XHRSettings;
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -1449,7 +1406,7 @@ module.exports = MATH_CONST;
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -1481,7 +1438,7 @@ module.exports = Wrap;
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -1514,8 +1471,8 @@ module.exports = NOOP;
 
 var Class = __webpack_require__(0);
 var BaseSpinePlugin = __webpack_require__(12);
-var SpineWebGL = __webpack_require__(47);
-var Matrix4 = __webpack_require__(48);
+var SpineWebGL = __webpack_require__(84);
+var Matrix4 = __webpack_require__(85);
 
 /**
  * @classdesc
@@ -1608,8 +1565,8 @@ module.exports = SpineWebGLPlugin;
 
 var Class = __webpack_require__(0);
 var ScenePlugin = __webpack_require__(13);
-var SpineFile = __webpack_require__(15);
-var SpineGameObject = __webpack_require__(24);
+var SpineFile = __webpack_require__(34);
+var SpineGameObject = __webpack_require__(54);
 
 var runtime;
 
@@ -1729,7 +1686,7 @@ var SpinePlugin = new Class({
      * @since 3.16.0
      *
      * @param {string} key - The key of the atlas Texture this Game Object will use to render with, as stored in the Texture Manager.
-     * @param {string} [skeletonJSON] - The animation to load with.
+     * @param {string} [skeletonJSON] - the skeletonJSON file to read skeleton data from, if undefined then will get json with key provided
      *
      * @return {any} skeletonData & skeleton.
      */
@@ -1817,12 +1774,13 @@ module.exports = SpinePlugin;
 
 /**
 * @author       Richard Davey <rich@photonstorm.com>
-* @copyright    2018 Photon Storm Ltd.
+* @copyright    2019 Photon Storm Ltd.
 * @license      {@link https://github.com/photonstorm/phaser3-plugin-template/blob/master/LICENSE|MIT License}
 */
 
 var BasePlugin = __webpack_require__(14);
 var Class = __webpack_require__(0);
+var SceneEvents = __webpack_require__(15);
 
 /**
  * @classdesc
@@ -1852,7 +1810,7 @@ var ScenePlugin = new Class({
         this.scene = scene;
         this.systems = scene.sys;
 
-        scene.sys.events.once('boot', this.boot, this);
+        scene.sys.events.once(SceneEvents.BOOT, this.boot, this);
     },
 
     /**
@@ -1905,7 +1863,7 @@ module.exports = ScenePlugin;
 
 /**
 * @author       Richard Davey <rich@photonstorm.com>
-* @copyright    2018 Photon Storm Ltd.
+* @copyright    2019 Photon Storm Ltd.
 * @license      {@link https://github.com/photonstorm/phaser3-plugin-template/blob/master/LICENSE|MIT License}
 */
 
@@ -2086,6 +2044,598 @@ module.exports = BasePlugin;
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * @namespace Phaser.Scenes.Events
+ */
+
+module.exports = {
+
+    BOOT: __webpack_require__(16),
+    DESTROY: __webpack_require__(17),
+    PAUSE: __webpack_require__(18),
+    POST_UPDATE: __webpack_require__(19),
+    PRE_UPDATE: __webpack_require__(20),
+    READY: __webpack_require__(21),
+    RENDER: __webpack_require__(22),
+    RESUME: __webpack_require__(23),
+    SHUTDOWN: __webpack_require__(24),
+    SLEEP: __webpack_require__(25),
+    START: __webpack_require__(26),
+    TRANSITION_COMPLETE: __webpack_require__(27),
+    TRANSITION_INIT: __webpack_require__(28),
+    TRANSITION_OUT: __webpack_require__(29),
+    TRANSITION_START: __webpack_require__(30),
+    TRANSITION_WAKE: __webpack_require__(31),
+    UPDATE: __webpack_require__(32),
+    WAKE: __webpack_require__(33)
+
+};
+
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Boot Event.
+ * 
+ * This event is dispatched by a Scene during the Scene Systems boot process. Primarily used by Scene Plugins.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('boot', listener)`.
+ * 
+ * @event Phaser.Scenes.Events#BOOT
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ */
+module.exports = 'boot';
+
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Destroy Event.
+ * 
+ * This event is dispatched by a Scene during the Scene Systems destroy process.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('destroy', listener)`.
+ * 
+ * You should destroy any resources that may be in use by your Scene in this event handler.
+ * 
+ * @event Phaser.Scenes.Events#DESTROY
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ */
+module.exports = 'destroy';
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Pause Event.
+ * 
+ * This event is dispatched by a Scene when it is paused, either directly via the `pause` method, or as an
+ * action from another Scene.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('pause', listener)`.
+ * 
+ * @event Phaser.Scenes.Events#PAUSE
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {any} [data] - An optional data object that was passed to this Scene when it was paused.
+ */
+module.exports = 'pause';
+
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Post Update Event.
+ * 
+ * This event is dispatched by a Scene during the main game loop step.
+ * 
+ * The event flow for a single step of a Scene is as follows:
+ * 
+ * 1. [PRE_UPDATE]{@linkcode Phaser.Scenes.Events#event:PRE_UPDATE}
+ * 2. [UPDATE]{@linkcode Phaser.Scenes.Events#event:UPDATE}
+ * 3. The `Scene.update` method is called, if it exists
+ * 4. [POST_UPDATE]{@linkcode Phaser.Scenes.Events#event:POST_UPDATE}
+ * 5. [RENDER]{@linkcode Phaser.Scenes.Events#event:RENDER}
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('postupdate', listener)`.
+ * 
+ * A Scene will only run its step if it is active.
+ * 
+ * @event Phaser.Scenes.Events#POST_UPDATE
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {number} time - The current time. Either a High Resolution Timer value if it comes from Request Animation Frame, or Date.now if using SetTimeout.
+ * @param {number} delta - The delta time in ms since the last frame. This is a smoothed and capped value based on the FPS rate.
+ */
+module.exports = 'postupdate';
+
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Pre Update Event.
+ * 
+ * This event is dispatched by a Scene during the main game loop step.
+ * 
+ * The event flow for a single step of a Scene is as follows:
+ * 
+ * 1. [PRE_UPDATE]{@linkcode Phaser.Scenes.Events#event:PRE_UPDATE}
+ * 2. [UPDATE]{@linkcode Phaser.Scenes.Events#event:UPDATE}
+ * 3. The `Scene.update` method is called, if it exists
+ * 4. [POST_UPDATE]{@linkcode Phaser.Scenes.Events#event:POST_UPDATE}
+ * 5. [RENDER]{@linkcode Phaser.Scenes.Events#event:RENDER}
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('preupdate', listener)`.
+ * 
+ * A Scene will only run its step if it is active.
+ * 
+ * @event Phaser.Scenes.Events#PRE_UPDATE
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {number} time - The current time. Either a High Resolution Timer value if it comes from Request Animation Frame, or Date.now if using SetTimeout.
+ * @param {number} delta - The delta time in ms since the last frame. This is a smoothed and capped value based on the FPS rate.
+ */
+module.exports = 'preupdate';
+
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Ready Event.
+ * 
+ * This event is dispatched by a Scene during the Scene Systems start process.
+ * By this point in the process the Scene is now fully active and rendering.
+ * This event is meant for your game code to use, as all plugins have responded to the earlier 'start' event.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('ready', listener)`.
+ * 
+ * @event Phaser.Scenes.Events#READY
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {any} [data] - An optional data object that was passed to this Scene when it was started.
+ */
+module.exports = 'ready';
+
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Render Event.
+ * 
+ * This event is dispatched by a Scene during the main game loop step.
+ * 
+ * The event flow for a single step of a Scene is as follows:
+ * 
+ * 1. [PRE_UPDATE]{@linkcode Phaser.Scenes.Events#event:PRE_UPDATE}
+ * 2. [UPDATE]{@linkcode Phaser.Scenes.Events#event:UPDATE}
+ * 3. The `Scene.update` method is called, if it exists
+ * 4. [POST_UPDATE]{@linkcode Phaser.Scenes.Events#event:POST_UPDATE}
+ * 5. [RENDER]{@linkcode Phaser.Scenes.Events#event:RENDER}
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('render', listener)`.
+ * 
+ * A Scene will only render if it is visible and active.
+ * By the time this event is dispatched, the Scene will have already been rendered.
+ * 
+ * @event Phaser.Scenes.Events#RENDER
+ * 
+ * @param {(Phaser.Renderer.Canvas.CanvasRenderer|Phaser.Renderer.WebGL.WebGLRenderer)} renderer - The renderer that rendered the Scene.
+ */
+module.exports = 'render';
+
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Resume Event.
+ * 
+ * This event is dispatched by a Scene when it is resumed from a paused state, either directly via the `resume` method,
+ * or as an action from another Scene.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('resume', listener)`.
+ * 
+ * @event Phaser.Scenes.Events#RESUME
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {any} [data] - An optional data object that was passed to this Scene when it was resumed.
+ */
+module.exports = 'resume';
+
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Shutdown Event.
+ * 
+ * This event is dispatched by a Scene during the Scene Systems shutdown process.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('shutdown', listener)`.
+ * 
+ * You should free-up any resources that may be in use by your Scene in this event handler, on the understanding
+ * that the Scene may, at any time, become active again. A shutdown Scene is not 'destroyed', it's simply not
+ * currently active. Use the [DESTROY]{@linkcode Phaser.Scenes.Events#event:DESTROY} event to completely clear resources.
+ * 
+ * @event Phaser.Scenes.Events#SHUTDOWN
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {any} [data] - An optional data object that was passed to this Scene when it was shutdown.
+ */
+module.exports = 'shutdown';
+
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Sleep Event.
+ * 
+ * This event is dispatched by a Scene when it is sent to sleep, either directly via the `sleep` method,
+ * or as an action from another Scene.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('sleep', listener)`.
+ * 
+ * @event Phaser.Scenes.Events#SLEEP
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {any} [data] - An optional data object that was passed to this Scene when it was sent to sleep.
+ */
+module.exports = 'sleep';
+
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Start Event.
+ * 
+ * This event is dispatched by a Scene during the Scene Systems start process. Primarily used by Scene Plugins.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('start', listener)`.
+ * 
+ * @event Phaser.Scenes.Events#START
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ */
+module.exports = 'start';
+
+
+/***/ }),
+/* 27 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Transition Complete Event.
+ * 
+ * This event is dispatched by the Target Scene of a transition.
+ * 
+ * It happens when the transition process has completed. This occurs when the duration timer equals or exceeds the duration
+ * of the transition.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('transitioncomplete', listener)`.
+ * 
+ * The Scene Transition event flow is as follows:
+ * 
+ * 1. [TRANSITION_OUT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_OUT} - the Scene that started the transition will emit this event.
+ * 2. [TRANSITION_INIT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_INIT} - the Target Scene will emit this event if it has an `init` method.
+ * 3. [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} - the Target Scene will emit this event after its `create` method is called, OR ...
+ * 4. [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} - the Target Scene will emit this event if it was asleep and has been woken-up to be transitioned to.
+ * 5. [TRANSITION_COMPLETE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_COMPLETE} - the Target Scene will emit this event when the transition finishes.
+ * 
+ * @event Phaser.Scenes.Events#TRANSITION_COMPLETE
+ * 
+ * @param {Phaser.Scene} scene -The Scene on which the transitioned completed.
+ */
+module.exports = 'transitioncomplete';
+
+
+/***/ }),
+/* 28 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Transition Init Event.
+ * 
+ * This event is dispatched by the Target Scene of a transition.
+ * 
+ * It happens immediately after the `Scene.init` method is called. If the Scene does not have an `init` method,
+ * this event is not dispatched.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('transitioninit', listener)`.
+ * 
+ * The Scene Transition event flow is as follows:
+ * 
+ * 1. [TRANSITION_OUT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_OUT} - the Scene that started the transition will emit this event.
+ * 2. [TRANSITION_INIT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_INIT} - the Target Scene will emit this event if it has an `init` method.
+ * 3. [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} - the Target Scene will emit this event after its `create` method is called, OR ...
+ * 4. [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} - the Target Scene will emit this event if it was asleep and has been woken-up to be transitioned to.
+ * 5. [TRANSITION_COMPLETE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_COMPLETE} - the Target Scene will emit this event when the transition finishes.
+ * 
+ * @event Phaser.Scenes.Events#TRANSITION_INIT
+ * 
+ * @param {Phaser.Scene} from - A reference to the Scene that is being transitioned from.
+ * @param {number} duration - The duration of the transition in ms.
+ */
+module.exports = 'transitioninit';
+
+
+/***/ }),
+/* 29 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Transition Out Event.
+ * 
+ * This event is dispatched by a Scene when it initiates a transition to another Scene.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('transitionout', listener)`.
+ * 
+ * The Scene Transition event flow is as follows:
+ * 
+ * 1. [TRANSITION_OUT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_OUT} - the Scene that started the transition will emit this event.
+ * 2. [TRANSITION_INIT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_INIT} - the Target Scene will emit this event if it has an `init` method.
+ * 3. [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} - the Target Scene will emit this event after its `create` method is called, OR ...
+ * 4. [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} - the Target Scene will emit this event if it was asleep and has been woken-up to be transitioned to.
+ * 5. [TRANSITION_COMPLETE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_COMPLETE} - the Target Scene will emit this event when the transition finishes.
+ * 
+ * @event Phaser.Scenes.Events#TRANSITION_OUT
+ * 
+ * @param {Phaser.Scene} target - A reference to the Scene that is being transitioned to.
+ * @param {number} duration - The duration of the transition in ms.
+ */
+module.exports = 'transitionout';
+
+
+/***/ }),
+/* 30 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Transition Start Event.
+ * 
+ * This event is dispatched by the Target Scene of a transition, only if that Scene was not asleep.
+ * 
+ * It happens immediately after the `Scene.create` method is called. If the Scene does not have a `create` method,
+ * this event is dispatched anyway.
+ * 
+ * If the Target Scene was sleeping then the [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} event is
+ * dispatched instead of this event.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('transitionstart', listener)`.
+ * 
+ * The Scene Transition event flow is as follows:
+ * 
+ * 1. [TRANSITION_OUT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_OUT} - the Scene that started the transition will emit this event.
+ * 2. [TRANSITION_INIT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_INIT} - the Target Scene will emit this event if it has an `init` method.
+ * 3. [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} - the Target Scene will emit this event after its `create` method is called, OR ...
+ * 4. [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} - the Target Scene will emit this event if it was asleep and has been woken-up to be transitioned to.
+ * 5. [TRANSITION_COMPLETE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_COMPLETE} - the Target Scene will emit this event when the transition finishes.
+ * 
+ * @event Phaser.Scenes.Events#TRANSITION_START
+ * 
+ * @param {Phaser.Scene} from - A reference to the Scene that is being transitioned from.
+ * @param {number} duration - The duration of the transition in ms.
+ */
+module.exports = 'transitionstart';
+
+
+/***/ }),
+/* 31 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Transition Wake Event.
+ * 
+ * This event is dispatched by the Target Scene of a transition, only if that Scene was asleep before
+ * the transition began. If the Scene was not asleep the [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} event is dispatched instead.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('transitionwake', listener)`.
+ * 
+ * The Scene Transition event flow is as follows:
+ * 
+ * 1. [TRANSITION_OUT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_OUT} - the Scene that started the transition will emit this event.
+ * 2. [TRANSITION_INIT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_INIT} - the Target Scene will emit this event if it has an `init` method.
+ * 3. [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} - the Target Scene will emit this event after its `create` method is called, OR ...
+ * 4. [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} - the Target Scene will emit this event if it was asleep and has been woken-up to be transitioned to.
+ * 5. [TRANSITION_COMPLETE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_COMPLETE} - the Target Scene will emit this event when the transition finishes.
+ * 
+ * @event Phaser.Scenes.Events#TRANSITION_WAKE
+ * 
+ * @param {Phaser.Scene} from - A reference to the Scene that is being transitioned from.
+ * @param {number} duration - The duration of the transition in ms.
+ */
+module.exports = 'transitionwake';
+
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Update Event.
+ * 
+ * This event is dispatched by a Scene during the main game loop step.
+ * 
+ * The event flow for a single step of a Scene is as follows:
+ * 
+ * 1. [PRE_UPDATE]{@linkcode Phaser.Scenes.Events#event:PRE_UPDATE}
+ * 2. [UPDATE]{@linkcode Phaser.Scenes.Events#event:UPDATE}
+ * 3. The `Scene.update` method is called, if it exists
+ * 4. [POST_UPDATE]{@linkcode Phaser.Scenes.Events#event:POST_UPDATE}
+ * 5. [RENDER]{@linkcode Phaser.Scenes.Events#event:RENDER}
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('update', listener)`.
+ * 
+ * A Scene will only run its step if it is active.
+ * 
+ * @event Phaser.Scenes.Events#UPDATE
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {number} time - The current time. Either a High Resolution Timer value if it comes from Request Animation Frame, or Date.now if using SetTimeout.
+ * @param {number} delta - The delta time in ms since the last frame. This is a smoothed and capped value based on the FPS rate.
+ */
+module.exports = 'update';
+
+
+/***/ }),
+/* 33 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Wake Event.
+ * 
+ * This event is dispatched by a Scene when it is woken from sleep, either directly via the `wake` method,
+ * or as an action from another Scene.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('wake', listener)`.
+ * 
+ * @event Phaser.Scenes.Events#WAKE
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {any} [data] - An optional data object that was passed to this Scene when it was woken up.
+ */
+module.exports = 'wake';
+
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
  * @copyright    2018 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
@@ -2093,11 +2643,11 @@ module.exports = BasePlugin;
 var Class = __webpack_require__(0);
 var FileTypesManager = __webpack_require__(3);
 var GetFastValue = __webpack_require__(1);
-var ImageFile = __webpack_require__(16);
+var ImageFile = __webpack_require__(35);
 var IsPlainObject = __webpack_require__(2);
-var JSONFile = __webpack_require__(20);
-var MultiFile = __webpack_require__(22);
-var TextFile = __webpack_require__(23);
+var JSONFile = __webpack_require__(50);
+var MultiFile = __webpack_require__(52);
+var TextFile = __webpack_require__(53);
 
 /**
  * @typedef {object} Phaser.Loader.FileTypes.SpineFileConfig
@@ -2385,12 +2935,12 @@ module.exports = SpineFile;
 
 
 /***/ }),
-/* 16 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -2681,12 +3231,332 @@ module.exports = ImageFile;
 
 
 /***/ }),
-/* 17 */
+/* 36 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * @namespace Phaser.Loader.Events
+ */
+
+module.exports = {
+
+    ADD: __webpack_require__(37),
+    COMPLETE: __webpack_require__(38),
+    FILE_COMPLETE: __webpack_require__(39),
+    FILE_KEY_COMPLETE: __webpack_require__(40),
+    FILE_LOAD_ERROR: __webpack_require__(41),
+    FILE_LOAD: __webpack_require__(42),
+    FILE_PROGRESS: __webpack_require__(43),
+    POST_PROCESS: __webpack_require__(44),
+    PROGRESS: __webpack_require__(45),
+    START: __webpack_require__(46)
+
+};
+
+
+/***/ }),
+/* 37 */
 /***/ (function(module, exports) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Loader Plugin Add File Event.
+ * 
+ * This event is dispatched when a new file is successfully added to the Loader and placed into the load queue.
+ * 
+ * Listen to it from a Scene using: `this.load.on('addfile', listener)`.
+ * 
+ * If you add lots of files to a Loader from a `preload` method, it will dispatch this event for each one of them.
+ *
+ * @event Phaser.Loader.Events#ADD
+ * 
+ * @param {string} key - The unique key of the file that was added to the Loader.
+ * @param {string} type - The [file type]{@link Phaser.Loader.File#type} string of the file that was added to the Loader, i.e. `image`.
+ * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader Plugin that dispatched this event.
+ * @param {Phaser.Loader.File} file - A reference to the File which was added to the Loader.
+ */
+module.exports = 'addfile';
+
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Loader Plugin Complete Event.
+ * 
+ * This event is dispatched when the Loader has fully processed everything in the load queue.
+ * By this point every loaded file will now be in its associated cache and ready for use.
+ * 
+ * Listen to it from a Scene using: `this.load.on('complete', listener)`.
+ *
+ * @event Phaser.Loader.Events#COMPLETE
+ * 
+ * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader Plugin that dispatched this event.
+ * @param {integer} totalComplete - The total number of files that successfully loaded.
+ * @param {integer} totalFailed - The total number of files that failed to load.
+ */
+module.exports = 'complete';
+
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The File Load Complete Event.
+ * 
+ * This event is dispatched by the Loader Plugin when any file in the queue finishes loading.
+ * 
+ * Listen to it from a Scene using: `this.load.on('filecomplete', listener)`.
+ * 
+ * You can also listen for the completion of a specific file. See the [FILE_KEY_COMPLETE]{@linkcode Phaser.Loader.Events#event:FILE_KEY_COMPLETE} event.
+ *
+ * @event Phaser.Loader.Events#FILE_COMPLETE
+ * 
+ * @param {string} key - The key of the file that just loaded and finished processing.
+ * @param {string} type - The [file type]{@link Phaser.Loader.File#type} of the file that just loaded, i.e. `image`.
+ * @param {any} data - The raw data the file contained.
+ */
+module.exports = 'filecomplete';
+
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The File Load Complete Event.
+ * 
+ * This event is dispatched by the Loader Plugin when any file in the queue finishes loading.
+ * 
+ * It uses a special dynamic event name constructed from the key and type of the file.
+ * 
+ * For example, if you have loaded an `image` with a key of `monster`, you can listen for it
+ * using the following:
+ *
+ * ```javascript
+ * this.load.on('filecomplete-image-monster', function (key, type, data) {
+ *     // Your handler code
+ * });
+ * ```
+ *
+ * Or, if you have loaded a texture `atlas` with a key of `Level1`:
+ * 
+ * ```javascript
+ * this.load.on('filecomplete-atlas-Level1', function (key, type, data) {
+ *     // Your handler code
+ * });
+ * ```
+ * 
+ * Or, if you have loaded a sprite sheet with a key of `Explosion` and a prefix of `GAMEOVER`:
+ * 
+ * ```javascript
+ * this.load.on('filecomplete-spritesheet-GAMEOVERExplosion', function (key, type, data) {
+ *     // Your handler code
+ * });
+ * ```
+ * 
+ * You can also listen for the generic completion of files. See the [FILE_COMPLETE]{@linkcode Phaser.Loader.Events#event:FILE_COMPLETE} event.
+ *
+ * @event Phaser.Loader.Events#FILE_KEY_COMPLETE
+ * 
+ * @param {string} key - The key of the file that just loaded and finished processing.
+ * @param {string} type - The [file type]{@link Phaser.Loader.File#type} of the file that just loaded, i.e. `image`.
+ * @param {any} data - The raw data the file contained.
+ */
+module.exports = 'filecomplete-';
+
+
+/***/ }),
+/* 41 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The File Load Error Event.
+ * 
+ * This event is dispatched by the Loader Plugin when a file fails to load.
+ * 
+ * Listen to it from a Scene using: `this.load.on('loaderror', listener)`.
+ *
+ * @event Phaser.Loader.Events#FILE_LOAD_ERROR
+ * 
+ * @param {Phaser.Loader.File} file - A reference to the File which errored during load.
+ */
+module.exports = 'loaderror';
+
+
+/***/ }),
+/* 42 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The File Load Event.
+ * 
+ * This event is dispatched by the Loader Plugin when a file finishes loading,
+ * but _before_ it is processed and added to the internal Phaser caches.
+ * 
+ * Listen to it from a Scene using: `this.load.on('load', listener)`.
+ *
+ * @event Phaser.Loader.Events#FILE_LOAD
+ * 
+ * @param {Phaser.Loader.File} file - A reference to the File which just finished loading.
+ */
+module.exports = 'load';
+
+
+/***/ }),
+/* 43 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The File Load Progress Event.
+ * 
+ * This event is dispatched by the Loader Plugin during the load of a file, if the browser receives a DOM ProgressEvent and
+ * the `lengthComputable` event property is true. Depending on the size of the file and browser in use, this may, or may not happen.
+ * 
+ * Listen to it from a Scene using: `this.load.on('fileprogress', listener)`.
+ *
+ * @event Phaser.Loader.Events#FILE_PROGRESS
+ * 
+ * @param {Phaser.Loader.File} file - A reference to the File which errored during load.
+ * @param {number} percentComplete - A value between 0 and 1 indicating how 'complete' this file is.
+ */
+module.exports = 'fileprogress';
+
+
+/***/ }),
+/* 44 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Loader Plugin Post Process Event.
+ * 
+ * This event is dispatched by the Loader Plugin when the Loader has finished loading everything in the load queue.
+ * It is dispatched before the internal lists are cleared and each File is destroyed.
+ * 
+ * Use this hook to perform any last minute processing of files that can only happen once the
+ * Loader has completed, but prior to it emitting the `complete` event.
+ * 
+ * Listen to it from a Scene using: `this.load.on('postprocess', listener)`.
+ *
+ * @event Phaser.Loader.Events#POST_PROCESS
+ * 
+ * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader Plugin that dispatched this event.
+ */
+module.exports = 'postprocess';
+
+
+/***/ }),
+/* 45 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Loader Plugin Progress Event.
+ * 
+ * This event is dispatched when the Loader updates its load progress, typically as a result of a file having completed loading.
+ * 
+ * Listen to it from a Scene using: `this.load.on('progress', listener)`.
+ *
+ * @event Phaser.Loader.Events#PROGRESS
+ * 
+ * @param {number} progress - The current progress of the load. A value between 0 and 1.
+ */
+module.exports = 'progress';
+
+
+/***/ }),
+/* 46 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Loader Plugin Start Event.
+ * 
+ * This event is dispatched when the Loader starts running. At this point load progress is zero.
+ * 
+ * This event is dispatched even if there aren't any files in the load queue.
+ * 
+ * Listen to it from a Scene using: `this.load.on('start', listener)`.
+ *
+ * @event Phaser.Loader.Events#START
+ * 
+ * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader Plugin that dispatched this event.
+ */
+module.exports = 'start';
+
+
+/***/ }),
+/* 47 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -2722,12 +3592,12 @@ module.exports = GetURL;
 
 
 /***/ }),
-/* 18 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -2821,12 +3691,12 @@ module.exports = Extend;
 
 
 /***/ }),
-/* 19 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -2874,7 +3744,7 @@ var XHRLoader = function (file, globalXHRSettings)
     // After a successful request, the xhr.response property will contain the requested data as a DOMString, ArrayBuffer, Blob, or Document (depending on what was set for responseType.)
 
     xhr.onload = file.onLoad.bind(file, xhr);
-    xhr.onerror = file.onError.bind(file);
+    xhr.onerror = file.onError.bind(file, xhr);
     xhr.onprogress = file.onProgress.bind(file);
 
     //  This is the only standard method, the ones above are browser additions (maybe not universal?)
@@ -2889,12 +3759,12 @@ module.exports = XHRLoader;
 
 
 /***/ }),
-/* 20 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -2903,7 +3773,7 @@ var CONST = __webpack_require__(4);
 var File = __webpack_require__(5);
 var FileTypesManager = __webpack_require__(3);
 var GetFastValue = __webpack_require__(1);
-var GetValue = __webpack_require__(21);
+var GetValue = __webpack_require__(51);
 var IsPlainObject = __webpack_require__(2);
 
 /**
@@ -3129,12 +3999,12 @@ module.exports = JSONFile;
 
 
 /***/ }),
-/* 21 */
+/* 51 */
 /***/ (function(module, exports) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -3164,7 +4034,7 @@ var GetValue = function (source, key, defaultValue)
     {
         return source[key];
     }
-    else if (key.indexOf('.'))
+    else if (key.indexOf('.') !== -1)
     {
         var keys = key.split('.');
         var parent = source;
@@ -3200,12 +4070,12 @@ module.exports = GetValue;
 
 
 /***/ }),
-/* 22 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -3394,12 +4264,12 @@ module.exports = MultiFile;
 
 
 /***/ }),
-/* 23 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -3578,7 +4448,7 @@ module.exports = TextFile;
 
 
 /***/ }),
-/* 24 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -3588,15 +4458,15 @@ module.exports = TextFile;
  */
 
 var Class = __webpack_require__(0);
-var ComponentsAlpha = __webpack_require__(25);
-var ComponentsBlendMode = __webpack_require__(27);
-var ComponentsDepth = __webpack_require__(29);
-var ComponentsFlip = __webpack_require__(30);
-var ComponentsScrollFactor = __webpack_require__(31);
-var ComponentsTransform = __webpack_require__(32);
-var ComponentsVisible = __webpack_require__(37);
-var GameObject = __webpack_require__(38);
-var SpineGameObjectRender = __webpack_require__(42);
+var ComponentsAlpha = __webpack_require__(55);
+var ComponentsBlendMode = __webpack_require__(57);
+var ComponentsDepth = __webpack_require__(59);
+var ComponentsFlip = __webpack_require__(60);
+var ComponentsScrollFactor = __webpack_require__(61);
+var ComponentsTransform = __webpack_require__(62);
+var ComponentsVisible = __webpack_require__(67);
+var GameObject = __webpack_require__(68);
+var SpineGameObjectRender = __webpack_require__(79);
 
 /**
  * @classdesc
@@ -3681,7 +4551,7 @@ var SpineGameObject = new Class({
     },
 
     /**
-     * Gets a list of the animations available.
+     * Sets the spine skeleton.
      *
      * @method Phaser.GameObjects.SpineGameObject#setSkeleton
      * @public
@@ -3689,10 +4559,10 @@ var SpineGameObject = new Class({
      *
      * @param {string} textureKey - The key of the atlas Texture this Spine Game Object will use to render with, as stored in the Texture Manager.
      * @param {string} animationName - The animation name.
-     * @param {loop} atlasDataKey - The animation name.
-     * @param {skeletonJSON} skeletonJSON - The animation name.
+     * @param {boolean} loop - loop the animation?
+     * @param {skeletonJSON} [skeletonJSON] - The skeletonJSON file to read skeleton data from, if undefined then will get json with textureKey provided
      *
-     * @returns {Phaser.GameObjects.SpineGameObject} an array of the animation names.
+     * @returns {Phaser.GameObjects.SpineGameObject} the spine game object.
      */
     setSkeleton: function (textureKey, animationName, loop, skeletonJSON)
     {
@@ -4128,16 +4998,16 @@ module.exports = SpineGameObject;
 
 
 /***/ }),
-/* 25 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
-var Clamp = __webpack_require__(26);
+var Clamp = __webpack_require__(56);
 
 //  bitmask flag for GameObject.renderMask
 var _FLAG = 2; // 0010
@@ -4423,12 +5293,12 @@ module.exports = Alpha;
 
 
 /***/ }),
-/* 26 */
+/* 56 */
 /***/ (function(module, exports) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -4453,16 +5323,16 @@ module.exports = Clamp;
 
 
 /***/ }),
-/* 27 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
-var BlendModes = __webpack_require__(28);
+var BlendModes = __webpack_require__(58);
 
 /**
  * Provides methods used for setting the blend mode of a Game Object.
@@ -4575,12 +5445,12 @@ module.exports = BlendMode;
 
 
 /***/ }),
-/* 28 */
+/* 58 */
 /***/ (function(module, exports) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -4830,12 +5700,12 @@ module.exports = {
 
 
 /***/ }),
-/* 29 */
+/* 59 */
 /***/ (function(module, exports) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -4923,12 +5793,12 @@ module.exports = Depth;
 
 
 /***/ }),
-/* 30 */
+/* 60 */
 /***/ (function(module, exports) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -5071,12 +5941,12 @@ module.exports = Flip;
 
 
 /***/ }),
-/* 31 */
+/* 61 */
 /***/ (function(module, exports) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -5178,19 +6048,19 @@ module.exports = ScrollFactor;
 
 
 /***/ }),
-/* 32 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
 var MATH_CONST = __webpack_require__(8);
-var TransformMatrix = __webpack_require__(33);
-var WrapAngle = __webpack_require__(35);
-var WrapAngleDegrees = __webpack_require__(36);
+var TransformMatrix = __webpack_require__(63);
+var WrapAngle = __webpack_require__(65);
+var WrapAngleDegrees = __webpack_require__(66);
 
 //  global bitmask flag for GameObject.renderMask (used by Scale)
 var _FLAG = 4; // 0100
@@ -5441,8 +6311,8 @@ var Transform = {
     {
         if (x === undefined) { x = 0; }
         if (y === undefined) { y = 0; }
-        if (width === undefined) { width = this.scene.sys.game.config.width; }
-        if (height === undefined) { height = this.scene.sys.game.config.height; }
+        if (width === undefined) { width = this.scene.sys.scale.width; }
+        if (height === undefined) { height = this.scene.sys.scale.height; }
 
         this.x = x + (Math.random() * width);
         this.y = y + (Math.random() * height);
@@ -5646,17 +6516,17 @@ module.exports = Transform;
 
 
 /***/ }),
-/* 33 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
 var Class = __webpack_require__(0);
-var Vector2 = __webpack_require__(34);
+var Vector2 = __webpack_require__(64);
 
 /**
  * @classdesc
@@ -6573,12 +7443,12 @@ module.exports = TransformMatrix;
 
 
 /***/ }),
-/* 34 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -7150,21 +8020,81 @@ var Vector2 = new Class({
  *
  * @constant
  * @name Phaser.Math.Vector2.ZERO
- * @type {Vector2}
+ * @type {Phaser.Math.Vector2}
  * @since 3.1.0
  */
 Vector2.ZERO = new Vector2();
+
+/**
+ * A static right Vector2 for use by reference.
+ * 
+ * This constant is meant for comparison operations and should not be modified directly.
+ *
+ * @constant
+ * @name Phaser.Math.Vector2.RIGHT
+ * @type {Phaser.Math.Vector2}
+ * @since 3.16.0
+ */
+Vector2.RIGHT = new Vector2(1, 0);
+
+/**
+ * A static left Vector2 for use by reference.
+ * 
+ * This constant is meant for comparison operations and should not be modified directly.
+ *
+ * @constant
+ * @name Phaser.Math.Vector2.LEFT
+ * @type {Phaser.Math.Vector2}
+ * @since 3.16.0
+ */
+Vector2.LEFT = new Vector2(-1, 0);
+
+/**
+ * A static up Vector2 for use by reference.
+ * 
+ * This constant is meant for comparison operations and should not be modified directly.
+ *
+ * @constant
+ * @name Phaser.Math.Vector2.UP
+ * @type {Phaser.Math.Vector2}
+ * @since 3.16.0
+ */
+Vector2.UP = new Vector2(0, -1);
+
+/**
+ * A static down Vector2 for use by reference.
+ * 
+ * This constant is meant for comparison operations and should not be modified directly.
+ *
+ * @constant
+ * @name Phaser.Math.Vector2.DOWN
+ * @type {Phaser.Math.Vector2}
+ * @since 3.16.0
+ */
+Vector2.DOWN = new Vector2(0, 1);
+
+/**
+ * A static one Vector2 for use by reference.
+ * 
+ * This constant is meant for comparison operations and should not be modified directly.
+ *
+ * @constant
+ * @name Phaser.Math.Vector2.ONE
+ * @type {Phaser.Math.Vector2}
+ * @since 3.16.0
+ */
+Vector2.ONE = new Vector2(1, 1);
 
 module.exports = Vector2;
 
 
 /***/ }),
-/* 35 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -7191,12 +8121,12 @@ module.exports = Wrap;
 
 
 /***/ }),
-/* 36 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -7223,12 +8153,12 @@ module.exports = WrapDegrees;
 
 
 /***/ }),
-/* 37 */
+/* 67 */
 /***/ (function(module, exports) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -7312,19 +8242,20 @@ module.exports = Visible;
 
 
 /***/ }),
-/* 38 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
 var Class = __webpack_require__(0);
-var ComponentsToJSON = __webpack_require__(39);
-var DataManager = __webpack_require__(40);
-var EventEmitter = __webpack_require__(41);
+var ComponentsToJSON = __webpack_require__(69);
+var DataManager = __webpack_require__(70);
+var EventEmitter = __webpack_require__(76);
+var Events = __webpack_require__(77);
 
 /**
  * @classdesc
@@ -7621,7 +8552,7 @@ var GameObject = new Class({
      * When the value is first set, a `setdata` event is emitted from this Game Object.
      *
      * If the key already exists, a `changedata` event is emitted instead, along an event named after the key.
-     * For example, if you updated an existing key called `PlayerLives` then it would emit the event `changedata_PlayerLives`.
+     * For example, if you updated an existing key called `PlayerLives` then it would emit the event `changedata-PlayerLives`.
      * These events will be emitted regardless if you use this method to set the value, or the direct `values` setter.
      *
      * Please note that the data keys are case-sensitive and must be valid JavaScript Object property strings.
@@ -7873,7 +8804,7 @@ var GameObject = new Class({
      * Game Object Pool instead of destroying it, as destroyed objects cannot be resurrected.
      *
      * @method Phaser.GameObjects.GameObject#destroy
-     * @fires Phaser.GameObjects.GameObject#destroyEvent
+     * @fires Phaser.GameObjects.Events#DESTROY
      * @since 3.0.0
      *
      * @param {boolean} [fromScene=false] - Is this Game Object being destroyed as the result of a Scene shutdown?
@@ -7893,7 +8824,7 @@ var GameObject = new Class({
             this.preDestroy.call(this);
         }
 
-        this.emit('destroy', this);
+        this.emit(Events.DESTROY, this);
 
         var sys = this.scene.sys;
 
@@ -7951,19 +8882,14 @@ GameObject.RENDER_MASK = 15;
 
 module.exports = GameObject;
 
-/**
- * The Game Object will be destroyed.
- * @event Phaser.GameObjects.GameObject#destroyEvent
- */
-
 
 /***/ }),
-/* 39 */
+/* 69 */
 /***/ (function(module, exports) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -8045,16 +8971,17 @@ module.exports = ToJSON;
 
 
 /***/ }),
-/* 40 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
 var Class = __webpack_require__(0);
+var Events = __webpack_require__(71);
 
 /**
  * @callback DataEachCallback
@@ -8067,7 +8994,7 @@ var Class = __webpack_require__(0);
 
 /**
  * @classdesc
- * The Data Component features a means to store pieces of data specific to a Game Object, System or Plugin.
+ * The Data Manager Component features a means to store pieces of data specific to a Game Object, System or Plugin.
  * You can then search, query it, and retrieve the data. The parent must either extend EventEmitter,
  * or have a property called `events` that is an instance of it.
  *
@@ -8289,13 +9216,16 @@ var DataManager = new Class({
      * When the value is first set, a `setdata` event is emitted.
      *
      * If the key already exists, a `changedata` event is emitted instead, along an event named after the key.
-     * For example, if you updated an existing key called `PlayerLives` then it would emit the event `changedata_PlayerLives`.
+     * For example, if you updated an existing key called `PlayerLives` then it would emit the event `changedata-PlayerLives`.
      * These events will be emitted regardless if you use this method to set the value, or the direct `values` setter.
      *
      * Please note that the data keys are case-sensitive and must be valid JavaScript Object property strings.
      * This means the keys `gold` and `Gold` are treated as two unique values within the Data Manager.
      *
      * @method Phaser.Data.DataManager#set
+     * @fires Phaser.Data.Events#SET_DATA
+     * @fires Phaser.Data.Events#CHANGE_DATA
+     * @fires Phaser.Data.Events#CHANGE_DATA_KEY
      * @since 3.0.0
      *
      * @param {(string|object)} key - The key to set the value for. Or an object or key value pairs. If an object the `data` argument is ignored.
@@ -8329,6 +9259,9 @@ var DataManager = new Class({
      * Internal value setter, called automatically by the `set` method.
      *
      * @method Phaser.Data.DataManager#setValue
+     * @fires Phaser.Data.Events#SET_DATA
+     * @fires Phaser.Data.Events#CHANGE_DATA
+     * @fires Phaser.Data.Events#CHANGE_DATA_KEY
      * @private
      * @since 3.10.0
      *
@@ -8374,8 +9307,8 @@ var DataManager = new Class({
                         var previousValue = list[key];
                         list[key] = value;
 
-                        events.emit('changedata', parent, key, value, previousValue);
-                        events.emit('changedata_' + key, parent, value, previousValue);
+                        events.emit(Events.CHANGE_DATA, parent, key, value, previousValue);
+                        events.emit(Events.CHANGE_DATA_KEY + key, parent, value, previousValue);
                     }
                 }
 
@@ -8383,7 +9316,7 @@ var DataManager = new Class({
 
             list[key] = data;
 
-            events.emit('setdata', parent, key, data);
+            events.emit(Events.SET_DATA, parent, key, data);
         }
 
         return this;
@@ -8428,6 +9361,9 @@ var DataManager = new Class({
      * will emit a `changedata` event.
      *
      * @method Phaser.Data.DataManager#merge
+     * @fires Phaser.Data.Events#SET_DATA
+     * @fires Phaser.Data.Events#CHANGE_DATA
+     * @fires Phaser.Data.Events#CHANGE_DATA_KEY
      * @since 3.0.0
      *
      * @param {Object.<string, *>} data - The data to merge.
@@ -8464,6 +9400,7 @@ var DataManager = new Class({
      * ```
      *
      * @method Phaser.Data.DataManager#remove
+     * @fires Phaser.Data.Events#REMOVE_DATA
      * @since 3.0.0
      *
      * @param {(string|string[])} key - The key to remove, or an array of keys to remove.
@@ -8497,6 +9434,7 @@ var DataManager = new Class({
      *
      * @method Phaser.Data.DataManager#removeValue
      * @private
+     * @fires Phaser.Data.Events#REMOVE_DATA
      * @since 3.10.0
      *
      * @param {string} key - The key to set the value for.
@@ -8512,7 +9450,7 @@ var DataManager = new Class({
             delete this.list[key];
             delete this.values[key];
 
-            this.events.emit('removedata', this.parent, key, data);
+            this.events.emit(Events.REMOVE_DATA, this.parent, key, data);
         }
 
         return this;
@@ -8522,6 +9460,7 @@ var DataManager = new Class({
      * Retrieves the data associated with the given 'key', deletes it from this Data Manager, then returns it.
      *
      * @method Phaser.Data.DataManager#pop
+     * @fires Phaser.Data.Events#REMOVE_DATA
      * @since 3.0.0
      *
      * @param {string} key - The key of the value to retrieve and delete.
@@ -8539,7 +9478,7 @@ var DataManager = new Class({
             delete this.list[key];
             delete this.values[key];
 
-            this.events.emit('removedata', this, key, data);
+            this.events.emit(Events.REMOVE_DATA, this.parent, key, data);
         }
 
         return data;
@@ -8612,9 +9551,9 @@ var DataManager = new Class({
     {
         this.reset();
 
-        this.events.off('changedata');
-        this.events.off('setdata');
-        this.events.off('removedata');
+        this.events.off(Events.CHANGE_DATA);
+        this.events.off(Events.SET_DATA);
+        this.events.off(Events.REMOVE_DATA);
 
         this.parent = null;
     },
@@ -8673,7 +9612,146 @@ module.exports = DataManager;
 
 
 /***/ }),
-/* 41 */
+/* 71 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * @namespace Phaser.Data.Events
+ */
+
+module.exports = {
+
+    CHANGE_DATA: __webpack_require__(72),
+    CHANGE_DATA_KEY: __webpack_require__(73),
+    REMOVE_DATA: __webpack_require__(74),
+    SET_DATA: __webpack_require__(75)
+
+};
+
+
+/***/ }),
+/* 72 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Change Data Event.
+ * 
+ * This event is dispatched by a Data Manager when an item in the data store is changed.
+ * 
+ * Game Objects with data enabled have an instance of a Data Manager under the `data` property. So, to listen for
+ * a change data event from a Game Object you would use: `sprite.data.on('changedata', listener)`.
+ * 
+ * This event is dispatched for all items that change in the Data Manager.
+ * To listen for the change of a specific item, use the `CHANGE_DATA_KEY_EVENT` event.
+ *
+ * @event Phaser.Data.Events#CHANGE_DATA
+ * 
+ * @param {any} parent - A reference to the object that the Data Manager responsible for this event belongs to.
+ * @param {string} key - The unique key of the data item within the Data Manager.
+ * @param {any} value - The new value of the item in the Data Manager.
+ * @param {any} previousValue - The previous value of the item in the Data Manager.
+ */
+module.exports = 'changedata';
+
+
+/***/ }),
+/* 73 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Change Data Key Event.
+ * 
+ * This event is dispatched by a Data Manager when an item in the data store is changed.
+ * 
+ * Game Objects with data enabled have an instance of a Data Manager under the `data` property. So, to listen for
+ * the change of a specific data item from a Game Object you would use: `sprite.data.on('changedata-key', listener)`,
+ * where `key` is the unique string key of the data item. For example, if you have a data item stored called `gold`
+ * then you can listen for `sprite.data.on('changedata-gold')`.
+ *
+ * @event Phaser.Data.Events#CHANGE_DATA_KEY
+ * 
+ * @param {any} parent - A reference to the object that owns the instance of the Data Manager responsible for this event.
+ * @param {string} key - The unique key of the data item within the Data Manager.
+ * @param {any} value - The item that was updated in the Data Manager. This can be of any data type, i.e. a string, boolean, number, object or instance.
+ * @param {any} previousValue - The previous item that was updated in the Data Manager. This can be of any data type, i.e. a string, boolean, number, object or instance.
+ */
+module.exports = 'changedata-';
+
+
+/***/ }),
+/* 74 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Remove Data Event.
+ * 
+ * This event is dispatched by a Data Manager when an item is removed from it.
+ * 
+ * Game Objects with data enabled have an instance of a Data Manager under the `data` property. So, to listen for
+ * the removal of a data item on a Game Object you would use: `sprite.data.on('removedata', listener)`.
+ *
+ * @event Phaser.Data.Events#REMOVE_DATA
+ * 
+ * @param {any} parent - A reference to the object that owns the instance of the Data Manager responsible for this event.
+ * @param {string} key - The unique key of the data item within the Data Manager.
+ * @param {any} data - The item that was removed from the Data Manager. This can be of any data type, i.e. a string, boolean, number, object or instance.
+ */
+module.exports = 'removedata';
+
+
+/***/ }),
+/* 75 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Set Data Event.
+ * 
+ * This event is dispatched by a Data Manager when a new item is added to the data store.
+ * 
+ * Game Objects with data enabled have an instance of a Data Manager under the `data` property. So, to listen for
+ * the addition of a new data item on a Game Object you would use: `sprite.data.on('setdata', listener)`.
+ *
+ * @event Phaser.Data.Events#SET_DATA
+ * 
+ * @param {any} parent - A reference to the object that owns the instance of the Data Manager responsible for this event.
+ * @param {string} key - The unique key of the data item within the Data Manager.
+ * @param {any} data - The item that was added to the Data Manager. This can be of any data type, i.e. a string, boolean, number, object or instance.
+ */
+module.exports = 'setdata';
+
+
+/***/ }),
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9016,7 +10094,48 @@ if (true) {
 
 
 /***/ }),
-/* 42 */
+/* 77 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * @namespace Phaser.GameObjects.Events
+ */
+
+module.exports = { DESTROY: __webpack_require__(78) };
+
+
+/***/ }),
+/* 78 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Game Object Destroy Event.
+ * 
+ * This event is dispatched when a Game Object instance is being destroyed.
+ * 
+ * Listen for it on a Game Object instance using `GameObject.on('destroy', listener)`.
+ *
+ * @event Phaser.GameObjects.Events#DESTROY
+ * 
+ * @param {Phaser.GameObjects.GameObject} gameObject - The Game Object which is being destroyed.
+ */
+module.exports = 'destroy';
+
+
+/***/ }),
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -9030,12 +10149,12 @@ var renderCanvas = __webpack_require__(10);
 
 if (true)
 {
-    renderWebGL = __webpack_require__(43);
+    renderWebGL = __webpack_require__(80);
 }
 
 if (true)
 {
-    renderCanvas = __webpack_require__(45);
+    renderCanvas = __webpack_require__(82);
 }
 
 module.exports = {
@@ -9047,7 +10166,7 @@ module.exports = {
 
 
 /***/ }),
-/* 43 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -9056,7 +10175,7 @@ module.exports = {
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
-var CounterClockwise = __webpack_require__(44);
+var CounterClockwise = __webpack_require__(81);
 
 /**
  * Renders this Game Object with the Canvas Renderer to the given Camera.
@@ -9174,12 +10293,12 @@ module.exports = SpineGameObjectWebGLRenderer;
 
 
 /***/ }),
-/* 44 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -9214,7 +10333,7 @@ module.exports = CounterClockwise;
 
 
 /***/ }),
-/* 45 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -9223,7 +10342,7 @@ module.exports = CounterClockwise;
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
-var SetTransform = __webpack_require__(46);
+var SetTransform = __webpack_require__(83);
 
 /**
  * Renders this Game Object with the Canvas Renderer to the given Camera.
@@ -9277,12 +10396,12 @@ module.exports = SpineGameObjectCanvasRenderer;
 
 
 /***/ }),
-/* 46 */
+/* 83 */
 /***/ (function(module, exports) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
@@ -9290,12 +10409,12 @@ module.exports = SpineGameObjectCanvasRenderer;
  * Takes a reference to the Canvas Renderer, a Canvas Rendering Context, a Game Object, a Camera and a parent matrix
  * and then performs the following steps:
  * 
- * 1) Checks the alpha of the source combined with the Camera alpha. If 0 or less it aborts.
- * 2) Takes the Camera and Game Object matrix and multiplies them, combined with the parent matrix if given.
- * 3) Sets the blend mode of the context to be that used by the Game Object.
- * 4) Sets the alpha value of the context to be that used by the Game Object combined with the Camera.
- * 5) Saves the context state.
- * 6) Sets the final matrix values into the context via setTransform.
+ * 1. Checks the alpha of the source combined with the Camera alpha. If 0 or less it aborts.
+ * 2. Takes the Camera and Game Object matrix and multiplies them, combined with the parent matrix if given.
+ * 3. Sets the blend mode of the context to be that used by the Game Object.
+ * 4. Sets the alpha value of the context to be that used by the Game Object combined with the Camera.
+ * 5. Saves the context state.
+ * 6. Sets the final matrix values into the context via setTransform.
  * 
  * This function is only meant to be used internally. Most of the Canvas Renderer classes use it.
  *
@@ -9362,7 +10481,7 @@ module.exports = SetTransform;
 
 
 /***/ }),
-/* 47 */
+/* 84 */
 /***/ (function(module, exports) {
 
 /*** IMPORTS FROM imports-loader ***/
@@ -18558,12 +19677,12 @@ module.exports = spine;
 }.call(window));
 
 /***/ }),
-/* 48 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
+ * @copyright    2019 Photon Storm Ltd.
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
