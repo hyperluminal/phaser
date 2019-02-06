@@ -5,6 +5,7 @@
  */
 
 var Class = require('../utils/Class');
+var Components = require('./components');
 var ComponentsToJSON = require('./components/ToJSON');
 var DataManager = require('../data/DataManager');
 var EventEmitter = require('eventemitter3');
@@ -19,6 +20,7 @@ var Events = require('./events');
  * @class GameObject
  * @memberof Phaser.GameObjects
  * @extends Phaser.Events.EventEmitter
+ * @extends Phaser.GameObjects.Components.Transform
  * @constructor
  * @since 3.0.0
  *
@@ -28,6 +30,10 @@ var Events = require('./events');
 var GameObject = new Class({
 
     Extends: EventEmitter,
+
+    Mixins: [
+        Components.Transform
+    ],
 
     initialize:
 
@@ -231,9 +237,9 @@ var GameObject = new Class({
 
     /**
      * Sets the current state of this Game Object.
-     * 
+     *
      * Phaser itself will never modify the State of a Game Object, although plugins may do so.
-     * 
+     *
      * For example, a Game Object could change from a state of 'moving', to 'attacking', to 'dead'.
      * The state value should typically be an integer (ideally mapped to a constant
      * in your game code), but could also be a string. It is recommended to keep it light and simple.

@@ -69,7 +69,7 @@ var WebGLRenderer = new Class({
          * The local configuration settings of this WebGL Renderer.
          *
          * @name Phaser.Renderer.WebGL.WebGLRenderer#config
-         * @type {RendererConfig}
+         * @type {object}
          * @since 3.0.0
          */
         this.config = {
@@ -1608,7 +1608,7 @@ var WebGLRenderer = new Class({
 
         this.gl.deleteTexture(texture);
 
-        if (this.currentTextures[0] === texture)
+        if (this.currentTextures[0] === texture && !this.game.pendingDestroy)
         {
             //  texture we just deleted is in use, so bind a blank texture
             this.setBlankTexture(true);
@@ -2484,7 +2484,7 @@ var WebGLRenderer = new Class({
             delete this.pipelines[key];
         }
 
-        for (var index = 0; index < this.nativeTextures.length; ++index)
+        for (var index = 0; index < this.nativeTextures.length; index++)
         {
             this.deleteTexture(this.nativeTextures[index]);
 
