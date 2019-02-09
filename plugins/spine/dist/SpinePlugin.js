@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 11);
+/******/ 	return __webpack_require__(__webpack_require__.s = 28);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -433,6 +433,87 @@ module.exports = IsPlainObject;
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Class = __webpack_require__(0);
+
+/**
+ * @classdesc
+ * Defines a Point in 2D space, with an x and y component.
+ *
+ * @class Point
+ * @memberof Phaser.Geom
+ * @constructor
+ * @since 3.0.0
+ *
+ * @param {number} [x=0] - The x coordinate of this Point.
+ * @param {number} [y=x] - The y coordinate of this Point.
+ */
+var Point = new Class({
+
+    initialize:
+
+    function Point (x, y)
+    {
+        if (x === undefined) { x = 0; }
+        if (y === undefined) { y = x; }
+
+        /**
+         * The x coordinate of this Point.
+         *
+         * @name Phaser.Geom.Point#x
+         * @type {number}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.x = x;
+
+        /**
+         * The y coordinate of this Point.
+         *
+         * @name Phaser.Geom.Point#y
+         * @type {number}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.y = y;
+    },
+
+    /**
+     * Set the x and y coordinates of the point to the given values.
+     *
+     * @method Phaser.Geom.Point#setTo
+     * @since 3.0.0
+     *
+     * @param {number} [x=0] - The x coordinate of this Point.
+     * @param {number} [y=x] - The y coordinate of this Point.
+     *
+     * @return {Phaser.Geom.Point} This Point object.
+     */
+    setTo: function (x, y)
+    {
+        if (x === undefined) { x = 0; }
+        if (y === undefined) { y = x; }
+
+        this.x = x;
+        this.y = y;
+
+        return this;
+    }
+
+});
+
+module.exports = Point;
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports) {
 
 /**
@@ -501,7 +582,7 @@ module.exports = FileTypesManager;
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports) {
 
 /**
@@ -653,7 +734,7 @@ module.exports = FILE_CONST;
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -663,13 +744,13 @@ module.exports = FILE_CONST;
  */
 
 var Class = __webpack_require__(0);
-var CONST = __webpack_require__(4);
-var Events = __webpack_require__(36);
+var CONST = __webpack_require__(5);
+var Events = __webpack_require__(53);
 var GetFastValue = __webpack_require__(1);
-var GetURL = __webpack_require__(47);
-var MergeXHRSettings = __webpack_require__(6);
-var XHRLoader = __webpack_require__(49);
-var XHRSettings = __webpack_require__(7);
+var GetURL = __webpack_require__(64);
+var MergeXHRSettings = __webpack_require__(8);
+var XHRLoader = __webpack_require__(66);
+var XHRSettings = __webpack_require__(9);
 
 /**
  * @typedef {object} FileConfig
@@ -1203,7 +1284,7 @@ module.exports = File;
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -1212,8 +1293,654 @@ module.exports = File;
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
-var Extend = __webpack_require__(48);
-var XHRSettings = __webpack_require__(7);
+//  Adapted from [gl-matrix](https://github.com/toji/gl-matrix) by toji
+//  and [vecmath](https://github.com/mattdesl/vecmath) by mattdesl
+
+var Class = __webpack_require__(0);
+
+/**
+ * @typedef {object} Vector2Like
+ *
+ * @property {number} x - The x component.
+ * @property {number} y - The y component.
+ */
+
+/**
+ * @classdesc
+ * A representation of a vector in 2D space.
+ *
+ * A two-component vector.
+ *
+ * @class Vector2
+ * @memberof Phaser.Math
+ * @constructor
+ * @since 3.0.0
+ *
+ * @param {number|Vector2Like} [x] - The x component, or an object with `x` and `y` properties.
+ * @param {number} [y] - The y component.
+ */
+var Vector2 = new Class({
+
+    initialize:
+
+    function Vector2 (x, y)
+    {
+        /**
+         * The x component of this Vector.
+         *
+         * @name Phaser.Math.Vector2#x
+         * @type {number}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.x = 0;
+
+        /**
+         * The y component of this Vector.
+         *
+         * @name Phaser.Math.Vector2#y
+         * @type {number}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.y = 0;
+
+        if (typeof x === 'object')
+        {
+            this.x = x.x || 0;
+            this.y = x.y || 0;
+        }
+        else
+        {
+            if (y === undefined) { y = x; }
+
+            this.x = x || 0;
+            this.y = y || 0;
+        }
+    },
+
+    /**
+     * Make a clone of this Vector2.
+     *
+     * @method Phaser.Math.Vector2#clone
+     * @since 3.0.0
+     *
+     * @return {Phaser.Math.Vector2} A clone of this Vector2.
+     */
+    clone: function ()
+    {
+        return new Vector2(this.x, this.y);
+    },
+
+    /**
+     * Copy the components of a given Vector into this Vector.
+     *
+     * @method Phaser.Math.Vector2#copy
+     * @since 3.0.0
+     *
+     * @param {Phaser.Math.Vector2} src - The Vector to copy the components from.
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    copy: function (src)
+    {
+        this.x = src.x || 0;
+        this.y = src.y || 0;
+
+        return this;
+    },
+
+    /**
+     * Set the component values of this Vector from a given Vector2Like object.
+     *
+     * @method Phaser.Math.Vector2#setFromObject
+     * @since 3.0.0
+     *
+     * @param {Vector2Like} obj - The object containing the component values to set for this Vector.
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    setFromObject: function (obj)
+    {
+        this.x = obj.x || 0;
+        this.y = obj.y || 0;
+
+        return this;
+    },
+
+    /**
+     * Set the `x` and `y` components of the this Vector to the given `x` and `y` values.
+     *
+     * @method Phaser.Math.Vector2#set
+     * @since 3.0.0
+     *
+     * @param {number} x - The x value to set for this Vector.
+     * @param {number} [y=x] - The y value to set for this Vector.
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    set: function (x, y)
+    {
+        if (y === undefined) { y = x; }
+
+        this.x = x;
+        this.y = y;
+
+        return this;
+    },
+
+    /**
+     * This method is an alias for `Vector2.set`.
+     *
+     * @method Phaser.Math.Vector2#setTo
+     * @since 3.4.0
+     *
+     * @param {number} x - The x value to set for this Vector.
+     * @param {number} [y=x] - The y value to set for this Vector.
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    setTo: function (x, y)
+    {
+        return this.set(x, y);
+    },
+
+    /**
+     * Sets the `x` and `y` values of this object from a given polar coordinate.
+     *
+     * @method Phaser.Math.Vector2#setToPolar
+     * @since 3.0.0
+     *
+     * @param {number} azimuth - The angular coordinate, in radians.
+     * @param {number} [radius=1] - The radial coordinate (length).
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    setToPolar: function (azimuth, radius)
+    {
+        if (radius == null) { radius = 1; }
+
+        this.x = Math.cos(azimuth) * radius;
+        this.y = Math.sin(azimuth) * radius;
+
+        return this;
+    },
+
+    /**
+     * Check whether this Vector is equal to a given Vector.
+     *
+     * Performs a strict equality check against each Vector's components.
+     *
+     * @method Phaser.Math.Vector2#equals
+     * @since 3.0.0
+     *
+     * @param {Phaser.Math.Vector2} v - The vector to compare with this Vector.
+     *
+     * @return {boolean} Whether the given Vector is equal to this Vector.
+     */
+    equals: function (v)
+    {
+        return ((this.x === v.x) && (this.y === v.y));
+    },
+
+    /**
+     * Calculate the angle between this Vector and the positive x-axis, in radians.
+     *
+     * @method Phaser.Math.Vector2#angle
+     * @since 3.0.0
+     *
+     * @return {number} The angle between this Vector, and the positive x-axis, given in radians.
+     */
+    angle: function ()
+    {
+        // computes the angle in radians with respect to the positive x-axis
+
+        var angle = Math.atan2(this.y, this.x);
+
+        if (angle < 0)
+        {
+            angle += 2 * Math.PI;
+        }
+
+        return angle;
+    },
+
+    /**
+     * Add a given Vector to this Vector. Addition is component-wise.
+     *
+     * @method Phaser.Math.Vector2#add
+     * @since 3.0.0
+     *
+     * @param {Phaser.Math.Vector2} src - The Vector to add to this Vector.
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    add: function (src)
+    {
+        this.x += src.x;
+        this.y += src.y;
+
+        return this;
+    },
+
+    /**
+     * Subtract the given Vector from this Vector. Subtraction is component-wise.
+     *
+     * @method Phaser.Math.Vector2#subtract
+     * @since 3.0.0
+     *
+     * @param {Phaser.Math.Vector2} src - The Vector to subtract from this Vector.
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    subtract: function (src)
+    {
+        this.x -= src.x;
+        this.y -= src.y;
+
+        return this;
+    },
+
+    /**
+     * Perform a component-wise multiplication between this Vector and the given Vector.
+     *
+     * Multiplies this Vector by the given Vector.
+     *
+     * @method Phaser.Math.Vector2#multiply
+     * @since 3.0.0
+     *
+     * @param {Phaser.Math.Vector2} src - The Vector to multiply this Vector by.
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    multiply: function (src)
+    {
+        this.x *= src.x;
+        this.y *= src.y;
+
+        return this;
+    },
+
+    /**
+     * Scale this Vector by the given value.
+     *
+     * @method Phaser.Math.Vector2#scale
+     * @since 3.0.0
+     *
+     * @param {number} value - The value to scale this Vector by.
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    scale: function (value)
+    {
+        if (isFinite(value))
+        {
+            this.x *= value;
+            this.y *= value;
+        }
+        else
+        {
+            this.x = 0;
+            this.y = 0;
+        }
+
+        return this;
+    },
+
+    /**
+     * Perform a component-wise division between this Vector and the given Vector.
+     *
+     * Divides this Vector by the given Vector.
+     *
+     * @method Phaser.Math.Vector2#divide
+     * @since 3.0.0
+     *
+     * @param {Phaser.Math.Vector2} src - The Vector to divide this Vector by.
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    divide: function (src)
+    {
+        this.x /= src.x;
+        this.y /= src.y;
+
+        return this;
+    },
+
+    /**
+     * Negate the `x` and `y` components of this Vector.
+     *
+     * @method Phaser.Math.Vector2#negate
+     * @since 3.0.0
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    negate: function ()
+    {
+        this.x = -this.x;
+        this.y = -this.y;
+
+        return this;
+    },
+
+    /**
+     * Calculate the distance between this Vector and the given Vector.
+     *
+     * @method Phaser.Math.Vector2#distance
+     * @since 3.0.0
+     *
+     * @param {Phaser.Math.Vector2} src - The Vector to calculate the distance to.
+     *
+     * @return {number} The distance from this Vector to the given Vector.
+     */
+    distance: function (src)
+    {
+        var dx = src.x - this.x;
+        var dy = src.y - this.y;
+
+        return Math.sqrt(dx * dx + dy * dy);
+    },
+
+    /**
+     * Calculate the distance between this Vector and the given Vector, squared.
+     *
+     * @method Phaser.Math.Vector2#distanceSq
+     * @since 3.0.0
+     *
+     * @param {Phaser.Math.Vector2} src - The Vector to calculate the distance to.
+     *
+     * @return {number} The distance from this Vector to the given Vector, squared.
+     */
+    distanceSq: function (src)
+    {
+        var dx = src.x - this.x;
+        var dy = src.y - this.y;
+
+        return dx * dx + dy * dy;
+    },
+
+    /**
+     * Calculate the length (or magnitude) of this Vector.
+     *
+     * @method Phaser.Math.Vector2#length
+     * @since 3.0.0
+     *
+     * @return {number} The length of this Vector.
+     */
+    length: function ()
+    {
+        var x = this.x;
+        var y = this.y;
+
+        return Math.sqrt(x * x + y * y);
+    },
+
+    /**
+     * Calculate the length of this Vector squared.
+     *
+     * @method Phaser.Math.Vector2#lengthSq
+     * @since 3.0.0
+     *
+     * @return {number} The length of this Vector, squared.
+     */
+    lengthSq: function ()
+    {
+        var x = this.x;
+        var y = this.y;
+
+        return x * x + y * y;
+    },
+
+    /**
+     * Normalize this Vector.
+     *
+     * Makes the vector a unit length vector (magnitude of 1) in the same direction.
+     *
+     * @method Phaser.Math.Vector2#normalize
+     * @since 3.0.0
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    normalize: function ()
+    {
+        var x = this.x;
+        var y = this.y;
+        var len = x * x + y * y;
+
+        if (len > 0)
+        {
+            len = 1 / Math.sqrt(len);
+
+            this.x = x * len;
+            this.y = y * len;
+        }
+
+        return this;
+    },
+
+    /**
+     * Right-hand normalize (make unit length) this Vector.
+     *
+     * @method Phaser.Math.Vector2#normalizeRightHand
+     * @since 3.0.0
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    normalizeRightHand: function ()
+    {
+        var x = this.x;
+
+        this.x = this.y * -1;
+        this.y = x;
+
+        return this;
+    },
+
+    /**
+     * Calculate the dot product of this Vector and the given Vector.
+     *
+     * @method Phaser.Math.Vector2#dot
+     * @since 3.0.0
+     *
+     * @param {Phaser.Math.Vector2} src - The Vector2 to dot product with this Vector2.
+     *
+     * @return {number} The dot product of this Vector and the given Vector.
+     */
+    dot: function (src)
+    {
+        return this.x * src.x + this.y * src.y;
+    },
+
+    /**
+     * Calculate the cross product of this Vector and the given Vector.
+     *
+     * @method Phaser.Math.Vector2#cross
+     * @since 3.0.0
+     *
+     * @param {Phaser.Math.Vector2} src - The Vector2 to cross with this Vector2.
+     *
+     * @return {number} The cross product of this Vector and the given Vector.
+     */
+    cross: function (src)
+    {
+        return this.x * src.y - this.y * src.x;
+    },
+
+    /**
+     * Linearly interpolate between this Vector and the given Vector.
+     *
+     * Interpolates this Vector towards the given Vector.
+     *
+     * @method Phaser.Math.Vector2#lerp
+     * @since 3.0.0
+     *
+     * @param {Phaser.Math.Vector2} src - The Vector2 to interpolate towards.
+     * @param {number} [t=0] - The interpolation percentage, between 0 and 1.
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    lerp: function (src, t)
+    {
+        if (t === undefined) { t = 0; }
+
+        var ax = this.x;
+        var ay = this.y;
+
+        this.x = ax + t * (src.x - ax);
+        this.y = ay + t * (src.y - ay);
+
+        return this;
+    },
+
+    /**
+     * Transform this Vector with the given Matrix.
+     *
+     * @method Phaser.Math.Vector2#transformMat3
+     * @since 3.0.0
+     *
+     * @param {Phaser.Math.Matrix3} mat - The Matrix3 to transform this Vector2 with.
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    transformMat3: function (mat)
+    {
+        var x = this.x;
+        var y = this.y;
+        var m = mat.val;
+
+        this.x = m[0] * x + m[3] * y + m[6];
+        this.y = m[1] * x + m[4] * y + m[7];
+
+        return this;
+    },
+
+    /**
+     * Transform this Vector with the given Matrix.
+     *
+     * @method Phaser.Math.Vector2#transformMat4
+     * @since 3.0.0
+     *
+     * @param {Phaser.Math.Matrix4} mat - The Matrix4 to transform this Vector2 with.
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    transformMat4: function (mat)
+    {
+        var x = this.x;
+        var y = this.y;
+        var m = mat.val;
+
+        this.x = m[0] * x + m[4] * y + m[12];
+        this.y = m[1] * x + m[5] * y + m[13];
+
+        return this;
+    },
+
+    /**
+     * Make this Vector the zero vector (0, 0).
+     *
+     * @method Phaser.Math.Vector2#reset
+     * @since 3.0.0
+     *
+     * @return {Phaser.Math.Vector2} This Vector2.
+     */
+    reset: function ()
+    {
+        this.x = 0;
+        this.y = 0;
+
+        return this;
+    }
+
+});
+
+/**
+ * A static zero Vector2 for use by reference.
+ * 
+ * This constant is meant for comparison operations and should not be modified directly.
+ *
+ * @constant
+ * @name Phaser.Math.Vector2.ZERO
+ * @type {Phaser.Math.Vector2}
+ * @since 3.1.0
+ */
+Vector2.ZERO = new Vector2();
+
+/**
+ * A static right Vector2 for use by reference.
+ * 
+ * This constant is meant for comparison operations and should not be modified directly.
+ *
+ * @constant
+ * @name Phaser.Math.Vector2.RIGHT
+ * @type {Phaser.Math.Vector2}
+ * @since 3.16.0
+ */
+Vector2.RIGHT = new Vector2(1, 0);
+
+/**
+ * A static left Vector2 for use by reference.
+ * 
+ * This constant is meant for comparison operations and should not be modified directly.
+ *
+ * @constant
+ * @name Phaser.Math.Vector2.LEFT
+ * @type {Phaser.Math.Vector2}
+ * @since 3.16.0
+ */
+Vector2.LEFT = new Vector2(-1, 0);
+
+/**
+ * A static up Vector2 for use by reference.
+ * 
+ * This constant is meant for comparison operations and should not be modified directly.
+ *
+ * @constant
+ * @name Phaser.Math.Vector2.UP
+ * @type {Phaser.Math.Vector2}
+ * @since 3.16.0
+ */
+Vector2.UP = new Vector2(0, -1);
+
+/**
+ * A static down Vector2 for use by reference.
+ * 
+ * This constant is meant for comparison operations and should not be modified directly.
+ *
+ * @constant
+ * @name Phaser.Math.Vector2.DOWN
+ * @type {Phaser.Math.Vector2}
+ * @since 3.16.0
+ */
+Vector2.DOWN = new Vector2(0, 1);
+
+/**
+ * A static one Vector2 for use by reference.
+ * 
+ * This constant is meant for comparison operations and should not be modified directly.
+ *
+ * @constant
+ * @name Phaser.Math.Vector2.ONE
+ * @type {Phaser.Math.Vector2}
+ * @since 3.16.0
+ */
+Vector2.ONE = new Vector2(1, 1);
+
+module.exports = Vector2;
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Extend = __webpack_require__(65);
+var XHRSettings = __webpack_require__(9);
 
 /**
  * Takes two XHRSettings Objects and creates a new XHRSettings object from them.
@@ -1251,7 +1978,7 @@ module.exports = MergeXHRSettings;
 
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports) {
 
 /**
@@ -1329,2677 +2056,7 @@ module.exports = XHRSettings;
 
 
 /***/ }),
-/* 8 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-var MATH_CONST = {
-
-    /**
-     * The value of PI * 2.
-     * 
-     * @name Phaser.Math.PI2
-     * @type {number}
-     * @since 3.0.0
-     */
-    PI2: Math.PI * 2,
-
-    /**
-     * The value of PI * 0.5.
-     * 
-     * @name Phaser.Math.TAU
-     * @type {number}
-     * @since 3.0.0
-     */
-    TAU: Math.PI * 0.5,
-
-    /**
-     * An epsilon value (1.0e-6)
-     * 
-     * @name Phaser.Math.EPSILON
-     * @type {number}
-     * @since 3.0.0
-     */
-    EPSILON: 1.0e-6,
-
-    /**
-     * For converting degrees to radians (PI / 180)
-     * 
-     * @name Phaser.Math.DEG_TO_RAD
-     * @type {number}
-     * @since 3.0.0
-     */
-    DEG_TO_RAD: Math.PI / 180,
-
-    /**
-     * For converting radians to degrees (180 / PI)
-     * 
-     * @name Phaser.Math.RAD_TO_DEG
-     * @type {number}
-     * @since 3.0.0
-     */
-    RAD_TO_DEG: 180 / Math.PI,
-
-    /**
-     * An instance of the Random Number Generator.
-     * This is not set until the Game boots.
-     * 
-     * @name Phaser.Math.RND
-     * @type {Phaser.Math.RandomDataGenerator}
-     * @since 3.0.0
-     */
-    RND: null
-
-};
-
-module.exports = MATH_CONST;
-
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * Wrap the given `value` between `min` and `max.
- *
- * @function Phaser.Math.Wrap
- * @since 3.0.0
- *
- * @param {number} value - The value to wrap.
- * @param {number} min - The minimum value.
- * @param {number} max - The maximum value.
- *
- * @return {number} The wrapped value.
- */
-var Wrap = function (value, min, max)
-{
-    var range = max - min;
-
-    return (min + ((((value - min) % range) + range) % range));
-};
-
-module.exports = Wrap;
-
-
-/***/ }),
 /* 10 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * A NOOP (No Operation) callback function.
- *
- * Used internally by Phaser when it's more expensive to determine if a callback exists
- * than it is to just invoke an empty function.
- *
- * @function Phaser.Utils.NOOP
- * @since 3.0.0
- */
-var NOOP = function ()
-{
-    //  NOOP
-};
-
-module.exports = NOOP;
-
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-var Class = __webpack_require__(0);
-var BaseSpinePlugin = __webpack_require__(12);
-var SpineWebGL = __webpack_require__(84);
-var Matrix4 = __webpack_require__(85);
-
-/**
- * @classdesc
- * Just the WebGL Runtime.
- *
- * @class SpineWebGLPlugin
- * @extends Phaser.Plugins.ScenePlugin
- * @constructor
- * @since 3.16.0
- *
- * @param {Phaser.Scene} scene - A reference to the Scene that has installed this plugin.
- * @param {Phaser.Plugins.PluginManager} pluginManager - A reference to the Phaser Plugin Manager.
- */
-var SpineWebGLPlugin = new Class({
-
-    Extends: BaseSpinePlugin,
-
-    initialize:
-
-    function SpineWebGLPlugin (scene, pluginManager)
-    {
-        BaseSpinePlugin.call(this, scene, pluginManager, SpineWebGL);
-
-        this.gl;
-        this.mvp;
-        this.shader;
-        this.batcher;
-        this.debugRenderer;
-        this.debugShader;
-    },
-
-    boot: function ()
-    {
-        var gl = this.game.renderer.gl;
-
-        this.gl = gl;
-
-        this.mvp = new Matrix4();
-
-        //  Create a simple shader, mesh, model-view-projection matrix and SkeletonRenderer.
-        this.shader = SpineWebGL.webgl.Shader.newTwoColoredTextured(gl);
-        this.batcher = new SpineWebGL.webgl.PolygonBatcher(gl);
-
-        this.skeletonRenderer = new SpineWebGL.webgl.SkeletonRenderer(gl);
-        this.skeletonRenderer.premultipliedAlpha = true;
-
-        this.shapes = new SpineWebGL.webgl.ShapeRenderer(gl);
-
-        this.debugRenderer = new SpineWebGL.webgl.SkeletonDebugRenderer(gl);
-
-        this.debugShader = SpineWebGL.webgl.Shader.newColored(gl);
-    },
-
-    getAtlas: function (key)
-    {
-        var atlasData = this.cache.get(key);
-
-        if (!atlasData)
-        {
-            console.warn('No atlas data for: ' + key);
-            return;
-        }
-
-        var textures = this.textures;
-
-        var gl = this.game.renderer.gl;
-
-        var atlas = new SpineWebGL.TextureAtlas(atlasData, function (path)
-        {
-            return new SpineWebGL.webgl.GLTexture(gl, textures.get(path).getSourceImage());
-        });
-
-        return atlas;
-    }
-
-});
-
-module.exports = SpineWebGLPlugin;
-
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-var Class = __webpack_require__(0);
-var ScenePlugin = __webpack_require__(13);
-var SpineFile = __webpack_require__(34);
-var SpineGameObject = __webpack_require__(54);
-
-var runtime;
-
-/**
- * @classdesc
- * TODO
- *
- * @class SpinePlugin
- * @extends Phaser.Plugins.ScenePlugin
- * @constructor
- * @since 3.16.0
- *
- * @param {Phaser.Scene} scene - A reference to the Scene that has installed this plugin.
- * @param {Phaser.Plugins.PluginManager} pluginManager - A reference to the Phaser Plugin Manager.
- */
-var SpinePlugin = new Class({
-
-    Extends: ScenePlugin,
-
-    initialize:
-
-    function SpinePlugin (scene, pluginManager, SpineRuntime)
-    {
-        ScenePlugin.call(this, scene, pluginManager);
-
-        var game = pluginManager.game;
-
-        //  Create a custom cache to store the spine data (.atlas files)
-        this.cache = game.cache.addCustom('spine');
-
-        this.json = game.cache.json;
-
-        this.textures = game.textures;
-
-        this.skeletonRenderer;
-
-        this.drawDebug = false;
-
-        //  Register our file type
-        pluginManager.registerFileType('spine', this.spineFileCallback, scene);
-
-        //  Register our game object
-        pluginManager.registerGameObject('spine', this.createSpineFactory(this));
-
-        runtime = SpineRuntime;
-    },
-
-    spineFileCallback: function (key, jsonURL, atlasURL, jsonXhrSettings, atlasXhrSettings)
-    {
-        var multifile;
-
-        if (Array.isArray(key))
-        {
-            for (var i = 0; i < key.length; i++)
-            {
-                multifile = new SpineFile(this, key[i]);
-
-                this.addFile(multifile.files);
-            }
-        }
-        else
-        {
-            multifile = new SpineFile(this, key, jsonURL, atlasURL, jsonXhrSettings, atlasXhrSettings);
-
-            this.addFile(multifile.files);
-        }
-
-        return this;
-    },
-
-    /**
-     * Creates a new Spine Game Object and adds it to the Scene.
-     *
-     * @method Phaser.GameObjects.GameObjectFactory#spineFactory
-     * @since 3.16.0
-     *
-     * @param {number} x - The horizontal position of this Game Object.
-     * @param {number} y - The vertical position of this Game Object.
-     * @param {string} [key] - The key of the Texture this Game Object will use to render with, as stored in the Texture Manager.
-     * @param {(string|integer)} [animationName] - The animation to load with.
-     * @param {boolean} [loop] - Loop the loaded animation?
-     *
-     * @return {Phaser.GameObjects.SpineGameObject} The Game Object that was created.
-     */
-    createSpineFactory: function (plugin)
-    {
-        var callback = function (x, y, key, animationName, loop)
-        {
-            var spineGO = new SpineGameObject(this.scene, plugin, x, y, key, animationName, loop);
-
-            this.displayList.add(spineGO);
-            this.updateList.add(spineGO);
-
-            return spineGO;
-        };
-
-        return callback;
-    },
-
-    /**
-     * Gets the spine runtime.
-     *
-     * @method SpinePlugin#getRuntime
-     * @since 3.16.0
-     *
-     * @return {any} The spine runtime.
-     */
-    getRuntime: function ()
-    {
-        return runtime;
-    },
-
-    /**
-     * Creates a spine Skeleton
-     *
-     * @method SpinePlugin#createSkeleton
-     * @since 3.16.0
-     *
-     * @param {string} key - The key of the atlas Texture this Game Object will use to render with, as stored in the Texture Manager.
-     * @param {string} [skeletonJSON] - the skeletonJSON file to read skeleton data from, if undefined then will get json with key provided
-     *
-     * @return {any} skeletonData & skeleton.
-     */
-    createSkeleton: function (key, skeletonJSON)
-    {
-        var atlas = this.getAtlas(key);
-
-        var atlasLoader = new runtime.AtlasAttachmentLoader(atlas);
-
-        var skeletonJson = new runtime.SkeletonJson(atlasLoader);
-
-        var data = (skeletonJSON) ? skeletonJSON : this.json.get(key);
-
-        var skeletonData = skeletonJson.readSkeletonData(data);
-
-        var skeleton = new runtime.Skeleton(skeletonData);
-
-        return { skeletonData: skeletonData, skeleton: skeleton };
-    },
-
-
-    getBounds: function (skeleton)
-    {
-        var offset = new runtime.Vector2();
-        var size = new runtime.Vector2();
-
-        skeleton.getBounds(offset, size, []);
-
-        return { offset: offset, size: size };
-    },
-
-    createAnimationState: function (skeleton)
-    {
-        var stateData = new runtime.AnimationStateData(skeleton.data);
-
-        var state = new runtime.AnimationState(stateData);
-
-        return { stateData: stateData, state: state };
-    },
-
-    /**
-     * The Scene that owns this plugin is shutting down.
-     * We need to kill and reset all internal properties as well as stop listening to Scene events.
-     *
-     * @method SpinePlugin#shutdown
-     * @private
-     * @since 3.0.0
-     */
-    shutdown: function ()
-    {
-        var eventEmitter = this.systems.events;
-
-        eventEmitter.off('update', this.update, this);
-        eventEmitter.off('shutdown', this.shutdown, this);
-
-        this.removeAll();
-    },
-
-    /**
-     * The Scene that owns this plugin is being destroyed.
-     * We need to shutdown and then kill off all external references.
-     *
-     * @method SpinePlugin#destroy
-     * @private
-     * @since 3.0.0
-     */
-    destroy: function ()
-    {
-        this.shutdown();
-
-        this.pluginManager = null;
-        this.game = null;
-        this.scene = null;
-        this.systems = null;
-    }
-
-});
-
-module.exports = SpinePlugin;
-
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
-* @author       Richard Davey <rich@photonstorm.com>
-* @copyright    2019 Photon Storm Ltd.
-* @license      {@link https://github.com/photonstorm/phaser3-plugin-template/blob/master/LICENSE|MIT License}
-*/
-
-var BasePlugin = __webpack_require__(14);
-var Class = __webpack_require__(0);
-var SceneEvents = __webpack_require__(15);
-
-/**
- * @classdesc
- * A Scene Level Plugin is installed into every Scene and belongs to that Scene.
- * It can listen for Scene events and respond to them.
- * It can map itself to a Scene property, or into the Scene Systems, or both.
- *
- * @class ScenePlugin
- * @memberof Phaser.Plugins
- * @extends Phaser.Plugins.BasePlugin
- * @constructor
- * @since 3.8.0
- *
- * @param {Phaser.Scene} scene - A reference to the Scene that has installed this plugin.
- * @param {Phaser.Plugins.PluginManager} pluginManager - A reference to the Plugin Manager.
- */
-var ScenePlugin = new Class({
-
-    Extends: BasePlugin,
-
-    initialize:
-
-    function ScenePlugin (scene, pluginManager)
-    {
-        BasePlugin.call(this, pluginManager);
-
-        this.scene = scene;
-        this.systems = scene.sys;
-
-        scene.sys.events.once(SceneEvents.BOOT, this.boot, this);
-    },
-
-    /**
-     * This method is called when the Scene boots. It is only ever called once.
-     * 
-     * By this point the plugin properties `scene` and `systems` will have already been set.
-     * 
-     * In here you can listen for Scene events and set-up whatever you need for this plugin to run.
-     * Here are the Scene events you can listen to:
-     * 
-     * start
-     * ready
-     * preupdate
-     * update
-     * postupdate
-     * resize
-     * pause
-     * resume
-     * sleep
-     * wake
-     * transitioninit
-     * transitionstart
-     * transitioncomplete
-     * transitionout
-     * shutdown
-     * destroy
-     * 
-     * At the very least you should offer a destroy handler for when the Scene closes down, i.e:
-     *
-     * ```javascript
-     * var eventEmitter = this.systems.events;
-     * eventEmitter.once('destroy', this.sceneDestroy, this);
-     * ```
-     *
-     * @method Phaser.Plugins.ScenePlugin#boot
-     * @since 3.8.0
-     */
-    boot: function ()
-    {
-    }
-
-});
-
-module.exports = ScenePlugin;
-
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
-* @author       Richard Davey <rich@photonstorm.com>
-* @copyright    2019 Photon Storm Ltd.
-* @license      {@link https://github.com/photonstorm/phaser3-plugin-template/blob/master/LICENSE|MIT License}
-*/
-
-var Class = __webpack_require__(0);
-
-/**
- * @classdesc
- * A Global Plugin is installed just once into the Game owned Plugin Manager.
- * It can listen for Game events and respond to them.
- *
- * @class BasePlugin
- * @memberof Phaser.Plugins
- * @constructor
- * @since 3.8.0
- *
- * @param {Phaser.Plugins.PluginManager} pluginManager - A reference to the Plugin Manager.
- */
-var BasePlugin = new Class({
-
-    initialize:
-
-    function BasePlugin (pluginManager)
-    {
-        /**
-         * A handy reference to the Plugin Manager that is responsible for this plugin.
-         * Can be used as a route to gain access to game systems and  events.
-         *
-         * @name Phaser.Plugins.BasePlugin#pluginManager
-         * @type {Phaser.Plugins.PluginManager}
-         * @protected
-         * @since 3.8.0
-         */
-        this.pluginManager = pluginManager;
-
-        /**
-         * A reference to the Game instance this plugin is running under.
-         *
-         * @name Phaser.Plugins.BasePlugin#game
-         * @type {Phaser.Game}
-         * @protected
-         * @since 3.8.0
-         */
-        this.game = pluginManager.game;
-
-        /**
-         * A reference to the Scene that has installed this plugin.
-         * Only set if it's a Scene Plugin, otherwise `null`.
-         * This property is only set when the plugin is instantiated and added to the Scene, not before.
-         * You cannot use it during the `init` method, but you can during the `boot` method.
-         *
-         * @name Phaser.Plugins.BasePlugin#scene
-         * @type {?Phaser.Scene}
-         * @protected
-         * @since 3.8.0
-         */
-        this.scene;
-
-        /**
-         * A reference to the Scene Systems of the Scene that has installed this plugin.
-         * Only set if it's a Scene Plugin, otherwise `null`.
-         * This property is only set when the plugin is instantiated and added to the Scene, not before.
-         * You cannot use it during the `init` method, but you can during the `boot` method.
-         *
-         * @name Phaser.Plugins.BasePlugin#systems
-         * @type {?Phaser.Scenes.Systems}
-         * @protected
-         * @since 3.8.0
-         */
-        this.systems;
-    },
-
-    /**
-     * Called by the PluginManager when this plugin is first instantiated.
-     * It will never be called again on this instance.
-     * In here you can set-up whatever you need for this plugin to run.
-     * If a plugin is set to automatically start then `BasePlugin.start` will be called immediately after this.
-     *
-     * @method Phaser.Plugins.BasePlugin#init
-     * @since 3.8.0
-     *
-     * @param {?any} [data] - A value specified by the user, if any, from the `data` property of the plugin's configuration object (if started at game boot) or passed in the PluginManager's `install` method (if started manually).
-     */
-    init: function ()
-    {
-    },
-
-    /**
-     * Called by the PluginManager when this plugin is started.
-     * If a plugin is stopped, and then started again, this will get called again.
-     * Typically called immediately after `BasePlugin.init`.
-     *
-     * @method Phaser.Plugins.BasePlugin#start
-     * @since 3.8.0
-     */
-    start: function ()
-    {
-        //  Here are the game-level events you can listen to.
-        //  At the very least you should offer a destroy handler for when the game closes down.
-
-        // var eventEmitter = this.game.events;
-
-        // eventEmitter.once('destroy', this.gameDestroy, this);
-        // eventEmitter.on('pause', this.gamePause, this);
-        // eventEmitter.on('resume', this.gameResume, this);
-        // eventEmitter.on('resize', this.gameResize, this);
-        // eventEmitter.on('prestep', this.gamePreStep, this);
-        // eventEmitter.on('step', this.gameStep, this);
-        // eventEmitter.on('poststep', this.gamePostStep, this);
-        // eventEmitter.on('prerender', this.gamePreRender, this);
-        // eventEmitter.on('postrender', this.gamePostRender, this);
-    },
-
-    /**
-     * Called by the PluginManager when this plugin is stopped.
-     * The game code has requested that your plugin stop doing whatever it does.
-     * It is now considered as 'inactive' by the PluginManager.
-     * Handle that process here (i.e. stop listening for events, etc)
-     * If the plugin is started again then `BasePlugin.start` will be called again.
-     *
-     * @method Phaser.Plugins.BasePlugin#stop
-     * @since 3.8.0
-     */
-    stop: function ()
-    {
-    },
-
-    /**
-     * If this is a Scene Plugin (i.e. installed into a Scene) then this method is called when the Scene boots.
-     * By this point the plugin properties `scene` and `systems` will have already been set.
-     * In here you can listen for Scene events and set-up whatever you need for this plugin to run.
-     *
-     * @method Phaser.Plugins.BasePlugin#boot
-     * @since 3.8.0
-     */
-    boot: function ()
-    {
-        //  Here are the Scene events you can listen to.
-        //  At the very least you should offer a destroy handler for when the Scene closes down.
-
-        // var eventEmitter = this.systems.events;
-
-        // eventEmitter.once('destroy', this.sceneDestroy, this);
-        // eventEmitter.on('start', this.sceneStart, this);
-        // eventEmitter.on('preupdate', this.scenePreUpdate, this);
-        // eventEmitter.on('update', this.sceneUpdate, this);
-        // eventEmitter.on('postupdate', this.scenePostUpdate, this);
-        // eventEmitter.on('pause', this.scenePause, this);
-        // eventEmitter.on('resume', this.sceneResume, this);
-        // eventEmitter.on('sleep', this.sceneSleep, this);
-        // eventEmitter.on('wake', this.sceneWake, this);
-        // eventEmitter.on('shutdown', this.sceneShutdown, this);
-        // eventEmitter.on('destroy', this.sceneDestroy, this);
-    },
-
-    /**
-     * Game instance has been destroyed.
-     * You must release everything in here, all references, all objects, free it all up.
-     *
-     * @method Phaser.Plugins.BasePlugin#destroy
-     * @since 3.8.0
-     */
-    destroy: function ()
-    {
-        this.pluginManager = null;
-        this.game = null;
-        this.scene = null;
-        this.systems = null;
-    }
-
-});
-
-module.exports = BasePlugin;
-
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * @namespace Phaser.Scenes.Events
- */
-
-module.exports = {
-
-    BOOT: __webpack_require__(16),
-    DESTROY: __webpack_require__(17),
-    PAUSE: __webpack_require__(18),
-    POST_UPDATE: __webpack_require__(19),
-    PRE_UPDATE: __webpack_require__(20),
-    READY: __webpack_require__(21),
-    RENDER: __webpack_require__(22),
-    RESUME: __webpack_require__(23),
-    SHUTDOWN: __webpack_require__(24),
-    SLEEP: __webpack_require__(25),
-    START: __webpack_require__(26),
-    TRANSITION_COMPLETE: __webpack_require__(27),
-    TRANSITION_INIT: __webpack_require__(28),
-    TRANSITION_OUT: __webpack_require__(29),
-    TRANSITION_START: __webpack_require__(30),
-    TRANSITION_WAKE: __webpack_require__(31),
-    UPDATE: __webpack_require__(32),
-    WAKE: __webpack_require__(33)
-
-};
-
-
-/***/ }),
-/* 16 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Systems Boot Event.
- * 
- * This event is dispatched by a Scene during the Scene Systems boot process. Primarily used by Scene Plugins.
- * 
- * Listen to it from a Scene using `this.scene.events.on('boot', listener)`.
- * 
- * @event Phaser.Scenes.Events#BOOT
- * 
- * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
- */
-module.exports = 'boot';
-
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Systems Destroy Event.
- * 
- * This event is dispatched by a Scene during the Scene Systems destroy process.
- * 
- * Listen to it from a Scene using `this.scene.events.on('destroy', listener)`.
- * 
- * You should destroy any resources that may be in use by your Scene in this event handler.
- * 
- * @event Phaser.Scenes.Events#DESTROY
- * 
- * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
- */
-module.exports = 'destroy';
-
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Systems Pause Event.
- * 
- * This event is dispatched by a Scene when it is paused, either directly via the `pause` method, or as an
- * action from another Scene.
- * 
- * Listen to it from a Scene using `this.scene.events.on('pause', listener)`.
- * 
- * @event Phaser.Scenes.Events#PAUSE
- * 
- * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
- * @param {any} [data] - An optional data object that was passed to this Scene when it was paused.
- */
-module.exports = 'pause';
-
-
-/***/ }),
-/* 19 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Systems Post Update Event.
- * 
- * This event is dispatched by a Scene during the main game loop step.
- * 
- * The event flow for a single step of a Scene is as follows:
- * 
- * 1. [PRE_UPDATE]{@linkcode Phaser.Scenes.Events#event:PRE_UPDATE}
- * 2. [UPDATE]{@linkcode Phaser.Scenes.Events#event:UPDATE}
- * 3. The `Scene.update` method is called, if it exists
- * 4. [POST_UPDATE]{@linkcode Phaser.Scenes.Events#event:POST_UPDATE}
- * 5. [RENDER]{@linkcode Phaser.Scenes.Events#event:RENDER}
- * 
- * Listen to it from a Scene using `this.scene.events.on('postupdate', listener)`.
- * 
- * A Scene will only run its step if it is active.
- * 
- * @event Phaser.Scenes.Events#POST_UPDATE
- * 
- * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
- * @param {number} time - The current time. Either a High Resolution Timer value if it comes from Request Animation Frame, or Date.now if using SetTimeout.
- * @param {number} delta - The delta time in ms since the last frame. This is a smoothed and capped value based on the FPS rate.
- */
-module.exports = 'postupdate';
-
-
-/***/ }),
-/* 20 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Systems Pre Update Event.
- * 
- * This event is dispatched by a Scene during the main game loop step.
- * 
- * The event flow for a single step of a Scene is as follows:
- * 
- * 1. [PRE_UPDATE]{@linkcode Phaser.Scenes.Events#event:PRE_UPDATE}
- * 2. [UPDATE]{@linkcode Phaser.Scenes.Events#event:UPDATE}
- * 3. The `Scene.update` method is called, if it exists
- * 4. [POST_UPDATE]{@linkcode Phaser.Scenes.Events#event:POST_UPDATE}
- * 5. [RENDER]{@linkcode Phaser.Scenes.Events#event:RENDER}
- * 
- * Listen to it from a Scene using `this.scene.events.on('preupdate', listener)`.
- * 
- * A Scene will only run its step if it is active.
- * 
- * @event Phaser.Scenes.Events#PRE_UPDATE
- * 
- * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
- * @param {number} time - The current time. Either a High Resolution Timer value if it comes from Request Animation Frame, or Date.now if using SetTimeout.
- * @param {number} delta - The delta time in ms since the last frame. This is a smoothed and capped value based on the FPS rate.
- */
-module.exports = 'preupdate';
-
-
-/***/ }),
-/* 21 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Systems Ready Event.
- * 
- * This event is dispatched by a Scene during the Scene Systems start process.
- * By this point in the process the Scene is now fully active and rendering.
- * This event is meant for your game code to use, as all plugins have responded to the earlier 'start' event.
- * 
- * Listen to it from a Scene using `this.scene.events.on('ready', listener)`.
- * 
- * @event Phaser.Scenes.Events#READY
- * 
- * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
- * @param {any} [data] - An optional data object that was passed to this Scene when it was started.
- */
-module.exports = 'ready';
-
-
-/***/ }),
-/* 22 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Systems Render Event.
- * 
- * This event is dispatched by a Scene during the main game loop step.
- * 
- * The event flow for a single step of a Scene is as follows:
- * 
- * 1. [PRE_UPDATE]{@linkcode Phaser.Scenes.Events#event:PRE_UPDATE}
- * 2. [UPDATE]{@linkcode Phaser.Scenes.Events#event:UPDATE}
- * 3. The `Scene.update` method is called, if it exists
- * 4. [POST_UPDATE]{@linkcode Phaser.Scenes.Events#event:POST_UPDATE}
- * 5. [RENDER]{@linkcode Phaser.Scenes.Events#event:RENDER}
- * 
- * Listen to it from a Scene using `this.scene.events.on('render', listener)`.
- * 
- * A Scene will only render if it is visible and active.
- * By the time this event is dispatched, the Scene will have already been rendered.
- * 
- * @event Phaser.Scenes.Events#RENDER
- * 
- * @param {(Phaser.Renderer.Canvas.CanvasRenderer|Phaser.Renderer.WebGL.WebGLRenderer)} renderer - The renderer that rendered the Scene.
- */
-module.exports = 'render';
-
-
-/***/ }),
-/* 23 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Systems Resume Event.
- * 
- * This event is dispatched by a Scene when it is resumed from a paused state, either directly via the `resume` method,
- * or as an action from another Scene.
- * 
- * Listen to it from a Scene using `this.scene.events.on('resume', listener)`.
- * 
- * @event Phaser.Scenes.Events#RESUME
- * 
- * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
- * @param {any} [data] - An optional data object that was passed to this Scene when it was resumed.
- */
-module.exports = 'resume';
-
-
-/***/ }),
-/* 24 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Systems Shutdown Event.
- * 
- * This event is dispatched by a Scene during the Scene Systems shutdown process.
- * 
- * Listen to it from a Scene using `this.scene.events.on('shutdown', listener)`.
- * 
- * You should free-up any resources that may be in use by your Scene in this event handler, on the understanding
- * that the Scene may, at any time, become active again. A shutdown Scene is not 'destroyed', it's simply not
- * currently active. Use the [DESTROY]{@linkcode Phaser.Scenes.Events#event:DESTROY} event to completely clear resources.
- * 
- * @event Phaser.Scenes.Events#SHUTDOWN
- * 
- * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
- * @param {any} [data] - An optional data object that was passed to this Scene when it was shutdown.
- */
-module.exports = 'shutdown';
-
-
-/***/ }),
-/* 25 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Systems Sleep Event.
- * 
- * This event is dispatched by a Scene when it is sent to sleep, either directly via the `sleep` method,
- * or as an action from another Scene.
- * 
- * Listen to it from a Scene using `this.scene.events.on('sleep', listener)`.
- * 
- * @event Phaser.Scenes.Events#SLEEP
- * 
- * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
- * @param {any} [data] - An optional data object that was passed to this Scene when it was sent to sleep.
- */
-module.exports = 'sleep';
-
-
-/***/ }),
-/* 26 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Systems Start Event.
- * 
- * This event is dispatched by a Scene during the Scene Systems start process. Primarily used by Scene Plugins.
- * 
- * Listen to it from a Scene using `this.scene.events.on('start', listener)`.
- * 
- * @event Phaser.Scenes.Events#START
- * 
- * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
- */
-module.exports = 'start';
-
-
-/***/ }),
-/* 27 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Transition Complete Event.
- * 
- * This event is dispatched by the Target Scene of a transition.
- * 
- * It happens when the transition process has completed. This occurs when the duration timer equals or exceeds the duration
- * of the transition.
- * 
- * Listen to it from a Scene using `this.scene.events.on('transitioncomplete', listener)`.
- * 
- * The Scene Transition event flow is as follows:
- * 
- * 1. [TRANSITION_OUT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_OUT} - the Scene that started the transition will emit this event.
- * 2. [TRANSITION_INIT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_INIT} - the Target Scene will emit this event if it has an `init` method.
- * 3. [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} - the Target Scene will emit this event after its `create` method is called, OR ...
- * 4. [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} - the Target Scene will emit this event if it was asleep and has been woken-up to be transitioned to.
- * 5. [TRANSITION_COMPLETE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_COMPLETE} - the Target Scene will emit this event when the transition finishes.
- * 
- * @event Phaser.Scenes.Events#TRANSITION_COMPLETE
- * 
- * @param {Phaser.Scene} scene -The Scene on which the transitioned completed.
- */
-module.exports = 'transitioncomplete';
-
-
-/***/ }),
-/* 28 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Transition Init Event.
- * 
- * This event is dispatched by the Target Scene of a transition.
- * 
- * It happens immediately after the `Scene.init` method is called. If the Scene does not have an `init` method,
- * this event is not dispatched.
- * 
- * Listen to it from a Scene using `this.scene.events.on('transitioninit', listener)`.
- * 
- * The Scene Transition event flow is as follows:
- * 
- * 1. [TRANSITION_OUT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_OUT} - the Scene that started the transition will emit this event.
- * 2. [TRANSITION_INIT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_INIT} - the Target Scene will emit this event if it has an `init` method.
- * 3. [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} - the Target Scene will emit this event after its `create` method is called, OR ...
- * 4. [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} - the Target Scene will emit this event if it was asleep and has been woken-up to be transitioned to.
- * 5. [TRANSITION_COMPLETE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_COMPLETE} - the Target Scene will emit this event when the transition finishes.
- * 
- * @event Phaser.Scenes.Events#TRANSITION_INIT
- * 
- * @param {Phaser.Scene} from - A reference to the Scene that is being transitioned from.
- * @param {number} duration - The duration of the transition in ms.
- */
-module.exports = 'transitioninit';
-
-
-/***/ }),
-/* 29 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Transition Out Event.
- * 
- * This event is dispatched by a Scene when it initiates a transition to another Scene.
- * 
- * Listen to it from a Scene using `this.scene.events.on('transitionout', listener)`.
- * 
- * The Scene Transition event flow is as follows:
- * 
- * 1. [TRANSITION_OUT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_OUT} - the Scene that started the transition will emit this event.
- * 2. [TRANSITION_INIT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_INIT} - the Target Scene will emit this event if it has an `init` method.
- * 3. [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} - the Target Scene will emit this event after its `create` method is called, OR ...
- * 4. [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} - the Target Scene will emit this event if it was asleep and has been woken-up to be transitioned to.
- * 5. [TRANSITION_COMPLETE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_COMPLETE} - the Target Scene will emit this event when the transition finishes.
- * 
- * @event Phaser.Scenes.Events#TRANSITION_OUT
- * 
- * @param {Phaser.Scene} target - A reference to the Scene that is being transitioned to.
- * @param {number} duration - The duration of the transition in ms.
- */
-module.exports = 'transitionout';
-
-
-/***/ }),
-/* 30 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Transition Start Event.
- * 
- * This event is dispatched by the Target Scene of a transition, only if that Scene was not asleep.
- * 
- * It happens immediately after the `Scene.create` method is called. If the Scene does not have a `create` method,
- * this event is dispatched anyway.
- * 
- * If the Target Scene was sleeping then the [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} event is
- * dispatched instead of this event.
- * 
- * Listen to it from a Scene using `this.scene.events.on('transitionstart', listener)`.
- * 
- * The Scene Transition event flow is as follows:
- * 
- * 1. [TRANSITION_OUT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_OUT} - the Scene that started the transition will emit this event.
- * 2. [TRANSITION_INIT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_INIT} - the Target Scene will emit this event if it has an `init` method.
- * 3. [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} - the Target Scene will emit this event after its `create` method is called, OR ...
- * 4. [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} - the Target Scene will emit this event if it was asleep and has been woken-up to be transitioned to.
- * 5. [TRANSITION_COMPLETE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_COMPLETE} - the Target Scene will emit this event when the transition finishes.
- * 
- * @event Phaser.Scenes.Events#TRANSITION_START
- * 
- * @param {Phaser.Scene} from - A reference to the Scene that is being transitioned from.
- * @param {number} duration - The duration of the transition in ms.
- */
-module.exports = 'transitionstart';
-
-
-/***/ }),
-/* 31 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Transition Wake Event.
- * 
- * This event is dispatched by the Target Scene of a transition, only if that Scene was asleep before
- * the transition began. If the Scene was not asleep the [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} event is dispatched instead.
- * 
- * Listen to it from a Scene using `this.scene.events.on('transitionwake', listener)`.
- * 
- * The Scene Transition event flow is as follows:
- * 
- * 1. [TRANSITION_OUT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_OUT} - the Scene that started the transition will emit this event.
- * 2. [TRANSITION_INIT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_INIT} - the Target Scene will emit this event if it has an `init` method.
- * 3. [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} - the Target Scene will emit this event after its `create` method is called, OR ...
- * 4. [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} - the Target Scene will emit this event if it was asleep and has been woken-up to be transitioned to.
- * 5. [TRANSITION_COMPLETE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_COMPLETE} - the Target Scene will emit this event when the transition finishes.
- * 
- * @event Phaser.Scenes.Events#TRANSITION_WAKE
- * 
- * @param {Phaser.Scene} from - A reference to the Scene that is being transitioned from.
- * @param {number} duration - The duration of the transition in ms.
- */
-module.exports = 'transitionwake';
-
-
-/***/ }),
-/* 32 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Systems Update Event.
- * 
- * This event is dispatched by a Scene during the main game loop step.
- * 
- * The event flow for a single step of a Scene is as follows:
- * 
- * 1. [PRE_UPDATE]{@linkcode Phaser.Scenes.Events#event:PRE_UPDATE}
- * 2. [UPDATE]{@linkcode Phaser.Scenes.Events#event:UPDATE}
- * 3. The `Scene.update` method is called, if it exists
- * 4. [POST_UPDATE]{@linkcode Phaser.Scenes.Events#event:POST_UPDATE}
- * 5. [RENDER]{@linkcode Phaser.Scenes.Events#event:RENDER}
- * 
- * Listen to it from a Scene using `this.scene.events.on('update', listener)`.
- * 
- * A Scene will only run its step if it is active.
- * 
- * @event Phaser.Scenes.Events#UPDATE
- * 
- * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
- * @param {number} time - The current time. Either a High Resolution Timer value if it comes from Request Animation Frame, or Date.now if using SetTimeout.
- * @param {number} delta - The delta time in ms since the last frame. This is a smoothed and capped value based on the FPS rate.
- */
-module.exports = 'update';
-
-
-/***/ }),
-/* 33 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Scene Systems Wake Event.
- * 
- * This event is dispatched by a Scene when it is woken from sleep, either directly via the `wake` method,
- * or as an action from another Scene.
- * 
- * Listen to it from a Scene using `this.scene.events.on('wake', listener)`.
- * 
- * @event Phaser.Scenes.Events#WAKE
- * 
- * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
- * @param {any} [data] - An optional data object that was passed to this Scene when it was woken up.
- */
-module.exports = 'wake';
-
-
-/***/ }),
-/* 34 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-var Class = __webpack_require__(0);
-var FileTypesManager = __webpack_require__(3);
-var GetFastValue = __webpack_require__(1);
-var ImageFile = __webpack_require__(35);
-var IsPlainObject = __webpack_require__(2);
-var JSONFile = __webpack_require__(50);
-var MultiFile = __webpack_require__(52);
-var TextFile = __webpack_require__(53);
-
-/**
- * @typedef {object} Phaser.Loader.FileTypes.SpineFileConfig
- *
- * @property {string} key - The key of the file. Must be unique within both the Loader and the Texture Manager.
- * @property {string} [jsonURL] - The absolute or relative URL to load the spine json file from.
- * @property {string} [textureExtension='png'] - The default file extension to use for the image texture if no url is provided.
- * @property {XHRSettingsObject} [jsonXhrSettings] - Extra XHR Settings specifically for the spine json file.
- * @property {string} [atlasURL] - The absolute or relative URL to load the spine atlas file from.
- * @property {string} [atlasExtension='txt'] - The default file extension to use for the spine atlas if no url is provided.
- * @property {XHRSettingsObject} [atlasXhrSettings] - Extra XHR Settings specifically for the spine atlas file.
- * @property {string} [path] - The path to use when loading the textures defined in the spine atlas file.
- */
-
-/**
- * @classdesc
- * A Spine File suitable for loading by the Loader.
- *
- * These are created when you use the Phaser.Loader.LoaderPlugin#spine method and are not typically created directly.
- *
- * For documentation about what all the arguments and configuration options mean please see Phaser.Loader.LoaderPlugin#spine.
- *
- * @class SpineFile
- * @extends Phaser.Loader.MultiFile
- * @memberof Phaser.Loader.FileTypes
- * @constructor
- *
- * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader that is responsible for this file.
- * @param {(string|Phaser.Loader.FileTypes.UnityAtlasFileConfig)} key - The key to use for this file, or a file configuration object.
- * @param {string|string[]} [jsonURL] - The absolute or relative URL to load the json file from. If undefined or `null` it will be set to `<key>.png`, i.e. if `key` was "alien" then the URL will be "alien.png".
- * @param {string} [atlasURL] - The absolute or relative URL to load the spine atlas file from. If undefined or `null` it will be set to `<key>.txt`, i.e. if `key` was "alien" then the URL will be "alien.txt".
- * @param {string} [path] - The path to use when loading the textures defined in the spine atlas.
- * @param {XHRSettingsObject} [jsonXhrSettings] - An XHR Settings configuration object for the spine json file. Used in replacement of the Loaders default XHR Settings.
- * @param {XHRSettingsObject} [atlasXhrSettings] - An XHR Settings configuration object for the spine atlas file. Used in replacement of the Loaders default XHR Settings.
- */
-var SpineFile = new Class({
-
-    Extends: MultiFile,
-
-    initialize:
-
-    function SpineFile (loader, key, jsonURL, atlasURL, path, jsonXhrSettings, atlasXhrSettings)
-    {
-        var json;
-        var atlas;
-        var config;
-
-        if (IsPlainObject(key))
-        {
-            config = key;
-
-            key = GetFastValue(config, 'key');
-            path = GetFastValue(config, 'path');
-
-            json = new JSONFile(loader, {
-                key: key,
-                url: GetFastValue(config, 'jsonURL'),
-                extension: GetFastValue(config, 'jsonExtension', 'json'),
-                xhrSettings: GetFastValue(config, 'jsonXhrSettings')
-            });
-
-            atlas = new TextFile(loader, {
-                key: key,
-                url: GetFastValue(config, 'atlasURL'),
-                extension: GetFastValue(config, 'atlasExtension', 'atlas'),
-                xhrSettings: GetFastValue(config, 'atlasXhrSettings')
-            });
-        }
-        else
-        {
-            json = new JSONFile(loader, key, jsonURL, jsonXhrSettings);
-            atlas = new TextFile(loader, key, atlasURL, atlasXhrSettings);
-        }
-        atlas.cache = loader.cacheManager.custom.spine;
-
-        MultiFile.call(this, loader, 'spine', key, [ json, atlas ]);
-
-        this.config.path = path;
-        this.config.jsonXhrSettings = jsonXhrSettings;
-        this.config.atlasXhrSettings = atlasXhrSettings;
-    },
-
-    /**
-     * Called by each File when it finishes loading.
-     *
-     * @method Phaser.Loader.MultiFile#onFileComplete
-     * @since 3.7.0
-     *
-     * @param {Phaser.Loader.File} file - The File that has completed processing.
-     */
-    onFileComplete: function (file)
-    {
-        var index = this.files.indexOf(file);
-
-        if (index !== -1)
-        {
-            this.pending--;
-
-            if (file.type === 'text')
-            {
-                //  Inspect the data for the files to now load
-                var content = file.data.split('\n');
-
-                //  Extract the textures
-                var textures = [];
-
-                for (var t = 0; t < content.length; t++)
-                {
-                    var line = content[t];
-
-                    if (line.trim() === '' && t < content.length - 1)
-                    {
-                        line = content[t + 1];
-
-                        textures.push(line);
-                    }
-                }
-
-                var config = this.config;
-                var loader = this.loader;
-
-                var currentBaseURL = loader.baseURL;
-                var currentPath = loader.path;
-                var currentPrefix = loader.prefix;
-
-                var baseURL = GetFastValue(config, 'baseURL', currentBaseURL);
-                var path = GetFastValue(config, 'path', currentPath);
-                var prefix = GetFastValue(config, 'prefix', currentPrefix);
-                var textureXhrSettings = GetFastValue(config, 'textureXhrSettings');
-
-                loader.setBaseURL(baseURL);
-                loader.setPath(path);
-                loader.setPrefix(prefix);
-
-                for (var i = 0; i < textures.length; i++)
-                {
-                    var textureURL = textures[i];
-
-                    var key = '_SP_' + textureURL;
-
-                    var image = new ImageFile(loader, key, textureURL, textureXhrSettings);
-
-                    this.addToMultiFile(image);
-
-                    loader.addFile(image);
-                }
-
-                //  Reset the loader settings
-                loader.setBaseURL(currentBaseURL);
-                loader.setPath(currentPath);
-                loader.setPrefix(currentPrefix);
-            }
-        }
-    },
-
-    /**
-     * Adds this file to its target cache upon successful loading and processing.
-     *
-     * @method Phaser.Loader.FileTypes.SpineFile#addToCache
-     * @since 3.16.0
-     */
-    addToCache: function ()
-    {
-        if (this.isReadyToProcess())
-        {
-            var fileJSON = this.files[0];
-
-            fileJSON.addToCache();
-
-            var fileText = this.files[1];
-
-            fileText.addToCache();
-
-            for (var i = 2; i < this.files.length; i++)
-            {
-                var file = this.files[i];
-
-                var key = file.key.substr(4).trim();
-
-                this.loader.textureManager.addImage(key, file.data);
-
-                file.pendingDestroy();
-            }
-
-            this.complete = true;
-        }
-    }
-
-});
-
-/**
- * Adds a spine objects to the current load queue, consisting of json file, atlas file & textures.
- *
- * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
- *
- * ```javascript
- * function preload ()
- * {
- *     this.load.spine('spineboy', 'spine/sb/spineboy.json', 'spine/spineboy.atlas', 'spine/sb/' );
- * }
- * ```
- *
- * The file is **not** loaded right away. It is added to a queue ready to be loaded either when the loader starts,
- * or if it's already running, when the next free load slot becomes available. This happens automatically if you
- * are calling this from within the Scene's `preload` method, or a related callback. Because the file is queued
- * it means you cannot use the file immediately after calling this method, but must wait for the file to complete.
- * The typical flow for a Phaser Scene is that you load assets in the Scene's `preload` method and then when the
- * Scene's `create` method is called you are guaranteed that all of those assets are ready for use and have been
- * loaded.
- *
- * If you call this from outside of `preload` then you are responsible for starting the Loader afterwards and monitoring
- * its events to know when it's safe to use the asset. Please see the Phaser.Loader.LoaderPlugin class for more details.
- *
- * Phaser expects the atlas data to be provided in a JSON format as exported from Spine.
- *
- * Phaser can load all common image types: png, jpg, gif and any other format the browser can natively handle.
- *
- * The key must be a unique String. It is used to add the file to the global Texture Manager upon a successful load.
- * The key should be unique both in terms of files being loaded and files already present in the Texture Manager.
- * Loading a file using a key that is already taken will result in a warning. If you wish to replace an existing file
- * then remove it from the Texture Manager first, before loading a new one.
- *
- * Instead of passing arguments you can pass a configuration object, such as:
- *
- * ```javascript
- * this.load.spine({
- *     key: 'spineboy',
- *     jsonURL: 'spine/sb/spineboy.json',
- *     atlasURL: 'spine/spineboy.atlas',
- *     path: 'spine/sb/'
- * });
- * ```
- *
- * See the documentation for `Phaser.Loader.FileTypes.SpineFileConfig` for more details.
- *
- * If you have specified a prefix in the loader, via `Loader.setPrefix` then this value will be prepended to this files
- * key. For example, if the prefix was `MENU.` and the key was `Background` the final key will be `MENU.Background` and
- * this is what you would use to retrieve the image from the Texture Manager.
- *
- * The URL can be relative or absolute. If the URL is relative the `Loader.baseURL` and `Loader.path` values will be prepended to it.
- *
- * Note: The ability to load this type of file will only be available if the Spine plugin has been added.
- *
- * @method Phaser.Loader.LoaderPlugin#spine
- * @fires Phaser.Loader.LoaderPlugin#addFileEvent
- * @since 3.16.0
- *
- * @param {(string|Phaser.Loader.FileTypes.SpineFileConfig|Phaser.Loader.FileTypes.SpineFileConfig[])} key - The key to use for this file, or a file configuration object, or array of them.
- * @param {string|string[]} [jsonURL] - The absolute or relative URL to load the texture image file from. If undefined or `null` it will be set to `<key>.png`, i.e. if `key` was "alien" then the URL will be "alien.png".
- * @param {string} [atlasURL] - The absolute or relative URL to load the texture atlas data file from. If undefined or `null` it will be set to `<key>.txt`, i.e. if `key` was "alien" then the URL will be "alien.txt".
- * @param {string} [path] - Optional path to use when loading the textures defined in the atlas data.
- * @param {XHRSettingsObject} [jsonXhrSettings] - An XHR Settings configuration object for the json file. Used in replacement of the Loaders default XHR Settings.
- * @param {XHRSettingsObject} [atlasXhrSettings] - An XHR Settings configuration object for the atlas data file. Used in replacement of the Loaders default XHR Settings.
- *
- * @return {Phaser.Loader.LoaderPlugin} The Loader instance.
- */
-FileTypesManager.register('spine', function (key, jsonURL, atlasURL, path, jsonXhrSettings, atlasXhrSettings)
-{
-    var multifile;
-
-    //  Supports an Object file definition in the key argument
-    //  Or an array of objects in the key argument
-    //  Or a single entry where all arguments have been defined
-
-    if (Array.isArray(key))
-    {
-        for (var i = 0; i < key.length; i++)
-        {
-            multifile = new SpineFile(this, key[i]);
-
-            this.addFile(multifile.files);
-        }
-    }
-    else
-    {
-        multifile = new SpineFile(this, key, jsonURL, atlasURL, path, jsonXhrSettings, atlasXhrSettings);
-
-        this.addFile(multifile.files);
-    }
-
-    return this;
-});
-
-module.exports = SpineFile;
-
-
-/***/ }),
-/* 35 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-var Class = __webpack_require__(0);
-var CONST = __webpack_require__(4);
-var File = __webpack_require__(5);
-var FileTypesManager = __webpack_require__(3);
-var GetFastValue = __webpack_require__(1);
-var IsPlainObject = __webpack_require__(2);
-
-/**
- * @typedef {object} Phaser.Loader.FileTypes.ImageFrameConfig
- *
- * @property {integer} frameWidth - The width of the frame in pixels.
- * @property {integer} [frameHeight] - The height of the frame in pixels. Uses the `frameWidth` value if not provided.
- * @property {integer} [startFrame=0] - The first frame to start parsing from.
- * @property {integer} [endFrame] - The frame to stop parsing at. If not provided it will calculate the value based on the image and frame dimensions.
- * @property {integer} [margin=0] - The margin in the image. This is the space around the edge of the frames.
- * @property {integer} [spacing=0] - The spacing between each frame in the image.
- */
-
-/**
- * @typedef {object} Phaser.Loader.FileTypes.ImageFileConfig
- *
- * @property {string} key - The key of the file. Must be unique within both the Loader and the Texture Manager.
- * @property {string} [url] - The absolute or relative URL to load the file from.
- * @property {string} [extension='png'] - The default file extension to use if no url is provided.
- * @property {string} [normalMap] - The filename of an associated normal map. It uses the same path and url to load as the image.
- * @property {Phaser.Loader.FileTypes.ImageFrameConfig} [frameConfig] - The frame configuration object. Only provided for, and used by, Sprite Sheets.
- * @property {XHRSettingsObject} [xhrSettings] - Extra XHR Settings specifically for this file.
- */
-
-/**
- * @classdesc
- * A single Image File suitable for loading by the Loader.
- *
- * These are created when you use the Phaser.Loader.LoaderPlugin#image method and are not typically created directly.
- * 
- * For documentation about what all the arguments and configuration options mean please see Phaser.Loader.LoaderPlugin#image.
- *
- * @class ImageFile
- * @extends Phaser.Loader.File
- * @memberof Phaser.Loader.FileTypes
- * @constructor
- * @since 3.0.0
- *
- * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader that is responsible for this file.
- * @param {(string|Phaser.Loader.FileTypes.ImageFileConfig)} key - The key to use for this file, or a file configuration object.
- * @param {string|string[]} [url] - The absolute or relative URL to load this file from. If undefined or `null` it will be set to `<key>.png`, i.e. if `key` was "alien" then the URL will be "alien.png".
- * @param {XHRSettingsObject} [xhrSettings] - Extra XHR Settings specifically for this file.
- * @param {Phaser.Loader.FileTypes.ImageFrameConfig} [frameConfig] - The frame configuration object. Only provided for, and used by, Sprite Sheets.
- */
-var ImageFile = new Class({
-
-    Extends: File,
-
-    initialize:
-
-    function ImageFile (loader, key, url, xhrSettings, frameConfig)
-    {
-        var extension = 'png';
-        var normalMapURL;
-
-        if (IsPlainObject(key))
-        {
-            var config = key;
-
-            key = GetFastValue(config, 'key');
-            url = GetFastValue(config, 'url');
-            normalMapURL = GetFastValue(config, 'normalMap');
-            xhrSettings = GetFastValue(config, 'xhrSettings');
-            extension = GetFastValue(config, 'extension', extension);
-            frameConfig = GetFastValue(config, 'frameConfig');
-        }
-
-        if (Array.isArray(url))
-        {
-            normalMapURL = url[1];
-            url = url[0];
-        }
-
-        var fileConfig = {
-            type: 'image',
-            cache: loader.textureManager,
-            extension: extension,
-            responseType: 'blob',
-            key: key,
-            url: url,
-            xhrSettings: xhrSettings,
-            config: frameConfig
-        };
-
-        File.call(this, loader, fileConfig);
-
-        //  Do we have a normal map to load as well?
-        if (normalMapURL)
-        {
-            var normalMap = new ImageFile(loader, this.key, normalMapURL, xhrSettings, frameConfig);
-
-            normalMap.type = 'normalMap';
-
-            this.setLink(normalMap);
-
-            loader.addFile(normalMap);
-        }
-    },
-
-    /**
-     * Called automatically by Loader.nextFile.
-     * This method controls what extra work this File does with its loaded data.
-     *
-     * @method Phaser.Loader.FileTypes.ImageFile#onProcess
-     * @since 3.7.0
-     */
-    onProcess: function ()
-    {
-        this.state = CONST.FILE_PROCESSING;
-
-        this.data = new Image();
-
-        this.data.crossOrigin = this.crossOrigin;
-
-        var _this = this;
-
-        this.data.onload = function ()
-        {
-            File.revokeObjectURL(_this.data);
-
-            _this.onProcessComplete();
-        };
-
-        this.data.onerror = function ()
-        {
-            File.revokeObjectURL(_this.data);
-
-            _this.onProcessError();
-        };
-
-        File.createObjectURL(this.data, this.xhrLoader.response, 'image/png');
-    },
-
-    /**
-     * Adds this file to its target cache upon successful loading and processing.
-     *
-     * @method Phaser.Loader.FileTypes.ImageFile#addToCache
-     * @since 3.7.0
-     */
-    addToCache: function ()
-    {
-        var texture;
-        var linkFile = this.linkFile;
-
-        if (linkFile && linkFile.state === CONST.FILE_COMPLETE)
-        {
-            if (this.type === 'image')
-            {
-                texture = this.cache.addImage(this.key, this.data, linkFile.data);
-            }
-            else
-            {
-                texture = this.cache.addImage(linkFile.key, linkFile.data, this.data);
-            }
-
-            this.pendingDestroy(texture);
-
-            linkFile.pendingDestroy(texture);
-        }
-        else if (!linkFile)
-        {
-            texture = this.cache.addImage(this.key, this.data);
-
-            this.pendingDestroy(texture);
-        }
-    }
-
-});
-
-/**
- * Adds an Image, or array of Images, to the current load queue.
- *
- * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
- * 
- * ```javascript
- * function preload ()
- * {
- *     this.load.image('logo', 'images/phaserLogo.png');
- * }
- * ```
- *
- * The file is **not** loaded right away. It is added to a queue ready to be loaded either when the loader starts,
- * or if it's already running, when the next free load slot becomes available. This happens automatically if you
- * are calling this from within the Scene's `preload` method, or a related callback. Because the file is queued
- * it means you cannot use the file immediately after calling this method, but must wait for the file to complete.
- * The typical flow for a Phaser Scene is that you load assets in the Scene's `preload` method and then when the
- * Scene's `create` method is called you are guaranteed that all of those assets are ready for use and have been
- * loaded.
- * 
- * Phaser can load all common image types: png, jpg, gif and any other format the browser can natively handle.
- * If you try to load an animated gif only the first frame will be rendered. Browsers do not natively support playback
- * of animated gifs to Canvas elements.
- *
- * The key must be a unique String. It is used to add the file to the global Texture Manager upon a successful load.
- * The key should be unique both in terms of files being loaded and files already present in the Texture Manager.
- * Loading a file using a key that is already taken will result in a warning. If you wish to replace an existing file
- * then remove it from the Texture Manager first, before loading a new one.
- *
- * Instead of passing arguments you can pass a configuration object, such as:
- * 
- * ```javascript
- * this.load.image({
- *     key: 'logo',
- *     url: 'images/AtariLogo.png'
- * });
- * ```
- *
- * See the documentation for `Phaser.Loader.FileTypes.ImageFileConfig` for more details.
- *
- * Once the file has finished loading you can use it as a texture for a Game Object by referencing its key:
- * 
- * ```javascript
- * this.load.image('logo', 'images/AtariLogo.png');
- * // and later in your game ...
- * this.add.image(x, y, 'logo');
- * ```
- *
- * If you have specified a prefix in the loader, via `Loader.setPrefix` then this value will be prepended to this files
- * key. For example, if the prefix was `MENU.` and the key was `Background` the final key will be `MENU.Background` and
- * this is what you would use to retrieve the image from the Texture Manager.
- *
- * The URL can be relative or absolute. If the URL is relative the `Loader.baseURL` and `Loader.path` values will be prepended to it.
- *
- * If the URL isn't specified the Loader will take the key and create a filename from that. For example if the key is "alien"
- * and no URL is given then the Loader will set the URL to be "alien.png". It will always add `.png` as the extension, although
- * this can be overridden if using an object instead of method arguments. If you do not desire this action then provide a URL.
- *
- * Phaser also supports the automatic loading of associated normal maps. If you have a normal map to go with this image,
- * then you can specify it by providing an array as the `url` where the second element is the normal map:
- * 
- * ```javascript
- * this.load.image('logo', [ 'images/AtariLogo.png', 'images/AtariLogo-n.png' ]);
- * ```
- *
- * Or, if you are using a config object use the `normalMap` property:
- * 
- * ```javascript
- * this.load.image({
- *     key: 'logo',
- *     url: 'images/AtariLogo.png',
- *     normalMap: 'images/AtariLogo-n.png'
- * });
- * ```
- *
- * The normal map file is subject to the same conditions as the image file with regard to the path, baseURL, CORs and XHR Settings.
- * Normal maps are a WebGL only feature.
- *
- * Note: The ability to load this type of file will only be available if the Image File type has been built into Phaser.
- * It is available in the default build but can be excluded from custom builds.
- *
- * @method Phaser.Loader.LoaderPlugin#image
- * @fires Phaser.Loader.LoaderPlugin#addFileEvent
- * @since 3.0.0
- *
- * @param {(string|Phaser.Loader.FileTypes.ImageFileConfig|Phaser.Loader.FileTypes.ImageFileConfig[])} key - The key to use for this file, or a file configuration object, or array of them.
- * @param {string|string[]} [url] - The absolute or relative URL to load this file from. If undefined or `null` it will be set to `<key>.png`, i.e. if `key` was "alien" then the URL will be "alien.png".
- * @param {XHRSettingsObject} [xhrSettings] - An XHR Settings configuration object. Used in replacement of the Loaders default XHR Settings.
- *
- * @return {Phaser.Loader.LoaderPlugin} The Loader instance.
- */
-FileTypesManager.register('image', function (key, url, xhrSettings)
-{
-    if (Array.isArray(key))
-    {
-        for (var i = 0; i < key.length; i++)
-        {
-            //  If it's an array it has to be an array of Objects, so we get everything out of the 'key' object
-            this.addFile(new ImageFile(this, key[i]));
-        }
-    }
-    else
-    {
-        this.addFile(new ImageFile(this, key, url, xhrSettings));
-    }
-
-    return this;
-});
-
-module.exports = ImageFile;
-
-
-/***/ }),
-/* 36 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * @namespace Phaser.Loader.Events
- */
-
-module.exports = {
-
-    ADD: __webpack_require__(37),
-    COMPLETE: __webpack_require__(38),
-    FILE_COMPLETE: __webpack_require__(39),
-    FILE_KEY_COMPLETE: __webpack_require__(40),
-    FILE_LOAD_ERROR: __webpack_require__(41),
-    FILE_LOAD: __webpack_require__(42),
-    FILE_PROGRESS: __webpack_require__(43),
-    POST_PROCESS: __webpack_require__(44),
-    PROGRESS: __webpack_require__(45),
-    START: __webpack_require__(46)
-
-};
-
-
-/***/ }),
-/* 37 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Loader Plugin Add File Event.
- * 
- * This event is dispatched when a new file is successfully added to the Loader and placed into the load queue.
- * 
- * Listen to it from a Scene using: `this.load.on('addfile', listener)`.
- * 
- * If you add lots of files to a Loader from a `preload` method, it will dispatch this event for each one of them.
- *
- * @event Phaser.Loader.Events#ADD
- * 
- * @param {string} key - The unique key of the file that was added to the Loader.
- * @param {string} type - The [file type]{@link Phaser.Loader.File#type} string of the file that was added to the Loader, i.e. `image`.
- * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader Plugin that dispatched this event.
- * @param {Phaser.Loader.File} file - A reference to the File which was added to the Loader.
- */
-module.exports = 'addfile';
-
-
-/***/ }),
-/* 38 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Loader Plugin Complete Event.
- * 
- * This event is dispatched when the Loader has fully processed everything in the load queue.
- * By this point every loaded file will now be in its associated cache and ready for use.
- * 
- * Listen to it from a Scene using: `this.load.on('complete', listener)`.
- *
- * @event Phaser.Loader.Events#COMPLETE
- * 
- * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader Plugin that dispatched this event.
- * @param {integer} totalComplete - The total number of files that successfully loaded.
- * @param {integer} totalFailed - The total number of files that failed to load.
- */
-module.exports = 'complete';
-
-
-/***/ }),
-/* 39 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The File Load Complete Event.
- * 
- * This event is dispatched by the Loader Plugin when any file in the queue finishes loading.
- * 
- * Listen to it from a Scene using: `this.load.on('filecomplete', listener)`.
- * 
- * You can also listen for the completion of a specific file. See the [FILE_KEY_COMPLETE]{@linkcode Phaser.Loader.Events#event:FILE_KEY_COMPLETE} event.
- *
- * @event Phaser.Loader.Events#FILE_COMPLETE
- * 
- * @param {string} key - The key of the file that just loaded and finished processing.
- * @param {string} type - The [file type]{@link Phaser.Loader.File#type} of the file that just loaded, i.e. `image`.
- * @param {any} data - The raw data the file contained.
- */
-module.exports = 'filecomplete';
-
-
-/***/ }),
-/* 40 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The File Load Complete Event.
- * 
- * This event is dispatched by the Loader Plugin when any file in the queue finishes loading.
- * 
- * It uses a special dynamic event name constructed from the key and type of the file.
- * 
- * For example, if you have loaded an `image` with a key of `monster`, you can listen for it
- * using the following:
- *
- * ```javascript
- * this.load.on('filecomplete-image-monster', function (key, type, data) {
- *     // Your handler code
- * });
- * ```
- *
- * Or, if you have loaded a texture `atlas` with a key of `Level1`:
- * 
- * ```javascript
- * this.load.on('filecomplete-atlas-Level1', function (key, type, data) {
- *     // Your handler code
- * });
- * ```
- * 
- * Or, if you have loaded a sprite sheet with a key of `Explosion` and a prefix of `GAMEOVER`:
- * 
- * ```javascript
- * this.load.on('filecomplete-spritesheet-GAMEOVERExplosion', function (key, type, data) {
- *     // Your handler code
- * });
- * ```
- * 
- * You can also listen for the generic completion of files. See the [FILE_COMPLETE]{@linkcode Phaser.Loader.Events#event:FILE_COMPLETE} event.
- *
- * @event Phaser.Loader.Events#FILE_KEY_COMPLETE
- * 
- * @param {string} key - The key of the file that just loaded and finished processing.
- * @param {string} type - The [file type]{@link Phaser.Loader.File#type} of the file that just loaded, i.e. `image`.
- * @param {any} data - The raw data the file contained.
- */
-module.exports = 'filecomplete-';
-
-
-/***/ }),
-/* 41 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The File Load Error Event.
- * 
- * This event is dispatched by the Loader Plugin when a file fails to load.
- * 
- * Listen to it from a Scene using: `this.load.on('loaderror', listener)`.
- *
- * @event Phaser.Loader.Events#FILE_LOAD_ERROR
- * 
- * @param {Phaser.Loader.File} file - A reference to the File which errored during load.
- */
-module.exports = 'loaderror';
-
-
-/***/ }),
-/* 42 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The File Load Event.
- * 
- * This event is dispatched by the Loader Plugin when a file finishes loading,
- * but _before_ it is processed and added to the internal Phaser caches.
- * 
- * Listen to it from a Scene using: `this.load.on('load', listener)`.
- *
- * @event Phaser.Loader.Events#FILE_LOAD
- * 
- * @param {Phaser.Loader.File} file - A reference to the File which just finished loading.
- */
-module.exports = 'load';
-
-
-/***/ }),
-/* 43 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The File Load Progress Event.
- * 
- * This event is dispatched by the Loader Plugin during the load of a file, if the browser receives a DOM ProgressEvent and
- * the `lengthComputable` event property is true. Depending on the size of the file and browser in use, this may, or may not happen.
- * 
- * Listen to it from a Scene using: `this.load.on('fileprogress', listener)`.
- *
- * @event Phaser.Loader.Events#FILE_PROGRESS
- * 
- * @param {Phaser.Loader.File} file - A reference to the File which errored during load.
- * @param {number} percentComplete - A value between 0 and 1 indicating how 'complete' this file is.
- */
-module.exports = 'fileprogress';
-
-
-/***/ }),
-/* 44 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Loader Plugin Post Process Event.
- * 
- * This event is dispatched by the Loader Plugin when the Loader has finished loading everything in the load queue.
- * It is dispatched before the internal lists are cleared and each File is destroyed.
- * 
- * Use this hook to perform any last minute processing of files that can only happen once the
- * Loader has completed, but prior to it emitting the `complete` event.
- * 
- * Listen to it from a Scene using: `this.load.on('postprocess', listener)`.
- *
- * @event Phaser.Loader.Events#POST_PROCESS
- * 
- * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader Plugin that dispatched this event.
- */
-module.exports = 'postprocess';
-
-
-/***/ }),
-/* 45 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Loader Plugin Progress Event.
- * 
- * This event is dispatched when the Loader updates its load progress, typically as a result of a file having completed loading.
- * 
- * Listen to it from a Scene using: `this.load.on('progress', listener)`.
- *
- * @event Phaser.Loader.Events#PROGRESS
- * 
- * @param {number} progress - The current progress of the load. A value between 0 and 1.
- */
-module.exports = 'progress';
-
-
-/***/ }),
-/* 46 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * The Loader Plugin Start Event.
- * 
- * This event is dispatched when the Loader starts running. At this point load progress is zero.
- * 
- * This event is dispatched even if there aren't any files in the load queue.
- * 
- * Listen to it from a Scene using: `this.load.on('start', listener)`.
- *
- * @event Phaser.Loader.Events#START
- * 
- * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader Plugin that dispatched this event.
- */
-module.exports = 'start';
-
-
-/***/ }),
-/* 47 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * Given a File and a baseURL value this returns the URL the File will use to download from.
- *
- * @function Phaser.Loader.GetURL
- * @since 3.0.0
- *
- * @param {Phaser.Loader.File} file - The File object.
- * @param {string} baseURL - A default base URL.
- *
- * @return {string} The URL the File will use.
- */
-var GetURL = function (file, baseURL)
-{
-    if (!file.url)
-    {
-        return false;
-    }
-
-    if (file.url.match(/^(?:blob:|data:|http:\/\/|https:\/\/|\/\/)/))
-    {
-        return file.url;
-    }
-    else
-    {
-        return baseURL + file.url;
-    }
-};
-
-module.exports = GetURL;
-
-
-/***/ }),
-/* 48 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-var IsPlainObject = __webpack_require__(2);
-
-// @param {boolean} deep - Perform a deep copy?
-// @param {object} target - The target object to copy to.
-// @return {object} The extended object.
-
-/**
- * This is a slightly modified version of http://api.jquery.com/jQuery.extend/
- *
- * @function Phaser.Utils.Objects.Extend
- * @since 3.0.0
- *
- * @return {object} The extended object.
- */
-var Extend = function ()
-{
-    var options, name, src, copy, copyIsArray, clone,
-        target = arguments[0] || {},
-        i = 1,
-        length = arguments.length,
-        deep = false;
-
-    // Handle a deep copy situation
-    if (typeof target === 'boolean')
-    {
-        deep = target;
-        target = arguments[1] || {};
-
-        // skip the boolean and the target
-        i = 2;
-    }
-
-    // extend Phaser if only one argument is passed
-    if (length === i)
-    {
-        target = this;
-        --i;
-    }
-
-    for (; i < length; i++)
-    {
-        // Only deal with non-null/undefined values
-        if ((options = arguments[i]) != null)
-        {
-            // Extend the base object
-            for (name in options)
-            {
-                src = target[name];
-                copy = options[name];
-
-                // Prevent never-ending loop
-                if (target === copy)
-                {
-                    continue;
-                }
-
-                // Recurse if we're merging plain objects or arrays
-                if (deep && copy && (IsPlainObject(copy) || (copyIsArray = Array.isArray(copy))))
-                {
-                    if (copyIsArray)
-                    {
-                        copyIsArray = false;
-                        clone = src && Array.isArray(src) ? src : [];
-                    }
-                    else
-                    {
-                        clone = src && IsPlainObject(src) ? src : {};
-                    }
-
-                    // Never move original objects, clone them
-                    target[name] = Extend(deep, clone, copy);
-
-                // Don't bring in undefined values
-                }
-                else if (copy !== undefined)
-                {
-                    target[name] = copy;
-                }
-            }
-        }
-    }
-
-    // Return the modified object
-    return target;
-};
-
-module.exports = Extend;
-
-
-/***/ }),
-/* 49 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-var MergeXHRSettings = __webpack_require__(6);
-
-/**
- * Creates a new XMLHttpRequest (xhr) object based on the given File and XHRSettings
- * and starts the download of it. It uses the Files own XHRSettings and merges them
- * with the global XHRSettings object to set the xhr values before download.
- *
- * @function Phaser.Loader.XHRLoader
- * @since 3.0.0
- *
- * @param {Phaser.Loader.File} file - The File to download.
- * @param {XHRSettingsObject} globalXHRSettings - The global XHRSettings object.
- *
- * @return {XMLHttpRequest} The XHR object.
- */
-var XHRLoader = function (file, globalXHRSettings)
-{
-    var config = MergeXHRSettings(globalXHRSettings, file.xhrSettings);
-
-    var xhr = new XMLHttpRequest();
-
-    xhr.open('GET', file.src, config.async, config.user, config.password);
-
-    xhr.responseType = file.xhrSettings.responseType;
-    xhr.timeout = config.timeout;
-
-    if (config.header && config.headerValue)
-    {
-        xhr.setRequestHeader(config.header, config.headerValue);
-    }
-
-    if (config.requestedWith)
-    {
-        xhr.setRequestHeader('X-Requested-With', config.requestedWith);
-    }
-
-    if (config.overrideMimeType)
-    {
-        xhr.overrideMimeType(config.overrideMimeType);
-    }
-
-    // After a successful request, the xhr.response property will contain the requested data as a DOMString, ArrayBuffer, Blob, or Document (depending on what was set for responseType.)
-
-    xhr.onload = file.onLoad.bind(file, xhr);
-    xhr.onerror = file.onError.bind(file, xhr);
-    xhr.onprogress = file.onProgress.bind(file);
-
-    //  This is the only standard method, the ones above are browser additions (maybe not universal?)
-    // xhr.onreadystatechange
-
-    xhr.send();
-
-    return xhr;
-};
-
-module.exports = XHRLoader;
-
-
-/***/ }),
-/* 50 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-var Class = __webpack_require__(0);
-var CONST = __webpack_require__(4);
-var File = __webpack_require__(5);
-var FileTypesManager = __webpack_require__(3);
-var GetFastValue = __webpack_require__(1);
-var GetValue = __webpack_require__(51);
-var IsPlainObject = __webpack_require__(2);
-
-/**
- * @typedef {object} Phaser.Loader.FileTypes.JSONFileConfig
- *
- * @property {string} key - The key of the file. Must be unique within both the Loader and the JSON Cache.
- * @property {string|any} [url] - The absolute or relative URL to load the file from. Or can be a ready formed JSON object, in which case it will be directly added to the Cache.
- * @property {string} [extension='json'] - The default file extension to use if no url is provided.
- * @property {string} [dataKey] - If specified instead of the whole JSON file being parsed and added to the Cache, only the section corresponding to this property key will be added. If the property you want to extract is nested, use periods to divide it.
- * @property {XHRSettingsObject} [xhrSettings] - Extra XHR Settings specifically for this file.
- */
-
-/**
- * @classdesc
- * A single JSON File suitable for loading by the Loader.
- *
- * These are created when you use the Phaser.Loader.LoaderPlugin#json method and are not typically created directly.
- * 
- * For documentation about what all the arguments and configuration options mean please see Phaser.Loader.LoaderPlugin#json.
- *
- * @class JSONFile
- * @extends Phaser.Loader.File
- * @memberof Phaser.Loader.FileTypes
- * @constructor
- * @since 3.0.0
- *
- * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader that is responsible for this file.
- * @param {(string|Phaser.Loader.FileTypes.JSONFileConfig)} key - The key to use for this file, or a file configuration object.
- * @param {string} [url] - The absolute or relative URL to load this file from. If undefined or `null` it will be set to `<key>.json`, i.e. if `key` was "alien" then the URL will be "alien.json".
- * @param {XHRSettingsObject} [xhrSettings] - Extra XHR Settings specifically for this file.
- * @param {string} [dataKey] - When the JSON file loads only this property will be stored in the Cache.
- */
-var JSONFile = new Class({
-
-    Extends: File,
-
-    initialize:
-
-    //  url can either be a string, in which case it is treated like a proper url, or an object, in which case it is treated as a ready-made JS Object
-    //  dataKey allows you to pluck a specific object out of the JSON and put just that into the cache, rather than the whole thing
-
-    function JSONFile (loader, key, url, xhrSettings, dataKey)
-    {
-        var extension = 'json';
-
-        if (IsPlainObject(key))
-        {
-            var config = key;
-
-            key = GetFastValue(config, 'key');
-            url = GetFastValue(config, 'url');
-            xhrSettings = GetFastValue(config, 'xhrSettings');
-            extension = GetFastValue(config, 'extension', extension);
-            dataKey = GetFastValue(config, 'dataKey', dataKey);
-        }
-
-        var fileConfig = {
-            type: 'json',
-            cache: loader.cacheManager.json,
-            extension: extension,
-            responseType: 'text',
-            key: key,
-            url: url,
-            xhrSettings: xhrSettings,
-            config: dataKey
-        };
-
-        File.call(this, loader, fileConfig);
-
-        if (IsPlainObject(url))
-        {
-            //  Object provided instead of a URL, so no need to actually load it (populate data with value)
-            if (dataKey)
-            {
-                this.data = GetValue(url, dataKey);
-            }
-            else
-            {
-                this.data = url;
-            }
-
-            this.state = CONST.FILE_POPULATED;
-        }
-    },
-
-    /**
-     * Called automatically by Loader.nextFile.
-     * This method controls what extra work this File does with its loaded data.
-     *
-     * @method Phaser.Loader.FileTypes.JSONFile#onProcess
-     * @since 3.7.0
-     */
-    onProcess: function ()
-    {
-        if (this.state !== CONST.FILE_POPULATED)
-        {
-            this.state = CONST.FILE_PROCESSING;
-
-            var json = JSON.parse(this.xhrLoader.responseText);
-
-            var key = this.config;
-
-            if (typeof key === 'string')
-            {
-                this.data = GetValue(json, key, json);
-            }
-            else
-            {
-                this.data = json;
-            }
-        }
-
-        this.onProcessComplete();
-    }
-
-});
-
-/**
- * Adds a JSON file, or array of JSON files, to the current load queue.
- *
- * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
- * 
- * ```javascript
- * function preload ()
- * {
- *     this.load.json('wavedata', 'files/AlienWaveData.json');
- * }
- * ```
- *
- * The file is **not** loaded right away. It is added to a queue ready to be loaded either when the loader starts,
- * or if it's already running, when the next free load slot becomes available. This happens automatically if you
- * are calling this from within the Scene's `preload` method, or a related callback. Because the file is queued
- * it means you cannot use the file immediately after calling this method, but must wait for the file to complete.
- * The typical flow for a Phaser Scene is that you load assets in the Scene's `preload` method and then when the
- * Scene's `create` method is called you are guaranteed that all of those assets are ready for use and have been
- * loaded.
- * 
- * The key must be a unique String. It is used to add the file to the global JSON Cache upon a successful load.
- * The key should be unique both in terms of files being loaded and files already present in the JSON Cache.
- * Loading a file using a key that is already taken will result in a warning. If you wish to replace an existing file
- * then remove it from the JSON Cache first, before loading a new one.
- *
- * Instead of passing arguments you can pass a configuration object, such as:
- * 
- * ```javascript
- * this.load.json({
- *     key: 'wavedata',
- *     url: 'files/AlienWaveData.json'
- * });
- * ```
- *
- * See the documentation for `Phaser.Loader.FileTypes.JSONFileConfig` for more details.
- *
- * Once the file has finished loading you can access it from its Cache using its key:
- * 
- * ```javascript
- * this.load.json('wavedata', 'files/AlienWaveData.json');
- * // and later in your game ...
- * var data = this.cache.json.get('wavedata');
- * ```
- *
- * If you have specified a prefix in the loader, via `Loader.setPrefix` then this value will be prepended to this files
- * key. For example, if the prefix was `LEVEL1.` and the key was `Waves` the final key will be `LEVEL1.Waves` and
- * this is what you would use to retrieve the text from the JSON Cache.
- *
- * The URL can be relative or absolute. If the URL is relative the `Loader.baseURL` and `Loader.path` values will be prepended to it.
- *
- * If the URL isn't specified the Loader will take the key and create a filename from that. For example if the key is "data"
- * and no URL is given then the Loader will set the URL to be "data.json". It will always add `.json` as the extension, although
- * this can be overridden if using an object instead of method arguments. If you do not desire this action then provide a URL.
- *
- * You can also optionally provide a `dataKey` to use. This allows you to extract only a part of the JSON and store it in the Cache,
- * rather than the whole file. For example, if your JSON data had a structure like this:
- * 
- * ```json
- * {
- *     "level1": {
- *         "baddies": {
- *             "aliens": {},
- *             "boss": {}
- *         }
- *     },
- *     "level2": {},
- *     "level3": {}
- * }
- * ```
- *
- * And you only wanted to store the `boss` data in the Cache, then you could pass `level1.baddies.boss`as the `dataKey`.
- *
- * Note: The ability to load this type of file will only be available if the JSON File type has been built into Phaser.
- * It is available in the default build but can be excluded from custom builds.
- *
- * @method Phaser.Loader.LoaderPlugin#json
- * @fires Phaser.Loader.LoaderPlugin#addFileEvent
- * @since 3.0.0
- *
- * @param {(string|Phaser.Loader.FileTypes.JSONFileConfig|Phaser.Loader.FileTypes.JSONFileConfig[])} key - The key to use for this file, or a file configuration object, or array of them.
- * @param {string} [url] - The absolute or relative URL to load this file from. If undefined or `null` it will be set to `<key>.json`, i.e. if `key` was "alien" then the URL will be "alien.json".
- * @param {string} [dataKey] - When the JSON file loads only this property will be stored in the Cache.
- * @param {XHRSettingsObject} [xhrSettings] - An XHR Settings configuration object. Used in replacement of the Loaders default XHR Settings.
- *
- * @return {Phaser.Loader.LoaderPlugin} The Loader instance.
- */
-FileTypesManager.register('json', function (key, url, dataKey, xhrSettings)
-{
-    if (Array.isArray(key))
-    {
-        for (var i = 0; i < key.length; i++)
-        {
-            //  If it's an array it has to be an array of Objects, so we get everything out of the 'key' object
-            this.addFile(new JSONFile(this, key[i]));
-        }
-    }
-    else
-    {
-        this.addFile(new JSONFile(this, key, url, xhrSettings, dataKey));
-    }
-
-    return this;
-});
-
-module.exports = JSONFile;
-
-
-/***/ }),
-/* 51 */
 /***/ (function(module, exports) {
 
 /**
@@ -4070,7 +2127,7 @@ module.exports = GetValue;
 
 
 /***/ }),
-/* 52 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -4079,935 +2136,7 @@ module.exports = GetValue;
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
-var Class = __webpack_require__(0);
-
-/**
- * @classdesc
- * A MultiFile is a special kind of parent that contains two, or more, Files as children and looks after
- * the loading and processing of them all. It is commonly extended and used as a base class for file types such as AtlasJSON or BitmapFont.
- * 
- * You shouldn't create an instance of a MultiFile directly, but should extend it with your own class, setting a custom type and processing methods.
- *
- * @class MultiFile
- * @memberof Phaser.Loader
- * @constructor
- * @since 3.7.0
- *
- * @param {Phaser.Loader.LoaderPlugin} loader - The Loader that is going to load this File.
- * @param {string} type - The file type string for sorting within the Loader.
- * @param {string} key - The key of the file within the loader.
- * @param {Phaser.Loader.File[]} files - An array of Files that make-up this MultiFile.
- */
-var MultiFile = new Class({
-
-    initialize:
-
-    function MultiFile (loader, type, key, files)
-    {
-        /**
-         * A reference to the Loader that is going to load this file.
-         *
-         * @name Phaser.Loader.MultiFile#loader
-         * @type {Phaser.Loader.LoaderPlugin}
-         * @since 3.7.0
-         */
-        this.loader = loader;
-
-        /**
-         * The file type string for sorting within the Loader.
-         *
-         * @name Phaser.Loader.MultiFile#type
-         * @type {string}
-         * @since 3.7.0
-         */
-        this.type = type;
-
-        /**
-         * Unique cache key (unique within its file type)
-         *
-         * @name Phaser.Loader.MultiFile#key
-         * @type {string}
-         * @since 3.7.0
-         */
-        this.key = key;
-
-        /**
-         * Array of files that make up this MultiFile.
-         *
-         * @name Phaser.Loader.MultiFile#files
-         * @type {Phaser.Loader.File[]}
-         * @since 3.7.0
-         */
-        this.files = files;
-
-        /**
-         * The completion status of this MultiFile.
-         *
-         * @name Phaser.Loader.MultiFile#complete
-         * @type {boolean}
-         * @default false
-         * @since 3.7.0
-         */
-        this.complete = false;
-
-        /**
-         * The number of files to load.
-         *
-         * @name Phaser.Loader.MultiFile#pending
-         * @type {integer}
-         * @since 3.7.0
-         */
-
-        this.pending = files.length;
-
-        /**
-         * The number of files that failed to load.
-         *
-         * @name Phaser.Loader.MultiFile#failed
-         * @type {integer}
-         * @default 0
-         * @since 3.7.0
-         */
-        this.failed = 0;
-
-        /**
-         * A storage container for transient data that the loading files need.
-         *
-         * @name Phaser.Loader.MultiFile#config
-         * @type {any}
-         * @since 3.7.0
-         */
-        this.config = {};
-
-        //  Link the files
-        for (var i = 0; i < files.length; i++)
-        {
-            files[i].multiFile = this;
-        }
-    },
-
-    /**
-     * Checks if this MultiFile is ready to process its children or not.
-     *
-     * @method Phaser.Loader.MultiFile#isReadyToProcess
-     * @since 3.7.0
-     *
-     * @return {boolean} `true` if all children of this MultiFile have loaded, otherwise `false`.
-     */
-    isReadyToProcess: function ()
-    {
-        return (this.pending === 0 && this.failed === 0 && !this.complete);
-    },
-
-    /**
-     * Adds another child to this MultiFile, increases the pending count and resets the completion status.
-     *
-     * @method Phaser.Loader.MultiFile#addToMultiFile
-     * @since 3.7.0
-     *
-     * @param {Phaser.Loader.File} files - The File to add to this MultiFile.
-     *
-     * @return {Phaser.Loader.MultiFile} This MultiFile instance.
-     */
-    addToMultiFile: function (file)
-    {
-        this.files.push(file);
-
-        file.multiFile = this;
-
-        this.pending++;
-
-        this.complete = false;
-
-        return this;
-    },
-
-    /**
-     * Called by each File when it finishes loading.
-     *
-     * @method Phaser.Loader.MultiFile#onFileComplete
-     * @since 3.7.0
-     *
-     * @param {Phaser.Loader.File} file - The File that has completed processing.
-     */
-    onFileComplete: function (file)
-    {
-        var index = this.files.indexOf(file);
-
-        if (index !== -1)
-        {
-            this.pending--;
-        }
-    },
-
-    /**
-     * Called by each File that fails to load.
-     *
-     * @method Phaser.Loader.MultiFile#onFileFailed
-     * @since 3.7.0
-     *
-     * @param {Phaser.Loader.File} file - The File that has failed to load.
-     */
-    onFileFailed: function (file)
-    {
-        var index = this.files.indexOf(file);
-
-        if (index !== -1)
-        {
-            this.failed++;
-        }
-    }
-
-});
-
-module.exports = MultiFile;
-
-
-/***/ }),
-/* 53 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-var Class = __webpack_require__(0);
-var CONST = __webpack_require__(4);
-var File = __webpack_require__(5);
-var FileTypesManager = __webpack_require__(3);
-var GetFastValue = __webpack_require__(1);
-var IsPlainObject = __webpack_require__(2);
-
-/**
- * @typedef {object} Phaser.Loader.FileTypes.TextFileConfig
- *
- * @property {string} key - The key of the file. Must be unique within both the Loader and the Text Cache.
- * @property {string} [url] - The absolute or relative URL to load the file from.
- * @property {string} [extension='txt'] - The default file extension to use if no url is provided.
- * @property {XHRSettingsObject} [xhrSettings] - Extra XHR Settings specifically for this file.
- */
-
-/**
- * @classdesc
- * A single Text File suitable for loading by the Loader.
- *
- * These are created when you use the Phaser.Loader.LoaderPlugin#text method and are not typically created directly.
- *
- * For documentation about what all the arguments and configuration options mean please see Phaser.Loader.LoaderPlugin#text.
- *
- * @class TextFile
- * @extends Phaser.Loader.File
- * @memberof Phaser.Loader.FileTypes
- * @constructor
- * @since 3.0.0
- *
- * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader that is responsible for this file.
- * @param {(string|Phaser.Loader.FileTypes.TextFileConfig)} key - The key to use for this file, or a file configuration object.
- * @param {string} [url] - The absolute or relative URL to load this file from. If undefined or `null` it will be set to `<key>.txt`, i.e. if `key` was "alien" then the URL will be "alien.txt".
- * @param {XHRSettingsObject} [xhrSettings] - Extra XHR Settings specifically for this file.
- */
-var TextFile = new Class({
-
-    Extends: File,
-
-    initialize:
-
-    function TextFile (loader, key, url, xhrSettings)
-    {
-        var extension = 'txt';
-
-        if (IsPlainObject(key))
-        {
-            var config = key;
-
-            key = GetFastValue(config, 'key');
-            url = GetFastValue(config, 'url');
-            xhrSettings = GetFastValue(config, 'xhrSettings');
-            extension = GetFastValue(config, 'extension', extension);
-        }
-
-        var fileConfig = {
-            type: 'text',
-            cache: loader.cacheManager.text,
-            extension: extension,
-            responseType: 'text',
-            key: key,
-            url: url,
-            xhrSettings: xhrSettings
-        };
-
-        File.call(this, loader, fileConfig);
-    },
-
-    /**
-     * Called automatically by Loader.nextFile.
-     * This method controls what extra work this File does with its loaded data.
-     *
-     * @method Phaser.Loader.FileTypes.TextFile#onProcess
-     * @since 3.7.0
-     */
-    onProcess: function ()
-    {
-        this.state = CONST.FILE_PROCESSING;
-
-        this.data = this.xhrLoader.responseText;
-
-        this.onProcessComplete();
-    }
-
-});
-
-/**
- * Adds a Text file, or array of Text files, to the current load queue.
- *
- * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
- *
- * ```javascript
- * function preload ()
- * {
- *     this.load.text('story', 'files/IntroStory.txt');
- * }
- * ```
- *
- * The file is **not** loaded right away. It is added to a queue ready to be loaded either when the loader starts,
- * or if it's already running, when the next free load slot becomes available. This happens automatically if you
- * are calling this from within the Scene's `preload` method, or a related callback. Because the file is queued
- * it means you cannot use the file immediately after calling this method, but must wait for the file to complete.
- * The typical flow for a Phaser Scene is that you load assets in the Scene's `preload` method and then when the
- * Scene's `create` method is called you are guaranteed that all of those assets are ready for use and have been
- * loaded.
- *
- * The key must be a unique String. It is used to add the file to the global Text Cache upon a successful load.
- * The key should be unique both in terms of files being loaded and files already present in the Text Cache.
- * Loading a file using a key that is already taken will result in a warning. If you wish to replace an existing file
- * then remove it from the Text Cache first, before loading a new one.
- *
- * Instead of passing arguments you can pass a configuration object, such as:
- *
- * ```javascript
- * this.load.text({
- *     key: 'story',
- *     url: 'files/IntroStory.txt'
- * });
- * ```
- *
- * See the documentation for `Phaser.Loader.FileTypes.TextFileConfig` for more details.
- *
- * Once the file has finished loading you can access it from its Cache using its key:
- *
- * ```javascript
- * this.load.text('story', 'files/IntroStory.txt');
- * // and later in your game ...
- * var data = this.cache.text.get('story');
- * ```
- *
- * If you have specified a prefix in the loader, via `Loader.setPrefix` then this value will be prepended to this files
- * key. For example, if the prefix was `LEVEL1.` and the key was `Story` the final key will be `LEVEL1.Story` and
- * this is what you would use to retrieve the text from the Text Cache.
- *
- * The URL can be relative or absolute. If the URL is relative the `Loader.baseURL` and `Loader.path` values will be prepended to it.
- *
- * If the URL isn't specified the Loader will take the key and create a filename from that. For example if the key is "story"
- * and no URL is given then the Loader will set the URL to be "story.txt". It will always add `.txt` as the extension, although
- * this can be overridden if using an object instead of method arguments. If you do not desire this action then provide a URL.
- *
- * Note: The ability to load this type of file will only be available if the Text File type has been built into Phaser.
- * It is available in the default build but can be excluded from custom builds.
- *
- * @method Phaser.Loader.LoaderPlugin#text
- * @fires Phaser.Loader.LoaderPlugin#addFileEvent
- * @since 3.0.0
- *
- * @param {(string|Phaser.Loader.FileTypes.TextFileConfig|Phaser.Loader.FileTypes.TextFileConfig[])} key - The key to use for this file, or a file configuration object, or array of them.
- * @param {string} [url] - The absolute or relative URL to load this file from. If undefined or `null` it will be set to `<key>.txt`, i.e. if `key` was "alien" then the URL will be "alien.txt".
- * @param {XHRSettingsObject} [xhrSettings] - An XHR Settings configuration object. Used in replacement of the Loaders default XHR Settings.
- *
- * @return {Phaser.Loader.LoaderPlugin} The Loader instance.
- */
-FileTypesManager.register('text', function (key, url, xhrSettings)
-{
-    if (Array.isArray(key))
-    {
-        for (var i = 0; i < key.length; i++)
-        {
-            //  If it's an array it has to be an array of Objects, so we get everything out of the 'key' object
-            this.addFile(new TextFile(this, key[i]));
-        }
-    }
-    else
-    {
-        this.addFile(new TextFile(this, key, url, xhrSettings));
-    }
-
-    return this;
-});
-
-module.exports = TextFile;
-
-
-/***/ }),
-/* 54 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2018 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-var Class = __webpack_require__(0);
-var ComponentsAlpha = __webpack_require__(55);
-var ComponentsBlendMode = __webpack_require__(57);
-var ComponentsDepth = __webpack_require__(59);
-var ComponentsFlip = __webpack_require__(60);
-var ComponentsScrollFactor = __webpack_require__(61);
-var ComponentsTransform = __webpack_require__(62);
-var ComponentsVisible = __webpack_require__(67);
-var GameObject = __webpack_require__(68);
-var SpineGameObjectRender = __webpack_require__(79);
-
-/**
- * @classdesc
- * TODO
- *
- * @class SpineGameObject
- * @extends Phaser.GameObjects.GameObject
- * @extends Phaser.GameObjects.Components.Alpha
- * @extends Phaser.GameObjects.Components.BlendMode
- * @extends Phaser.GameObjects.Components.Depth
- * @extends Phaser.GameObjects.Components.Flip
- * @extends Phaser.GameObjects.Components.Transform
- * @extends Phaser.GameObjects.Components.Visible
- * @extends Phaser.GameObjects.Components.ScrollFactor
- *
- * @memberof Phaser.GameObjects
- * @constructor
- * @since 3.16.0
- *
- * @param {Phaser.Scene} scene - A reference to the Scene that has installed this plugin.
- * @param {Phaser.Plugins.PluginManager} plugin - A reference to the Phaser Plugin Manager.
- * @param {number} x
- * @param {number} y
- * @param {string} animationName
- * @param {boolean} loop
- */
-var SpineGameObject = new Class({
-
-    Extends: GameObject,
-
-    Mixins: [
-        ComponentsAlpha,
-        ComponentsBlendMode,
-        ComponentsDepth,
-        ComponentsFlip,
-        ComponentsScrollFactor,
-        ComponentsTransform,
-        ComponentsVisible,
-        SpineGameObjectRender
-    ],
-
-    initialize:
-
-    function SpineGameObject (scene, plugin, x, y, key, animationName, loop)
-    {
-        GameObject.call(this, scene, 'Spine');
-
-        this.plugin = plugin;
-
-        this.runtime = plugin.getRuntime();
-
-        this.skeleton = null;
-        this.skeletonData = null;
-
-        this.state = null;
-        this.stateData = null;
-
-        /**
-         * Draw debug info for the spine object
-         *
-         * @name Phaser.GameObjects.SpineGameObject#drawDebug
-         * @type {boolean}
-         * @since 3.16.0
-         */
-        this.drawDebug = false;
-
-        /**
-         * The timeScale used for spine runtime
-         *
-         * @name Phaser.GameObjects.SpineGameObject#timeScale
-         * @type {number}
-         * @since 3.16.0
-         */
-        this.timeScale = 1;
-
-        this.setPosition(x, y);
-
-        if (key)
-        {
-            this.setSkeleton(key, animationName, loop);
-        }
-    },
-
-    /**
-     * Sets the spine skeleton.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#setSkeleton
-     * @public
-     * @since 3.16.0
-     *
-     * @param {string} textureKey - The key of the atlas Texture this Spine Game Object will use to render with, as stored in the Texture Manager.
-     * @param {string} animationName - The animation name.
-     * @param {boolean} loop - loop the animation?
-     * @param {skeletonJSON} [skeletonJSON] - The skeletonJSON file to read skeleton data from, if undefined then will get json with textureKey provided
-     *
-     * @returns {Phaser.GameObjects.SpineGameObject} the spine game object.
-     */
-    setSkeleton: function (textureKey, animationName, loop, skeletonJSON)
-    {
-        var data = this.plugin.createSkeleton(textureKey, skeletonJSON);
-
-        this.skeletonData = data.skeletonData;
-
-        var skeleton = data.skeleton;
-
-        skeleton.flipY = (this.scene.sys.game.config.renderType === 1);
-
-        skeleton.setToSetupPose();
-
-        skeleton.updateWorldTransform();
-
-        skeleton.setSkinByName('default');
-
-        this.skeleton = skeleton;
-
-        //  AnimationState
-        data = this.plugin.createAnimationState(skeleton);
-
-        if (this.state)
-        {
-            this.state.clearListeners();
-            this.state.clearListenerNotifications();
-        }
-
-        this.state = data.state;
-
-        this.stateData = data.stateData;
-
-        var _this = this;
-
-        this.state.addListener({
-            event: function (trackEntry, event)
-            {
-                //  Event on a Track
-                _this.emit('spine.event', _this, trackEntry, event);
-            },
-            complete: function (trackEntry, loopCount)
-            {
-                //  Animation on Track x completed, loop count
-                _this.emit('spine.complete', _this, trackEntry, loopCount);
-            },
-            start: function (trackEntry)
-            {
-                //  Animation on Track x started
-                _this.emit('spine.start', _this, trackEntry);
-            },
-            end: function (trackEntry)
-            {
-                //  Animation on Track x ended
-                _this.emit('spine.end', _this, trackEntry);
-            },
-            dispose: function (trackEntry)
-            {
-                // Animation on Track x disposed
-                _this.emit('spine.dispose', _this, trackEntry);
-            }
-        });
-
-        if (animationName)
-        {
-            this.setAnimation(0, animationName, loop);
-        }
-
-        return this;
-    },
-
-    // http://esotericsoftware.com/spine-runtimes-guide
-
-    /**
-     * Gets a list of the animations available.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#getAnimationList
-     * @public
-     * @since 3.16.0
-     *
-     * @returns {string[]} an array of the animation names.
-     */
-    getAnimationList: function ()
-    {
-        var output = [];
-
-        var skeletonData = this.skeletonData;
-
-        if (skeletonData)
-        {
-            for (var i = 0; i < skeletonData.animations.length; i++)
-            {
-                output.push(skeletonData.animations[i].name);
-            }
-        }
-
-        return output;
-    },
-
-    /**
-     * Plays an animation by name.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#play
-     * @public
-     * @since 3.16.0
-     *
-     * @param {string} animationName - The animation name.
-     * @param {boolean} loop - If true, the animation will repeat. If false it will not, instead its last frame is applied if played beyond its duration.
-     * In either case trackEnd determines when the track is cleared.
-     *
-     * @returns {Phaser.GameObjects.SpineGameObject}
-     */
-    play: function (animationName, loop)
-    {
-        if (loop === undefined)
-        {
-            loop = false;
-        }
-
-        return this.setAnimation(0, animationName, loop);
-    },
-
-    /**
-     * Sets an animation by name.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#setAnimation
-     * @public
-     * @since 3.16.0
-     *
-     * @param {number} trackIndex - The index of the track.
-     * @param {string} animationName - The animation name.
-     * @param {boolean} loop - If true, the animation will repeat. If false it will not, instead its last frame is applied if played beyond its duration.
-     * In either case trackEnd determines when the track is cleared.
-     *
-     * @returns {Phaser.GameObjects.SpineGameObject}
-     */
-    setAnimation: function (trackIndex, animationName, loop)
-    {
-        this.state.setAnimation(trackIndex, animationName, loop);
-
-        return this;
-    },
-
-    /**
-     * Adds an animation to be played after the current or last queued animation for a track.
-     * If the track is empty, it is equivalent to calling setAnimation.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#addAnimation
-     * @public
-     * @since 3.16.0
-     *
-     * @param {number} trackIndex - The index of the track.
-     * @param {string} animationName - The index of the track.
-     * @param {string} loop - The index of the track.
-     * @param {string} delay - The index of the track.
-     *
-     * @returns {spine.trackEntry} A track entry to allow further customization of animation playback.
-     */
-    addAnimation: function (trackIndex, animationName, loop, delay)
-    {
-        return this.state.addAnimation(trackIndex, animationName, loop, delay);
-    },
-
-    /**
-     * Sets an empty animation for a track, discarding any queued animations, and sets the track entry's mixDuration.
-     * An empty animation has no timelines and serves as a placeholder for mixing in or out.
-     *
-     * Mixing out is done by setting an empty animation with a mix duration using either setEmptyAnimation, setEmptyAnimations,
-     * or addEmptyAnimation. Mixing to an empty animation causes the previous animation to be applied less and less over the mix duration.
-     * Properties keyed in the previous animation transition to the value from lower tracks or to the setup pose value if no lower
-     * tracks key the property. A mix duration of 0 still mixes out over one frame.
-     *
-     * Mixing in is done by first setting an empty animation, then adding an animation using addAnimation and on the returned track entry,
-     * set the mixDuration. Mixing from an empty animation causes the new animation to be applied more and more over the mix duration.
-     * Properties keyed in the new animation transition from the value from lower tracks or from the setup pose value if no lower tracks
-     * key the property to the value keyed in the new animation.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#setEmptyAnimation
-     * @public
-     * @since 3.16.0
-     *
-     * @param {number} trackIndex - The index of the track.
-     * @param {number} mixDuration - The index of the track.
-     *
-     * @returns {Phaser.GameObjects.SpineGameObject}
-     */
-    setEmptyAnimation: function (trackIndex, mixDuration)
-    {
-        this.state.setEmptyAnimation(trackIndex, mixDuration);
-
-        return this;
-    },
-
-    /**
-     * Returns the track entry for the animation currently playing on the track, or null if no animation is currently playing.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#getCurrent
-     * @public
-     * @since 3.16.0
-     *
-     * @param {number} trackIndex - The index of the track.
-     *
-     * @returns {spine.trackEntry}
-     */
-    getCurrent: function (trackIndex)
-    {
-        return this.state.getCurrent(trackIndex);
-    },
-
-    /**
-     * Removes all animations from the track, leaving skeletons in their previous pose.
-     * It may be desired to use setEmptyAnimations to mix the skeletons back to the setup pose,
-     * rather than leaving them in their previous pose.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#clearTrack
-     * @public
-     * @since 3.16.0
-     *
-     * @param {number} trackIndex - The index of the track.
-     *
-     * @returns {Phaser.GameObjects.SpineGameObject}
-     */
-    clearTrack: function (trackIndex)
-    {
-        this.state.clearTrack(trackIndex);
-
-        return this;
-    },
-
-    /**
-     * Removes all animations from all tracks, leaving skeletons in their previous pose.
-     * It may be desired to use setEmptyAnimations to mix the skeletons back to the setup pose,
-     * rather than leaving them in their previous pose.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#clearTracks
-     * @public
-     * @since 3.16.0
-     *
-     * @returns {Phaser.GameObjects.SpineGameObject}
-     *
-     */
-    clearTracks: function ()
-    {
-        this.state.clearTracks();
-
-        return this;
-    },
-
-    /**
-     * Sets a skin by name.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#setSkinByName
-     * @public
-     * @since 3.16.0
-     *
-     * @param {string} skinName - The name of the new skin.
-     *
-     * @returns {boolean} True if any animations were applied.
-     *
-     */
-    setSkinByName: function (skinName)
-    {
-        var skeleton = this.skeleton;
-
-        skeleton.setSkinByName(skinName);
-
-        skeleton.setSlotsToSetupPose();
-
-        return this.state.apply(skeleton);
-    },
-
-    /**
-     * Sets a skin
-     *
-     * @method Phaser.GameObjects.SpineGameObject#setSkin
-     * @public
-     * @since 3.16.0
-     *
-     * @param {spine.Skin} newSkin - The new skin.
-     *
-     * @returns {Phaser.GameObjects.SpineGameObject}
-     *
-     */
-    setSkin: function (newSkin)
-    {
-        var skeleton = this.skeleton;
-
-        skeleton.setSkin(newSkin);
-
-        skeleton.setSlotsToSetupPose();
-
-        this.state.apply(skeleton);
-
-        return this;
-    },
-
-    /**
-     * Sets a mix duration by animation name.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#setMix
-     * @public
-     * @since 3.16.0
-     *
-     * @param {string} fromName - The name state to mix from.
-     * @param {string} toName - The name of the state to mix to.
-     * @param {string} duration - The duration of the mix.
-     *
-     * @returns {Phaser.GameObjects.SpineGameObject}
-     *
-     */
-    setMix: function (fromName, toName, duration)
-    {
-        this.stateData.setMix(fromName, toName, duration);
-
-        return this;
-    },
-
-    /**
-     * Finds a bone by comparing each bone's name. It is more efficient to cache the results of this method than to call it multiple times.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#findBone
-     * @public
-     * @since 3.16.0
-     *
-     * @param {string} boneName - The name of the bone.
-     *
-     * @returns {spine.Bone|null}
-     *
-     */
-    findBone: function (boneName)
-    {
-        return this.skeleton.findBone(boneName);
-    },
-
-    /**
-     * Finds a slot by comparing each slot's name. It is more efficient to cache the results of this method than to call it multiple times.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#findSlot
-     * @public
-     * @since 3.16.0
-     *
-     * @param {string} slotName - The name of the slot.
-     *
-     * @returns {spine.SlotData|null}
-     *
-     */
-    findSlot: function (slotName)
-    {
-        return this.skeleton.findSlot(slotName);
-    },
-
-    /**
-     * The skeleton's slots.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#getSlots
-     * @public
-     * @since 3.16.0
-     *
-     *
-     * @returns {list<spine.SlotData>}
-     *
-     */
-    getSlots: function ()
-    {
-        return this.skeleton.slots;
-    },
-
-    /**
-     * todo
-     *
-     * @method Phaser.GameObjects.SpineGameObject#getBounds
-     * @public
-     * @since 3.16.0
-     */
-    getBounds: function ()
-    {
-        return this.plugin.getBounds(this.skeleton);
-    },
-
-    /**
-     * Update this SpineGameObject's animations.
-     *
-     * @method Phaser.GameObjects.SpineGameObject#preUpdate
-     * @protected
-     * @since 3.16.0
-     *
-     * @param {number} time - The current timestamp.
-     * @param {number} delta - The delta time, in ms, elapsed since the last frame.
-     */
-    preUpdate: function (time, delta)
-    {
-        var skeleton = this.skeleton;
-
-        skeleton.flipX = this.flipX;
-        skeleton.flipY = this.flipY;
-
-        this.state.update((delta / 1000) * this.timeScale);
-
-        this.state.apply(skeleton);
-
-        this.emit('spine.update', skeleton);
-
-        skeleton.updateWorldTransform();
-    },
-
-    /**
-     * Internal destroy handler, called as part of the destroy process.
-     *
-     * @method Phaser.GameObjects.RenderTexture#preDestroy
-     * @protected
-     * @since 3.16.0
-     */
-    preDestroy: function ()
-    {
-        if (this.state)
-        {
-            this.state.clearListeners();
-            this.state.clearListenerNotifications();
-        }
-
-        this.plugin = null;
-        this.runtime = null;
-
-        this.skeleton = null;
-        this.skeletonData = null;
-
-        this.state = null;
-        this.stateData = null;
-    }
-
-});
-
-module.exports = SpineGameObject;
-
-
-/***/ }),
-/* 55 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-var Clamp = __webpack_require__(56);
+var Clamp = __webpack_require__(12);
 
 //  bitmask flag for GameObject.renderMask
 var _FLAG = 2; // 0010
@@ -5293,7 +2422,7 @@ module.exports = Alpha;
 
 
 /***/ }),
-/* 56 */
+/* 12 */
 /***/ (function(module, exports) {
 
 /**
@@ -5323,7 +2452,7 @@ module.exports = Clamp;
 
 
 /***/ }),
-/* 57 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -5332,7 +2461,7 @@ module.exports = Clamp;
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
-var BlendModes = __webpack_require__(58);
+var BlendModes = __webpack_require__(71);
 
 /**
  * Provides methods used for setting the blend mode of a Game Object.
@@ -5445,262 +2574,7 @@ module.exports = BlendMode;
 
 
 /***/ }),
-/* 58 */
-/***/ (function(module, exports) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-/**
- * Phaser Blend Modes.
- * 
- * @name Phaser.BlendModes
- * @enum {integer}
- * @memberof Phaser
- * @readonly
- * @since 3.0.0
- */
-
-module.exports = {
-
-    /**
-     * Skips the Blend Mode check in the renderer.
-     * 
-     * @name Phaser.BlendModes.SKIP_CHECK
-     */
-    SKIP_CHECK: -1,
-
-    /**
-     * Normal blend mode. For Canvas and WebGL.
-     * This is the default setting and draws new shapes on top of the existing canvas content.
-     * 
-     * @name Phaser.BlendModes.NORMAL
-     */
-    NORMAL: 0,
-
-    /**
-     * Add blend mode. For Canvas and WebGL.
-     * Where both shapes overlap the color is determined by adding color values.
-     * 
-     * @name Phaser.BlendModes.ADD
-     */
-    ADD: 1,
-
-    /**
-     * Multiply blend mode. For Canvas and WebGL.
-     * The pixels are of the top layer are multiplied with the corresponding pixel of the bottom layer. A darker picture is the result.
-     * 
-     * @name Phaser.BlendModes.MULTIPLY
-     */
-    MULTIPLY: 2,
-
-    /**
-     * Screen blend mode. For Canvas and WebGL.
-     * The pixels are inverted, multiplied, and inverted again. A lighter picture is the result (opposite of multiply)
-     * 
-     * @name Phaser.BlendModes.SCREEN
-     */
-    SCREEN: 3,
-
-    /**
-     * Overlay blend mode. For Canvas only.
-     * A combination of multiply and screen. Dark parts on the base layer become darker, and light parts become lighter.
-     * 
-     * @name Phaser.BlendModes.OVERLAY
-     */
-    OVERLAY: 4,
-
-    /**
-     * Darken blend mode. For Canvas only.
-     * Retains the darkest pixels of both layers.
-     * 
-     * @name Phaser.BlendModes.DARKEN
-     */
-    DARKEN: 5,
-
-    /**
-     * Lighten blend mode. For Canvas only.
-     * Retains the lightest pixels of both layers.
-     * 
-     * @name Phaser.BlendModes.LIGHTEN
-     */
-    LIGHTEN: 6,
-
-    /**
-     * Color Dodge blend mode. For Canvas only.
-     * Divides the bottom layer by the inverted top layer.
-     * 
-     * @name Phaser.BlendModes.COLOR_DODGE
-     */
-    COLOR_DODGE: 7,
-
-    /**
-     * Color Burn blend mode. For Canvas only.
-     * Divides the inverted bottom layer by the top layer, and then inverts the result.
-     * 
-     * @name Phaser.BlendModes.COLOR_BURN
-     */
-    COLOR_BURN: 8,
-
-    /**
-     * Hard Light blend mode. For Canvas only.
-     * A combination of multiply and screen like overlay, but with top and bottom layer swapped.
-     * 
-     * @name Phaser.BlendModes.HARD_LIGHT
-     */
-    HARD_LIGHT: 9,
-
-    /**
-     * Soft Light blend mode. For Canvas only.
-     * A softer version of hard-light. Pure black or white does not result in pure black or white.
-     * 
-     * @name Phaser.BlendModes.SOFT_LIGHT
-     */
-    SOFT_LIGHT: 10,
-
-    /**
-     * Difference blend mode. For Canvas only.
-     * Subtracts the bottom layer from the top layer or the other way round to always get a positive value.
-     * 
-     * @name Phaser.BlendModes.DIFFERENCE
-     */
-    DIFFERENCE: 11,
-
-    /**
-     * Exclusion blend mode. For Canvas only.
-     * Like difference, but with lower contrast.
-     * 
-     * @name Phaser.BlendModes.EXCLUSION
-     */
-    EXCLUSION: 12,
-
-    /**
-     * Hue blend mode. For Canvas only.
-     * Preserves the luma and chroma of the bottom layer, while adopting the hue of the top layer.
-     * 
-     * @name Phaser.BlendModes.HUE
-     */
-    HUE: 13,
-
-    /**
-     * Saturation blend mode. For Canvas only.
-     * Preserves the luma and hue of the bottom layer, while adopting the chroma of the top layer.
-     * 
-     * @name Phaser.BlendModes.SATURATION
-     */
-    SATURATION: 14,
-
-    /**
-     * Color blend mode. For Canvas only.
-     * Preserves the luma of the bottom layer, while adopting the hue and chroma of the top layer.
-     * 
-     * @name Phaser.BlendModes.COLOR
-     */
-    COLOR: 15,
-
-    /**
-     * Luminosity blend mode. For Canvas only.
-     * Preserves the hue and chroma of the bottom layer, while adopting the luma of the top layer.
-     * 
-     * @name Phaser.BlendModes.LUMINOSITY
-     */
-    LUMINOSITY: 16,
-
-    /**
-     * Alpha erase blend mode. For Canvas and WebGL.
-     * 
-     * @name Phaser.BlendModes.ERASE
-     */
-    ERASE: 17,
-
-    /**
-     * Source-in blend mode. For Canvas only.
-     * The new shape is drawn only where both the new shape and the destination canvas overlap. Everything else is made transparent.
-     * 
-     * @name Phaser.BlendModes.SOURCE_IN
-     */
-    SOURCE_IN: 18,
-
-    /**
-     * Source-out blend mode. For Canvas only.
-     * The new shape is drawn where it doesn't overlap the existing canvas content.
-     * 
-     * @name Phaser.BlendModes.SOURCE_OUT
-     */
-    SOURCE_OUT: 19,
-
-    /**
-     * Source-out blend mode. For Canvas only.
-     * The new shape is only drawn where it overlaps the existing canvas content.
-     * 
-     * @name Phaser.BlendModes.SOURCE_ATOP
-     */
-    SOURCE_ATOP: 20,
-
-    /**
-     * Destination-over blend mode. For Canvas only.
-     * New shapes are drawn behind the existing canvas content.
-     * 
-     * @name Phaser.BlendModes.DESTINATION_OVER
-     */
-    DESTINATION_OVER: 21,
-
-    /**
-     * Destination-in blend mode. For Canvas only.
-     * The existing canvas content is kept where both the new shape and existing canvas content overlap. Everything else is made transparent.
-     * 
-     * @name Phaser.BlendModes.DESTINATION_IN
-     */
-    DESTINATION_IN: 22,
-
-    /**
-     * Destination-out blend mode. For Canvas only.
-     * The existing content is kept where it doesn't overlap the new shape.
-     * 
-     * @name Phaser.BlendModes.DESTINATION_OUT
-     */
-    DESTINATION_OUT: 23,
-
-    /**
-     * Destination-out blend mode. For Canvas only.
-     * The existing canvas is only kept where it overlaps the new shape. The new shape is drawn behind the canvas content.
-     * 
-     * @name Phaser.BlendModes.DESTINATION_ATOP
-     */
-    DESTINATION_ATOP: 24,
-
-    /**
-     * Lighten blend mode. For Canvas only.
-     * Where both shapes overlap the color is determined by adding color values.
-     * 
-     * @name Phaser.BlendModes.LIGHTER
-     */
-    LIGHTER: 25,
-
-    /**
-     * Copy blend mode. For Canvas only.
-     * Only the new shape is shown.
-     * 
-     * @name Phaser.BlendModes.COPY
-     */
-    COPY: 26,
-
-    /**
-     * xor blend mode. For Canvas only.
-     * Shapes are made transparent where both overlap and drawn normal everywhere else.
-     * 
-     * @name Phaser.BlendModes.XOR
-     */
-    XOR: 27
-
-};
-
-
-/***/ }),
-/* 59 */
+/* 14 */
 /***/ (function(module, exports) {
 
 /**
@@ -5793,7 +2667,7 @@ module.exports = Depth;
 
 
 /***/ }),
-/* 60 */
+/* 15 */
 /***/ (function(module, exports) {
 
 /**
@@ -5941,7 +2815,7 @@ module.exports = Flip;
 
 
 /***/ }),
-/* 61 */
+/* 16 */
 /***/ (function(module, exports) {
 
 /**
@@ -6048,7 +2922,7 @@ module.exports = ScrollFactor;
 
 
 /***/ }),
-/* 62 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -6057,10 +2931,10 @@ module.exports = ScrollFactor;
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
-var MATH_CONST = __webpack_require__(8);
-var TransformMatrix = __webpack_require__(63);
-var WrapAngle = __webpack_require__(65);
-var WrapAngleDegrees = __webpack_require__(66);
+var MATH_CONST = __webpack_require__(18);
+var TransformMatrix = __webpack_require__(19);
+var WrapAngle = __webpack_require__(72);
+var WrapAngleDegrees = __webpack_require__(73);
 
 //  global bitmask flag for GameObject.renderMask (used by Scale)
 var _FLAG = 4; // 0100
@@ -6516,7 +3390,79 @@ module.exports = Transform;
 
 
 /***/ }),
-/* 63 */
+/* 18 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var MATH_CONST = {
+
+    /**
+     * The value of PI * 2.
+     * 
+     * @name Phaser.Math.PI2
+     * @type {number}
+     * @since 3.0.0
+     */
+    PI2: Math.PI * 2,
+
+    /**
+     * The value of PI * 0.5.
+     * 
+     * @name Phaser.Math.TAU
+     * @type {number}
+     * @since 3.0.0
+     */
+    TAU: Math.PI * 0.5,
+
+    /**
+     * An epsilon value (1.0e-6)
+     * 
+     * @name Phaser.Math.EPSILON
+     * @type {number}
+     * @since 3.0.0
+     */
+    EPSILON: 1.0e-6,
+
+    /**
+     * For converting degrees to radians (PI / 180)
+     * 
+     * @name Phaser.Math.DEG_TO_RAD
+     * @type {number}
+     * @since 3.0.0
+     */
+    DEG_TO_RAD: Math.PI / 180,
+
+    /**
+     * For converting radians to degrees (180 / PI)
+     * 
+     * @name Phaser.Math.RAD_TO_DEG
+     * @type {number}
+     * @since 3.0.0
+     */
+    RAD_TO_DEG: 180 / Math.PI,
+
+    /**
+     * An instance of the Random Number Generator.
+     * This is not set until the Game boots.
+     * 
+     * @name Phaser.Math.RND
+     * @type {Phaser.Math.RandomDataGenerator}
+     * @since 3.0.0
+     */
+    RND: null
+
+};
+
+module.exports = MATH_CONST;
+
+
+/***/ }),
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -6526,7 +3472,7 @@ module.exports = Transform;
  */
 
 var Class = __webpack_require__(0);
-var Vector2 = __webpack_require__(64);
+var Vector2 = __webpack_require__(7);
 
 /**
  * @classdesc
@@ -7443,8 +4389,8 @@ module.exports = TransformMatrix;
 
 
 /***/ }),
-/* 64 */
-/***/ (function(module, exports, __webpack_require__) {
+/* 20 */
+/***/ (function(module, exports) {
 
 /**
  * @author       Richard Davey <rich@photonstorm.com>
@@ -7452,708 +4398,30 @@ module.exports = TransformMatrix;
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
-//  Adapted from [gl-matrix](https://github.com/toji/gl-matrix) by toji
-//  and [vecmath](https://github.com/mattdesl/vecmath) by mattdesl
-
-var Class = __webpack_require__(0);
-
 /**
- * @typedef {object} Vector2Like
+ * Wrap the given `value` between `min` and `max.
  *
- * @property {number} x - The x component.
- * @property {number} y - The y component.
- */
-
-/**
- * @classdesc
- * A representation of a vector in 2D space.
- *
- * A two-component vector.
- *
- * @class Vector2
- * @memberof Phaser.Math
- * @constructor
+ * @function Phaser.Math.Wrap
  * @since 3.0.0
  *
- * @param {number|Vector2Like} [x] - The x component, or an object with `x` and `y` properties.
- * @param {number} [y] - The y component.
+ * @param {number} value - The value to wrap.
+ * @param {number} min - The minimum value.
+ * @param {number} max - The maximum value.
+ *
+ * @return {number} The wrapped value.
  */
-var Vector2 = new Class({
-
-    initialize:
-
-    function Vector2 (x, y)
-    {
-        /**
-         * The x component of this Vector.
-         *
-         * @name Phaser.Math.Vector2#x
-         * @type {number}
-         * @default 0
-         * @since 3.0.0
-         */
-        this.x = 0;
-
-        /**
-         * The y component of this Vector.
-         *
-         * @name Phaser.Math.Vector2#y
-         * @type {number}
-         * @default 0
-         * @since 3.0.0
-         */
-        this.y = 0;
-
-        if (typeof x === 'object')
-        {
-            this.x = x.x || 0;
-            this.y = x.y || 0;
-        }
-        else
-        {
-            if (y === undefined) { y = x; }
-
-            this.x = x || 0;
-            this.y = y || 0;
-        }
-    },
-
-    /**
-     * Make a clone of this Vector2.
-     *
-     * @method Phaser.Math.Vector2#clone
-     * @since 3.0.0
-     *
-     * @return {Phaser.Math.Vector2} A clone of this Vector2.
-     */
-    clone: function ()
-    {
-        return new Vector2(this.x, this.y);
-    },
-
-    /**
-     * Copy the components of a given Vector into this Vector.
-     *
-     * @method Phaser.Math.Vector2#copy
-     * @since 3.0.0
-     *
-     * @param {Phaser.Math.Vector2} src - The Vector to copy the components from.
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    copy: function (src)
-    {
-        this.x = src.x || 0;
-        this.y = src.y || 0;
-
-        return this;
-    },
-
-    /**
-     * Set the component values of this Vector from a given Vector2Like object.
-     *
-     * @method Phaser.Math.Vector2#setFromObject
-     * @since 3.0.0
-     *
-     * @param {Vector2Like} obj - The object containing the component values to set for this Vector.
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    setFromObject: function (obj)
-    {
-        this.x = obj.x || 0;
-        this.y = obj.y || 0;
-
-        return this;
-    },
-
-    /**
-     * Set the `x` and `y` components of the this Vector to the given `x` and `y` values.
-     *
-     * @method Phaser.Math.Vector2#set
-     * @since 3.0.0
-     *
-     * @param {number} x - The x value to set for this Vector.
-     * @param {number} [y=x] - The y value to set for this Vector.
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    set: function (x, y)
-    {
-        if (y === undefined) { y = x; }
-
-        this.x = x;
-        this.y = y;
-
-        return this;
-    },
-
-    /**
-     * This method is an alias for `Vector2.set`.
-     *
-     * @method Phaser.Math.Vector2#setTo
-     * @since 3.4.0
-     *
-     * @param {number} x - The x value to set for this Vector.
-     * @param {number} [y=x] - The y value to set for this Vector.
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    setTo: function (x, y)
-    {
-        return this.set(x, y);
-    },
-
-    /**
-     * Sets the `x` and `y` values of this object from a given polar coordinate.
-     *
-     * @method Phaser.Math.Vector2#setToPolar
-     * @since 3.0.0
-     *
-     * @param {number} azimuth - The angular coordinate, in radians.
-     * @param {number} [radius=1] - The radial coordinate (length).
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    setToPolar: function (azimuth, radius)
-    {
-        if (radius == null) { radius = 1; }
-
-        this.x = Math.cos(azimuth) * radius;
-        this.y = Math.sin(azimuth) * radius;
-
-        return this;
-    },
-
-    /**
-     * Check whether this Vector is equal to a given Vector.
-     *
-     * Performs a strict equality check against each Vector's components.
-     *
-     * @method Phaser.Math.Vector2#equals
-     * @since 3.0.0
-     *
-     * @param {Phaser.Math.Vector2} v - The vector to compare with this Vector.
-     *
-     * @return {boolean} Whether the given Vector is equal to this Vector.
-     */
-    equals: function (v)
-    {
-        return ((this.x === v.x) && (this.y === v.y));
-    },
-
-    /**
-     * Calculate the angle between this Vector and the positive x-axis, in radians.
-     *
-     * @method Phaser.Math.Vector2#angle
-     * @since 3.0.0
-     *
-     * @return {number} The angle between this Vector, and the positive x-axis, given in radians.
-     */
-    angle: function ()
-    {
-        // computes the angle in radians with respect to the positive x-axis
-
-        var angle = Math.atan2(this.y, this.x);
-
-        if (angle < 0)
-        {
-            angle += 2 * Math.PI;
-        }
-
-        return angle;
-    },
-
-    /**
-     * Add a given Vector to this Vector. Addition is component-wise.
-     *
-     * @method Phaser.Math.Vector2#add
-     * @since 3.0.0
-     *
-     * @param {Phaser.Math.Vector2} src - The Vector to add to this Vector.
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    add: function (src)
-    {
-        this.x += src.x;
-        this.y += src.y;
-
-        return this;
-    },
-
-    /**
-     * Subtract the given Vector from this Vector. Subtraction is component-wise.
-     *
-     * @method Phaser.Math.Vector2#subtract
-     * @since 3.0.0
-     *
-     * @param {Phaser.Math.Vector2} src - The Vector to subtract from this Vector.
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    subtract: function (src)
-    {
-        this.x -= src.x;
-        this.y -= src.y;
-
-        return this;
-    },
-
-    /**
-     * Perform a component-wise multiplication between this Vector and the given Vector.
-     *
-     * Multiplies this Vector by the given Vector.
-     *
-     * @method Phaser.Math.Vector2#multiply
-     * @since 3.0.0
-     *
-     * @param {Phaser.Math.Vector2} src - The Vector to multiply this Vector by.
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    multiply: function (src)
-    {
-        this.x *= src.x;
-        this.y *= src.y;
-
-        return this;
-    },
-
-    /**
-     * Scale this Vector by the given value.
-     *
-     * @method Phaser.Math.Vector2#scale
-     * @since 3.0.0
-     *
-     * @param {number} value - The value to scale this Vector by.
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    scale: function (value)
-    {
-        if (isFinite(value))
-        {
-            this.x *= value;
-            this.y *= value;
-        }
-        else
-        {
-            this.x = 0;
-            this.y = 0;
-        }
-
-        return this;
-    },
-
-    /**
-     * Perform a component-wise division between this Vector and the given Vector.
-     *
-     * Divides this Vector by the given Vector.
-     *
-     * @method Phaser.Math.Vector2#divide
-     * @since 3.0.0
-     *
-     * @param {Phaser.Math.Vector2} src - The Vector to divide this Vector by.
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    divide: function (src)
-    {
-        this.x /= src.x;
-        this.y /= src.y;
-
-        return this;
-    },
-
-    /**
-     * Negate the `x` and `y` components of this Vector.
-     *
-     * @method Phaser.Math.Vector2#negate
-     * @since 3.0.0
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    negate: function ()
-    {
-        this.x = -this.x;
-        this.y = -this.y;
-
-        return this;
-    },
-
-    /**
-     * Calculate the distance between this Vector and the given Vector.
-     *
-     * @method Phaser.Math.Vector2#distance
-     * @since 3.0.0
-     *
-     * @param {Phaser.Math.Vector2} src - The Vector to calculate the distance to.
-     *
-     * @return {number} The distance from this Vector to the given Vector.
-     */
-    distance: function (src)
-    {
-        var dx = src.x - this.x;
-        var dy = src.y - this.y;
-
-        return Math.sqrt(dx * dx + dy * dy);
-    },
-
-    /**
-     * Calculate the distance between this Vector and the given Vector, squared.
-     *
-     * @method Phaser.Math.Vector2#distanceSq
-     * @since 3.0.0
-     *
-     * @param {Phaser.Math.Vector2} src - The Vector to calculate the distance to.
-     *
-     * @return {number} The distance from this Vector to the given Vector, squared.
-     */
-    distanceSq: function (src)
-    {
-        var dx = src.x - this.x;
-        var dy = src.y - this.y;
-
-        return dx * dx + dy * dy;
-    },
-
-    /**
-     * Calculate the length (or magnitude) of this Vector.
-     *
-     * @method Phaser.Math.Vector2#length
-     * @since 3.0.0
-     *
-     * @return {number} The length of this Vector.
-     */
-    length: function ()
-    {
-        var x = this.x;
-        var y = this.y;
-
-        return Math.sqrt(x * x + y * y);
-    },
-
-    /**
-     * Calculate the length of this Vector squared.
-     *
-     * @method Phaser.Math.Vector2#lengthSq
-     * @since 3.0.0
-     *
-     * @return {number} The length of this Vector, squared.
-     */
-    lengthSq: function ()
-    {
-        var x = this.x;
-        var y = this.y;
-
-        return x * x + y * y;
-    },
-
-    /**
-     * Normalize this Vector.
-     *
-     * Makes the vector a unit length vector (magnitude of 1) in the same direction.
-     *
-     * @method Phaser.Math.Vector2#normalize
-     * @since 3.0.0
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    normalize: function ()
-    {
-        var x = this.x;
-        var y = this.y;
-        var len = x * x + y * y;
-
-        if (len > 0)
-        {
-            len = 1 / Math.sqrt(len);
-
-            this.x = x * len;
-            this.y = y * len;
-        }
-
-        return this;
-    },
-
-    /**
-     * Right-hand normalize (make unit length) this Vector.
-     *
-     * @method Phaser.Math.Vector2#normalizeRightHand
-     * @since 3.0.0
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    normalizeRightHand: function ()
-    {
-        var x = this.x;
-
-        this.x = this.y * -1;
-        this.y = x;
-
-        return this;
-    },
-
-    /**
-     * Calculate the dot product of this Vector and the given Vector.
-     *
-     * @method Phaser.Math.Vector2#dot
-     * @since 3.0.0
-     *
-     * @param {Phaser.Math.Vector2} src - The Vector2 to dot product with this Vector2.
-     *
-     * @return {number} The dot product of this Vector and the given Vector.
-     */
-    dot: function (src)
-    {
-        return this.x * src.x + this.y * src.y;
-    },
-
-    /**
-     * Calculate the cross product of this Vector and the given Vector.
-     *
-     * @method Phaser.Math.Vector2#cross
-     * @since 3.0.0
-     *
-     * @param {Phaser.Math.Vector2} src - The Vector2 to cross with this Vector2.
-     *
-     * @return {number} The cross product of this Vector and the given Vector.
-     */
-    cross: function (src)
-    {
-        return this.x * src.y - this.y * src.x;
-    },
-
-    /**
-     * Linearly interpolate between this Vector and the given Vector.
-     *
-     * Interpolates this Vector towards the given Vector.
-     *
-     * @method Phaser.Math.Vector2#lerp
-     * @since 3.0.0
-     *
-     * @param {Phaser.Math.Vector2} src - The Vector2 to interpolate towards.
-     * @param {number} [t=0] - The interpolation percentage, between 0 and 1.
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    lerp: function (src, t)
-    {
-        if (t === undefined) { t = 0; }
-
-        var ax = this.x;
-        var ay = this.y;
-
-        this.x = ax + t * (src.x - ax);
-        this.y = ay + t * (src.y - ay);
-
-        return this;
-    },
-
-    /**
-     * Transform this Vector with the given Matrix.
-     *
-     * @method Phaser.Math.Vector2#transformMat3
-     * @since 3.0.0
-     *
-     * @param {Phaser.Math.Matrix3} mat - The Matrix3 to transform this Vector2 with.
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    transformMat3: function (mat)
-    {
-        var x = this.x;
-        var y = this.y;
-        var m = mat.val;
-
-        this.x = m[0] * x + m[3] * y + m[6];
-        this.y = m[1] * x + m[4] * y + m[7];
-
-        return this;
-    },
-
-    /**
-     * Transform this Vector with the given Matrix.
-     *
-     * @method Phaser.Math.Vector2#transformMat4
-     * @since 3.0.0
-     *
-     * @param {Phaser.Math.Matrix4} mat - The Matrix4 to transform this Vector2 with.
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    transformMat4: function (mat)
-    {
-        var x = this.x;
-        var y = this.y;
-        var m = mat.val;
-
-        this.x = m[0] * x + m[4] * y + m[12];
-        this.y = m[1] * x + m[5] * y + m[13];
-
-        return this;
-    },
-
-    /**
-     * Make this Vector the zero vector (0, 0).
-     *
-     * @method Phaser.Math.Vector2#reset
-     * @since 3.0.0
-     *
-     * @return {Phaser.Math.Vector2} This Vector2.
-     */
-    reset: function ()
-    {
-        this.x = 0;
-        this.y = 0;
-
-        return this;
-    }
-
-});
-
-/**
- * A static zero Vector2 for use by reference.
- * 
- * This constant is meant for comparison operations and should not be modified directly.
- *
- * @constant
- * @name Phaser.Math.Vector2.ZERO
- * @type {Phaser.Math.Vector2}
- * @since 3.1.0
- */
-Vector2.ZERO = new Vector2();
-
-/**
- * A static right Vector2 for use by reference.
- * 
- * This constant is meant for comparison operations and should not be modified directly.
- *
- * @constant
- * @name Phaser.Math.Vector2.RIGHT
- * @type {Phaser.Math.Vector2}
- * @since 3.16.0
- */
-Vector2.RIGHT = new Vector2(1, 0);
-
-/**
- * A static left Vector2 for use by reference.
- * 
- * This constant is meant for comparison operations and should not be modified directly.
- *
- * @constant
- * @name Phaser.Math.Vector2.LEFT
- * @type {Phaser.Math.Vector2}
- * @since 3.16.0
- */
-Vector2.LEFT = new Vector2(-1, 0);
-
-/**
- * A static up Vector2 for use by reference.
- * 
- * This constant is meant for comparison operations and should not be modified directly.
- *
- * @constant
- * @name Phaser.Math.Vector2.UP
- * @type {Phaser.Math.Vector2}
- * @since 3.16.0
- */
-Vector2.UP = new Vector2(0, -1);
-
-/**
- * A static down Vector2 for use by reference.
- * 
- * This constant is meant for comparison operations and should not be modified directly.
- *
- * @constant
- * @name Phaser.Math.Vector2.DOWN
- * @type {Phaser.Math.Vector2}
- * @since 3.16.0
- */
-Vector2.DOWN = new Vector2(0, 1);
-
-/**
- * A static one Vector2 for use by reference.
- * 
- * This constant is meant for comparison operations and should not be modified directly.
- *
- * @constant
- * @name Phaser.Math.Vector2.ONE
- * @type {Phaser.Math.Vector2}
- * @since 3.16.0
- */
-Vector2.ONE = new Vector2(1, 1);
-
-module.exports = Vector2;
-
-
-/***/ }),
-/* 65 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-var MathWrap = __webpack_require__(9);
-
-/**
- * Wrap an angle.
- *
- * Wraps the angle to a value in the range of -PI to PI.
- *
- * @function Phaser.Math.Angle.Wrap
- * @since 3.0.0
- *
- * @param {number} angle - The angle to wrap, in radians.
- *
- * @return {number} The wrapped angle, in radians.
- */
-var Wrap = function (angle)
+var Wrap = function (value, min, max)
 {
-    return MathWrap(angle, -Math.PI, Math.PI);
+    var range = max - min;
+
+    return (min + ((((value - min) % range) + range) % range));
 };
 
 module.exports = Wrap;
 
 
 /***/ }),
-/* 66 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2019 Photon Storm Ltd.
- * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
- */
-
-var Wrap = __webpack_require__(9);
-
-/**
- * Wrap an angle in degrees.
- *
- * Wraps the angle to a value in the range of -180 to 180.
- *
- * @function Phaser.Math.Angle.WrapDegrees
- * @since 3.0.0
- *
- * @param {number} angle - The angle to wrap, in degrees.
- *
- * @return {number} The wrapped angle, in degrees.
- */
-var WrapDegrees = function (angle)
-{
-    return Wrap(angle, -180, 180);
-};
-
-module.exports = WrapDegrees;
-
-
-/***/ }),
-/* 67 */
+/* 21 */
 /***/ (function(module, exports) {
 
 /**
@@ -8242,6 +4510,3145 @@ module.exports = Visible;
 
 
 /***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var has = Object.prototype.hasOwnProperty
+  , prefix = '~';
+
+/**
+ * Constructor to create a storage for our `EE` objects.
+ * An `Events` instance is a plain object whose properties are event names.
+ *
+ * @constructor
+ * @private
+ */
+function Events() {}
+
+//
+// We try to not inherit from `Object.prototype`. In some engines creating an
+// instance in this way is faster than calling `Object.create(null)` directly.
+// If `Object.create(null)` is not supported we prefix the event names with a
+// character to make sure that the built-in object properties are not
+// overridden or used as an attack vector.
+//
+if (Object.create) {
+  Events.prototype = Object.create(null);
+
+  //
+  // This hack is needed because the `__proto__` property is still inherited in
+  // some old browsers like Android 4, iPhone 5.1, Opera 11 and Safari 5.
+  //
+  if (!new Events().__proto__) prefix = false;
+}
+
+/**
+ * Representation of a single event listener.
+ *
+ * @param {Function} fn The listener function.
+ * @param {*} context The context to invoke the listener with.
+ * @param {Boolean} [once=false] Specify if the listener is a one-time listener.
+ * @constructor
+ * @private
+ */
+function EE(fn, context, once) {
+  this.fn = fn;
+  this.context = context;
+  this.once = once || false;
+}
+
+/**
+ * Add a listener for a given event.
+ *
+ * @param {EventEmitter} emitter Reference to the `EventEmitter` instance.
+ * @param {(String|Symbol)} event The event name.
+ * @param {Function} fn The listener function.
+ * @param {*} context The context to invoke the listener with.
+ * @param {Boolean} once Specify if the listener is a one-time listener.
+ * @returns {EventEmitter}
+ * @private
+ */
+function addListener(emitter, event, fn, context, once) {
+  if (typeof fn !== 'function') {
+    throw new TypeError('The listener must be a function');
+  }
+
+  var listener = new EE(fn, context || emitter, once)
+    , evt = prefix ? prefix + event : event;
+
+  if (!emitter._events[evt]) emitter._events[evt] = listener, emitter._eventsCount++;
+  else if (!emitter._events[evt].fn) emitter._events[evt].push(listener);
+  else emitter._events[evt] = [emitter._events[evt], listener];
+
+  return emitter;
+}
+
+/**
+ * Clear event by name.
+ *
+ * @param {EventEmitter} emitter Reference to the `EventEmitter` instance.
+ * @param {(String|Symbol)} evt The Event name.
+ * @private
+ */
+function clearEvent(emitter, evt) {
+  if (--emitter._eventsCount === 0) emitter._events = new Events();
+  else delete emitter._events[evt];
+}
+
+/**
+ * Minimal `EventEmitter` interface that is molded against the Node.js
+ * `EventEmitter` interface.
+ *
+ * @constructor
+ * @public
+ */
+function EventEmitter() {
+  this._events = new Events();
+  this._eventsCount = 0;
+}
+
+/**
+ * Return an array listing the events for which the emitter has registered
+ * listeners.
+ *
+ * @returns {Array}
+ * @public
+ */
+EventEmitter.prototype.eventNames = function eventNames() {
+  var names = []
+    , events
+    , name;
+
+  if (this._eventsCount === 0) return names;
+
+  for (name in (events = this._events)) {
+    if (has.call(events, name)) names.push(prefix ? name.slice(1) : name);
+  }
+
+  if (Object.getOwnPropertySymbols) {
+    return names.concat(Object.getOwnPropertySymbols(events));
+  }
+
+  return names;
+};
+
+/**
+ * Return the listeners registered for a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @returns {Array} The registered listeners.
+ * @public
+ */
+EventEmitter.prototype.listeners = function listeners(event) {
+  var evt = prefix ? prefix + event : event
+    , handlers = this._events[evt];
+
+  if (!handlers) return [];
+  if (handlers.fn) return [handlers.fn];
+
+  for (var i = 0, l = handlers.length, ee = new Array(l); i < l; i++) {
+    ee[i] = handlers[i].fn;
+  }
+
+  return ee;
+};
+
+/**
+ * Return the number of listeners listening to a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @returns {Number} The number of listeners.
+ * @public
+ */
+EventEmitter.prototype.listenerCount = function listenerCount(event) {
+  var evt = prefix ? prefix + event : event
+    , listeners = this._events[evt];
+
+  if (!listeners) return 0;
+  if (listeners.fn) return 1;
+  return listeners.length;
+};
+
+/**
+ * Calls each of the listeners registered for a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @returns {Boolean} `true` if the event had listeners, else `false`.
+ * @public
+ */
+EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
+  var evt = prefix ? prefix + event : event;
+
+  if (!this._events[evt]) return false;
+
+  var listeners = this._events[evt]
+    , len = arguments.length
+    , args
+    , i;
+
+  if (listeners.fn) {
+    if (listeners.once) this.removeListener(event, listeners.fn, undefined, true);
+
+    switch (len) {
+      case 1: return listeners.fn.call(listeners.context), true;
+      case 2: return listeners.fn.call(listeners.context, a1), true;
+      case 3: return listeners.fn.call(listeners.context, a1, a2), true;
+      case 4: return listeners.fn.call(listeners.context, a1, a2, a3), true;
+      case 5: return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
+      case 6: return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
+    }
+
+    for (i = 1, args = new Array(len -1); i < len; i++) {
+      args[i - 1] = arguments[i];
+    }
+
+    listeners.fn.apply(listeners.context, args);
+  } else {
+    var length = listeners.length
+      , j;
+
+    for (i = 0; i < length; i++) {
+      if (listeners[i].once) this.removeListener(event, listeners[i].fn, undefined, true);
+
+      switch (len) {
+        case 1: listeners[i].fn.call(listeners[i].context); break;
+        case 2: listeners[i].fn.call(listeners[i].context, a1); break;
+        case 3: listeners[i].fn.call(listeners[i].context, a1, a2); break;
+        case 4: listeners[i].fn.call(listeners[i].context, a1, a2, a3); break;
+        default:
+          if (!args) for (j = 1, args = new Array(len -1); j < len; j++) {
+            args[j - 1] = arguments[j];
+          }
+
+          listeners[i].fn.apply(listeners[i].context, args);
+      }
+    }
+  }
+
+  return true;
+};
+
+/**
+ * Add a listener for a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @param {Function} fn The listener function.
+ * @param {*} [context=this] The context to invoke the listener with.
+ * @returns {EventEmitter} `this`.
+ * @public
+ */
+EventEmitter.prototype.on = function on(event, fn, context) {
+  return addListener(this, event, fn, context, false);
+};
+
+/**
+ * Add a one-time listener for a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @param {Function} fn The listener function.
+ * @param {*} [context=this] The context to invoke the listener with.
+ * @returns {EventEmitter} `this`.
+ * @public
+ */
+EventEmitter.prototype.once = function once(event, fn, context) {
+  return addListener(this, event, fn, context, true);
+};
+
+/**
+ * Remove the listeners of a given event.
+ *
+ * @param {(String|Symbol)} event The event name.
+ * @param {Function} fn Only remove the listeners that match this function.
+ * @param {*} context Only remove the listeners that have this context.
+ * @param {Boolean} once Only remove one-time listeners.
+ * @returns {EventEmitter} `this`.
+ * @public
+ */
+EventEmitter.prototype.removeListener = function removeListener(event, fn, context, once) {
+  var evt = prefix ? prefix + event : event;
+
+  if (!this._events[evt]) return this;
+  if (!fn) {
+    clearEvent(this, evt);
+    return this;
+  }
+
+  var listeners = this._events[evt];
+
+  if (listeners.fn) {
+    if (
+      listeners.fn === fn &&
+      (!once || listeners.once) &&
+      (!context || listeners.context === context)
+    ) {
+      clearEvent(this, evt);
+    }
+  } else {
+    for (var i = 0, events = [], length = listeners.length; i < length; i++) {
+      if (
+        listeners[i].fn !== fn ||
+        (once && !listeners[i].once) ||
+        (context && listeners[i].context !== context)
+      ) {
+        events.push(listeners[i]);
+      }
+    }
+
+    //
+    // Reset the array, or remove it completely if we have no more listeners.
+    //
+    if (events.length) this._events[evt] = events.length === 1 ? events[0] : events;
+    else clearEvent(this, evt);
+  }
+
+  return this;
+};
+
+/**
+ * Remove all listeners, or those of the specified event.
+ *
+ * @param {(String|Symbol)} [event] The event name.
+ * @returns {EventEmitter} `this`.
+ * @public
+ */
+EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
+  var evt;
+
+  if (event) {
+    evt = prefix ? prefix + event : event;
+    if (this._events[evt]) clearEvent(this, evt);
+  } else {
+    this._events = new Events();
+    this._eventsCount = 0;
+  }
+
+  return this;
+};
+
+//
+// Alias methods names because people roll like that.
+//
+EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
+EventEmitter.prototype.addListener = EventEmitter.prototype.on;
+
+//
+// Expose the prefix.
+//
+EventEmitter.prefixed = prefix;
+
+//
+// Allow `EventEmitter` to be imported as module namespace.
+//
+EventEmitter.EventEmitter = EventEmitter;
+
+//
+// Expose the module.
+//
+if (true) {
+  module.exports = EventEmitter;
+}
+
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * @namespace Phaser.Animations.Events
+ */
+
+module.exports = {
+
+    ADD_ANIMATION: __webpack_require__(78),
+    ANIMATION_COMPLETE: __webpack_require__(79),
+    ANIMATION_REPEAT: __webpack_require__(80),
+    ANIMATION_RESTART: __webpack_require__(81),
+    ANIMATION_START: __webpack_require__(82),
+    PAUSE_ALL: __webpack_require__(83),
+    REMOVE_ANIMATION: __webpack_require__(84),
+    RESUME_ALL: __webpack_require__(85),
+    SPRITE_ANIMATION_COMPLETE: __webpack_require__(86),
+    SPRITE_ANIMATION_KEY_COMPLETE: __webpack_require__(87),
+    SPRITE_ANIMATION_KEY_REPEAT: __webpack_require__(88),
+    SPRITE_ANIMATION_KEY_RESTART: __webpack_require__(89),
+    SPRITE_ANIMATION_KEY_START: __webpack_require__(90),
+    SPRITE_ANIMATION_KEY_UPDATE: __webpack_require__(91),
+    SPRITE_ANIMATION_REPEAT: __webpack_require__(92),
+    SPRITE_ANIMATION_RESTART: __webpack_require__(93),
+    SPRITE_ANIMATION_START: __webpack_require__(94),
+    SPRITE_ANIMATION_UPDATE: __webpack_require__(95)
+
+};
+
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Perimeter = __webpack_require__(25);
+var Point = __webpack_require__(3);
+
+/**
+ * Position is a value between 0 and 1 where 0 = the top-left of the rectangle and 0.5 = the bottom right.
+ *
+ * @function Phaser.Geom.Rectangle.GetPoint
+ * @since 3.0.0
+ *
+ * @generic {Phaser.Geom.Point} O - [out,$return]
+ *
+ * @param {Phaser.Geom.Rectangle} rectangle - [description]
+ * @param {number} position - [description]
+ * @param {(Phaser.Geom.Point|object)} [out] - [description]
+ *
+ * @return {Phaser.Geom.Point} [description]
+ */
+var GetPoint = function (rectangle, position, out)
+{
+    if (out === undefined) { out = new Point(); }
+
+    if (position <= 0 || position >= 1)
+    {
+        out.x = rectangle.x;
+        out.y = rectangle.y;
+
+        return out;
+    }
+
+    var p = Perimeter(rectangle) * position;
+
+    if (position > 0.5)
+    {
+        p -= (rectangle.width + rectangle.height);
+
+        if (p <= rectangle.width)
+        {
+            //  Face 3
+            out.x = rectangle.right - p;
+            out.y = rectangle.bottom;
+        }
+        else
+        {
+            //  Face 4
+            out.x = rectangle.x;
+            out.y = rectangle.bottom - (p - rectangle.width);
+        }
+    }
+    else if (p <= rectangle.width)
+    {
+        //  Face 1
+        out.x = rectangle.x + p;
+        out.y = rectangle.y;
+    }
+    else
+    {
+        //  Face 2
+        out.x = rectangle.right;
+        out.y = rectangle.y + (p - rectangle.width);
+    }
+
+    return out;
+};
+
+module.exports = GetPoint;
+
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * Calculates the perimeter of a Rectangle.
+ *
+ * @function Phaser.Geom.Rectangle.Perimeter
+ * @since 3.0.0
+ *
+ * @param {Phaser.Geom.Rectangle} rect - The Rectangle to use.
+ *
+ * @return {number} The perimeter of the Rectangle, equal to `(width * 2) + (height * 2)`.
+ */
+var Perimeter = function (rect)
+{
+    return 2 * (rect.width + rect.height);
+};
+
+module.exports = Perimeter;
+
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * @typedef {object} JSONGameObject
+ *
+ * @property {string} name - The name of this Game Object.
+ * @property {string} type - A textual representation of this Game Object, i.e. `sprite`.
+ * @property {number} x - The x position of this Game Object.
+ * @property {number} y - The y position of this Game Object.
+ * @property {object} scale - The scale of this Game Object
+ * @property {number} scale.x - The horizontal scale of this Game Object.
+ * @property {number} scale.y - The vertical scale of this Game Object.
+ * @property {object} origin - The origin of this Game Object.
+ * @property {number} origin.x - The horizontal origin of this Game Object.
+ * @property {number} origin.y - The vertical origin of this Game Object.
+ * @property {boolean} flipX - The horizontally flipped state of the Game Object.
+ * @property {boolean} flipY - The vertically flipped state of the Game Object.
+ * @property {number} rotation - The angle of this Game Object in radians.
+ * @property {number} alpha - The alpha value of the Game Object.
+ * @property {boolean} visible - The visible state of the Game Object.
+ * @property {integer} scaleMode - The Scale Mode being used by this Game Object.
+ * @property {(integer|string)} blendMode - Sets the Blend Mode being used by this Game Object.
+ * @property {string} textureKey - The texture key of this Game Object.
+ * @property {string} frameKey - The frame key of this Game Object.
+ * @property {object} data - The data of this Game Object.
+ */
+
+/**
+ * Build a JSON representation of the given Game Object.
+ *
+ * This is typically extended further by Game Object specific implementations.
+ *
+ * @method Phaser.GameObjects.Components.ToJSON
+ * @since 3.0.0
+ *
+ * @param {Phaser.GameObjects.GameObject} gameObject - The Game Object to export as JSON.
+ *
+ * @return {JSONGameObject} A JSON representation of the Game Object.
+ */
+var ToJSON = function (gameObject)
+{
+    var out = {
+        name: gameObject.name,
+        type: gameObject.type,
+        x: gameObject.x,
+        y: gameObject.y,
+        depth: gameObject.depth,
+        scale: {
+            x: gameObject.scaleX,
+            y: gameObject.scaleY
+        },
+        origin: {
+            x: gameObject.originX,
+            y: gameObject.originY
+        },
+        flipX: gameObject.flipX,
+        flipY: gameObject.flipY,
+        rotation: gameObject.rotation,
+        alpha: gameObject.alpha,
+        visible: gameObject.visible,
+        scaleMode: gameObject.scaleMode,
+        blendMode: gameObject.blendMode,
+        textureKey: '',
+        frameKey: '',
+        data: {}
+    };
+
+    if (gameObject.texture)
+    {
+        out.textureKey = gameObject.texture.key;
+        out.frameKey = gameObject.frame.name;
+    }
+
+    return out;
+};
+
+module.exports = ToJSON;
+
+
+/***/ }),
+/* 27 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * A NOOP (No Operation) callback function.
+ *
+ * Used internally by Phaser when it's more expensive to determine if a callback exists
+ * than it is to just invoke an empty function.
+ *
+ * @function Phaser.Utils.NOOP
+ * @since 3.0.0
+ */
+var NOOP = function ()
+{
+    //  NOOP
+};
+
+module.exports = NOOP;
+
+
+/***/ }),
+/* 28 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2018 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Class = __webpack_require__(0);
+var BaseSpinePlugin = __webpack_require__(29);
+var SpineWebGL = __webpack_require__(135);
+var Matrix4 = __webpack_require__(136);
+
+/**
+ * @classdesc
+ * Just the WebGL Runtime.
+ *
+ * @class SpineWebGLPlugin
+ * @extends Phaser.Plugins.ScenePlugin
+ * @constructor
+ * @since 3.16.0
+ *
+ * @param {Phaser.Scene} scene - A reference to the Scene that has installed this plugin.
+ * @param {Phaser.Plugins.PluginManager} pluginManager - A reference to the Phaser Plugin Manager.
+ */
+var SpineWebGLPlugin = new Class({
+
+    Extends: BaseSpinePlugin,
+
+    initialize:
+
+    function SpineWebGLPlugin (scene, pluginManager)
+    {
+        BaseSpinePlugin.call(this, scene, pluginManager, SpineWebGL);
+
+        this.gl;
+        this.mvp;
+        this.shader;
+        this.batcher;
+        this.debugRenderer;
+        this.debugShader;
+    },
+
+    boot: function ()
+    {
+        var gl = this.game.renderer.gl;
+
+        this.gl = gl;
+
+        this.mvp = new Matrix4();
+
+        //  Create a simple shader, mesh, model-view-projection matrix and SkeletonRenderer.
+        this.shader = SpineWebGL.webgl.Shader.newTwoColoredTextured(gl);
+        this.batcher = new SpineWebGL.webgl.PolygonBatcher(gl);
+
+        this.skeletonRenderer = new SpineWebGL.webgl.SkeletonRenderer(gl);
+        this.skeletonRenderer.premultipliedAlpha = true;
+
+        this.shapes = new SpineWebGL.webgl.ShapeRenderer(gl);
+
+        this.debugRenderer = new SpineWebGL.webgl.SkeletonDebugRenderer(gl);
+
+        this.debugShader = SpineWebGL.webgl.Shader.newColored(gl);
+    },
+
+    getAtlas: function (key)
+    {
+        var atlasData = this.cache.get(key);
+
+        if (!atlasData)
+        {
+            console.warn('No atlas data for: ' + key);
+            return;
+        }
+
+        var textures = this.textures;
+
+        var gl = this.game.renderer.gl;
+
+        var atlas = new SpineWebGL.TextureAtlas(atlasData, function (path)
+        {
+            return new SpineWebGL.webgl.GLTexture(gl, textures.get(path).getSourceImage());
+        });
+
+        return atlas;
+    }
+
+});
+
+module.exports = SpineWebGLPlugin;
+
+
+/***/ }),
+/* 29 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2018 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Class = __webpack_require__(0);
+var ScenePlugin = __webpack_require__(30);
+var SpineFile = __webpack_require__(51);
+var SpineGameObject = __webpack_require__(70);
+
+var runtime;
+
+/**
+ * @classdesc
+ * TODO
+ *
+ * @class SpinePlugin
+ * @extends Phaser.Plugins.ScenePlugin
+ * @constructor
+ * @since 3.16.0
+ *
+ * @param {Phaser.Scene} scene - A reference to the Scene that has installed this plugin.
+ * @param {Phaser.Plugins.PluginManager} pluginManager - A reference to the Phaser Plugin Manager.
+ */
+var SpinePlugin = new Class({
+
+    Extends: ScenePlugin,
+
+    initialize:
+
+    function SpinePlugin (scene, pluginManager, SpineRuntime)
+    {
+        ScenePlugin.call(this, scene, pluginManager);
+
+        var game = pluginManager.game;
+
+        //  Create a custom cache to store the spine data (.atlas files)
+        this.cache = game.cache.addCustom('spine');
+
+        this.json = game.cache.json;
+
+        this.textures = game.textures;
+
+        this.skeletonRenderer;
+
+        this.drawDebug = false;
+
+        //  Register our file type
+        pluginManager.registerFileType('spine', this.spineFileCallback, scene);
+
+        //  Register our game object
+        pluginManager.registerGameObject('spine', this.createSpineFactory(this));
+
+        runtime = SpineRuntime;
+    },
+
+    spineFileCallback: function (key, jsonURL, atlasURL, jsonXhrSettings, atlasXhrSettings)
+    {
+        var multifile;
+
+        if (Array.isArray(key))
+        {
+            for (var i = 0; i < key.length; i++)
+            {
+                multifile = new SpineFile(this, key[i]);
+
+                this.addFile(multifile.files);
+            }
+        }
+        else
+        {
+            multifile = new SpineFile(this, key, jsonURL, atlasURL, jsonXhrSettings, atlasXhrSettings);
+
+            this.addFile(multifile.files);
+        }
+
+        return this;
+    },
+
+    /**
+     * Creates a new Spine Game Object and adds it to the Scene.
+     *
+     * @method Phaser.GameObjects.GameObjectFactory#spineFactory
+     * @since 3.16.0
+     *
+     * @param {number} x - The horizontal position of this Game Object.
+     * @param {number} y - The vertical position of this Game Object.
+     * @param {string} [key] - The key of the Texture this Game Object will use to render with, as stored in the Texture Manager.
+     * @param {(string|integer)} [animationName] - The animation to load with.
+     * @param {boolean} [loop] - Loop the loaded animation?
+     *
+     * @return {Phaser.GameObjects.SpineGameObject} The Game Object that was created.
+     */
+    createSpineFactory: function (plugin)
+    {
+        var callback = function (x, y, key, animationName, loop)
+        {
+            var spineGO = new SpineGameObject(this.scene, plugin, x, y, key, animationName, loop);
+
+            this.displayList.add(spineGO);
+            this.updateList.add(spineGO);
+
+            return spineGO;
+        };
+
+        return callback;
+    },
+
+    /**
+     * Gets the spine runtime.
+     *
+     * @method SpinePlugin#getRuntime
+     * @since 3.16.0
+     *
+     * @return {any} The spine runtime.
+     */
+    getRuntime: function ()
+    {
+        return runtime;
+    },
+
+    /**
+     * Creates a spine Skeleton
+     *
+     * @method SpinePlugin#createSkeleton
+     * @since 3.16.0
+     *
+     * @param {string} key - The key of the atlas Texture this Game Object will use to render with, as stored in the Texture Manager.
+     * @param {string} [skeletonJSON] - the skeletonJSON file to read skeleton data from, if undefined then will get json with key provided
+     *
+     * @return {any} skeletonData & skeleton.
+     */
+    createSkeleton: function (key, skeletonJSON)
+    {
+        var atlas = this.getAtlas(key);
+
+        var atlasLoader = new runtime.AtlasAttachmentLoader(atlas);
+
+        var skeletonJson = new runtime.SkeletonJson(atlasLoader);
+
+        var data = (skeletonJSON) ? skeletonJSON : this.json.get(key);
+
+        var skeletonData = skeletonJson.readSkeletonData(data);
+
+        var skeleton = new runtime.Skeleton(skeletonData);
+
+        return { skeletonData: skeletonData, skeleton: skeleton };
+    },
+
+
+    getBounds: function (skeleton)
+    {
+        var offset = new runtime.Vector2();
+        var size = new runtime.Vector2();
+
+        skeleton.getBounds(offset, size, []);
+
+        return { offset: offset, size: size };
+    },
+
+    createAnimationState: function (skeleton)
+    {
+        var stateData = new runtime.AnimationStateData(skeleton.data);
+
+        var state = new runtime.AnimationState(stateData);
+
+        return { stateData: stateData, state: state };
+    },
+
+    /**
+     * The Scene that owns this plugin is shutting down.
+     * We need to kill and reset all internal properties as well as stop listening to Scene events.
+     *
+     * @method SpinePlugin#shutdown
+     * @private
+     * @since 3.0.0
+     */
+    shutdown: function ()
+    {
+        var eventEmitter = this.systems.events;
+
+        eventEmitter.off('update', this.update, this);
+        eventEmitter.off('shutdown', this.shutdown, this);
+
+        this.removeAll();
+    },
+
+    /**
+     * The Scene that owns this plugin is being destroyed.
+     * We need to shutdown and then kill off all external references.
+     *
+     * @method SpinePlugin#destroy
+     * @private
+     * @since 3.0.0
+     */
+    destroy: function ()
+    {
+        this.shutdown();
+
+        this.pluginManager = null;
+        this.game = null;
+        this.scene = null;
+        this.systems = null;
+    }
+
+});
+
+module.exports = SpinePlugin;
+
+
+/***/ }),
+/* 30 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+* @author       Richard Davey <rich@photonstorm.com>
+* @copyright    2019 Photon Storm Ltd.
+* @license      {@link https://github.com/photonstorm/phaser3-plugin-template/blob/master/LICENSE|MIT License}
+*/
+
+var BasePlugin = __webpack_require__(31);
+var Class = __webpack_require__(0);
+var SceneEvents = __webpack_require__(32);
+
+/**
+ * @classdesc
+ * A Scene Level Plugin is installed into every Scene and belongs to that Scene.
+ * It can listen for Scene events and respond to them.
+ * It can map itself to a Scene property, or into the Scene Systems, or both.
+ *
+ * @class ScenePlugin
+ * @memberof Phaser.Plugins
+ * @extends Phaser.Plugins.BasePlugin
+ * @constructor
+ * @since 3.8.0
+ *
+ * @param {Phaser.Scene} scene - A reference to the Scene that has installed this plugin.
+ * @param {Phaser.Plugins.PluginManager} pluginManager - A reference to the Plugin Manager.
+ */
+var ScenePlugin = new Class({
+
+    Extends: BasePlugin,
+
+    initialize:
+
+    function ScenePlugin (scene, pluginManager)
+    {
+        BasePlugin.call(this, pluginManager);
+
+        this.scene = scene;
+        this.systems = scene.sys;
+
+        scene.sys.events.once(SceneEvents.BOOT, this.boot, this);
+    },
+
+    /**
+     * This method is called when the Scene boots. It is only ever called once.
+     * 
+     * By this point the plugin properties `scene` and `systems` will have already been set.
+     * 
+     * In here you can listen for Scene events and set-up whatever you need for this plugin to run.
+     * Here are the Scene events you can listen to:
+     * 
+     * start
+     * ready
+     * preupdate
+     * update
+     * postupdate
+     * resize
+     * pause
+     * resume
+     * sleep
+     * wake
+     * transitioninit
+     * transitionstart
+     * transitioncomplete
+     * transitionout
+     * shutdown
+     * destroy
+     * 
+     * At the very least you should offer a destroy handler for when the Scene closes down, i.e:
+     *
+     * ```javascript
+     * var eventEmitter = this.systems.events;
+     * eventEmitter.once('destroy', this.sceneDestroy, this);
+     * ```
+     *
+     * @method Phaser.Plugins.ScenePlugin#boot
+     * @since 3.8.0
+     */
+    boot: function ()
+    {
+    }
+
+});
+
+module.exports = ScenePlugin;
+
+
+/***/ }),
+/* 31 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+* @author       Richard Davey <rich@photonstorm.com>
+* @copyright    2019 Photon Storm Ltd.
+* @license      {@link https://github.com/photonstorm/phaser3-plugin-template/blob/master/LICENSE|MIT License}
+*/
+
+var Class = __webpack_require__(0);
+
+/**
+ * @classdesc
+ * A Global Plugin is installed just once into the Game owned Plugin Manager.
+ * It can listen for Game events and respond to them.
+ *
+ * @class BasePlugin
+ * @memberof Phaser.Plugins
+ * @constructor
+ * @since 3.8.0
+ *
+ * @param {Phaser.Plugins.PluginManager} pluginManager - A reference to the Plugin Manager.
+ */
+var BasePlugin = new Class({
+
+    initialize:
+
+    function BasePlugin (pluginManager)
+    {
+        /**
+         * A handy reference to the Plugin Manager that is responsible for this plugin.
+         * Can be used as a route to gain access to game systems and  events.
+         *
+         * @name Phaser.Plugins.BasePlugin#pluginManager
+         * @type {Phaser.Plugins.PluginManager}
+         * @protected
+         * @since 3.8.0
+         */
+        this.pluginManager = pluginManager;
+
+        /**
+         * A reference to the Game instance this plugin is running under.
+         *
+         * @name Phaser.Plugins.BasePlugin#game
+         * @type {Phaser.Game}
+         * @protected
+         * @since 3.8.0
+         */
+        this.game = pluginManager.game;
+
+        /**
+         * A reference to the Scene that has installed this plugin.
+         * Only set if it's a Scene Plugin, otherwise `null`.
+         * This property is only set when the plugin is instantiated and added to the Scene, not before.
+         * You cannot use it during the `init` method, but you can during the `boot` method.
+         *
+         * @name Phaser.Plugins.BasePlugin#scene
+         * @type {?Phaser.Scene}
+         * @protected
+         * @since 3.8.0
+         */
+        this.scene;
+
+        /**
+         * A reference to the Scene Systems of the Scene that has installed this plugin.
+         * Only set if it's a Scene Plugin, otherwise `null`.
+         * This property is only set when the plugin is instantiated and added to the Scene, not before.
+         * You cannot use it during the `init` method, but you can during the `boot` method.
+         *
+         * @name Phaser.Plugins.BasePlugin#systems
+         * @type {?Phaser.Scenes.Systems}
+         * @protected
+         * @since 3.8.0
+         */
+        this.systems;
+    },
+
+    /**
+     * Called by the PluginManager when this plugin is first instantiated.
+     * It will never be called again on this instance.
+     * In here you can set-up whatever you need for this plugin to run.
+     * If a plugin is set to automatically start then `BasePlugin.start` will be called immediately after this.
+     *
+     * @method Phaser.Plugins.BasePlugin#init
+     * @since 3.8.0
+     *
+     * @param {?any} [data] - A value specified by the user, if any, from the `data` property of the plugin's configuration object (if started at game boot) or passed in the PluginManager's `install` method (if started manually).
+     */
+    init: function ()
+    {
+    },
+
+    /**
+     * Called by the PluginManager when this plugin is started.
+     * If a plugin is stopped, and then started again, this will get called again.
+     * Typically called immediately after `BasePlugin.init`.
+     *
+     * @method Phaser.Plugins.BasePlugin#start
+     * @since 3.8.0
+     */
+    start: function ()
+    {
+        //  Here are the game-level events you can listen to.
+        //  At the very least you should offer a destroy handler for when the game closes down.
+
+        // var eventEmitter = this.game.events;
+
+        // eventEmitter.once('destroy', this.gameDestroy, this);
+        // eventEmitter.on('pause', this.gamePause, this);
+        // eventEmitter.on('resume', this.gameResume, this);
+        // eventEmitter.on('resize', this.gameResize, this);
+        // eventEmitter.on('prestep', this.gamePreStep, this);
+        // eventEmitter.on('step', this.gameStep, this);
+        // eventEmitter.on('poststep', this.gamePostStep, this);
+        // eventEmitter.on('prerender', this.gamePreRender, this);
+        // eventEmitter.on('postrender', this.gamePostRender, this);
+    },
+
+    /**
+     * Called by the PluginManager when this plugin is stopped.
+     * The game code has requested that your plugin stop doing whatever it does.
+     * It is now considered as 'inactive' by the PluginManager.
+     * Handle that process here (i.e. stop listening for events, etc)
+     * If the plugin is started again then `BasePlugin.start` will be called again.
+     *
+     * @method Phaser.Plugins.BasePlugin#stop
+     * @since 3.8.0
+     */
+    stop: function ()
+    {
+    },
+
+    /**
+     * If this is a Scene Plugin (i.e. installed into a Scene) then this method is called when the Scene boots.
+     * By this point the plugin properties `scene` and `systems` will have already been set.
+     * In here you can listen for Scene events and set-up whatever you need for this plugin to run.
+     *
+     * @method Phaser.Plugins.BasePlugin#boot
+     * @since 3.8.0
+     */
+    boot: function ()
+    {
+        //  Here are the Scene events you can listen to.
+        //  At the very least you should offer a destroy handler for when the Scene closes down.
+
+        // var eventEmitter = this.systems.events;
+
+        // eventEmitter.once('destroy', this.sceneDestroy, this);
+        // eventEmitter.on('start', this.sceneStart, this);
+        // eventEmitter.on('preupdate', this.scenePreUpdate, this);
+        // eventEmitter.on('update', this.sceneUpdate, this);
+        // eventEmitter.on('postupdate', this.scenePostUpdate, this);
+        // eventEmitter.on('pause', this.scenePause, this);
+        // eventEmitter.on('resume', this.sceneResume, this);
+        // eventEmitter.on('sleep', this.sceneSleep, this);
+        // eventEmitter.on('wake', this.sceneWake, this);
+        // eventEmitter.on('shutdown', this.sceneShutdown, this);
+        // eventEmitter.on('destroy', this.sceneDestroy, this);
+    },
+
+    /**
+     * Game instance has been destroyed.
+     * You must release everything in here, all references, all objects, free it all up.
+     *
+     * @method Phaser.Plugins.BasePlugin#destroy
+     * @since 3.8.0
+     */
+    destroy: function ()
+    {
+        this.pluginManager = null;
+        this.game = null;
+        this.scene = null;
+        this.systems = null;
+    }
+
+});
+
+module.exports = BasePlugin;
+
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * @namespace Phaser.Scenes.Events
+ */
+
+module.exports = {
+
+    BOOT: __webpack_require__(33),
+    DESTROY: __webpack_require__(34),
+    PAUSE: __webpack_require__(35),
+    POST_UPDATE: __webpack_require__(36),
+    PRE_UPDATE: __webpack_require__(37),
+    READY: __webpack_require__(38),
+    RENDER: __webpack_require__(39),
+    RESUME: __webpack_require__(40),
+    SHUTDOWN: __webpack_require__(41),
+    SLEEP: __webpack_require__(42),
+    START: __webpack_require__(43),
+    TRANSITION_COMPLETE: __webpack_require__(44),
+    TRANSITION_INIT: __webpack_require__(45),
+    TRANSITION_OUT: __webpack_require__(46),
+    TRANSITION_START: __webpack_require__(47),
+    TRANSITION_WAKE: __webpack_require__(48),
+    UPDATE: __webpack_require__(49),
+    WAKE: __webpack_require__(50)
+
+};
+
+
+/***/ }),
+/* 33 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Boot Event.
+ * 
+ * This event is dispatched by a Scene during the Scene Systems boot process. Primarily used by Scene Plugins.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('boot', listener)`.
+ * 
+ * @event Phaser.Scenes.Events#BOOT
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ */
+module.exports = 'boot';
+
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Destroy Event.
+ * 
+ * This event is dispatched by a Scene during the Scene Systems destroy process.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('destroy', listener)`.
+ * 
+ * You should destroy any resources that may be in use by your Scene in this event handler.
+ * 
+ * @event Phaser.Scenes.Events#DESTROY
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ */
+module.exports = 'destroy';
+
+
+/***/ }),
+/* 35 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Pause Event.
+ * 
+ * This event is dispatched by a Scene when it is paused, either directly via the `pause` method, or as an
+ * action from another Scene.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('pause', listener)`.
+ * 
+ * @event Phaser.Scenes.Events#PAUSE
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {any} [data] - An optional data object that was passed to this Scene when it was paused.
+ */
+module.exports = 'pause';
+
+
+/***/ }),
+/* 36 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Post Update Event.
+ * 
+ * This event is dispatched by a Scene during the main game loop step.
+ * 
+ * The event flow for a single step of a Scene is as follows:
+ * 
+ * 1. [PRE_UPDATE]{@linkcode Phaser.Scenes.Events#event:PRE_UPDATE}
+ * 2. [UPDATE]{@linkcode Phaser.Scenes.Events#event:UPDATE}
+ * 3. The `Scene.update` method is called, if it exists
+ * 4. [POST_UPDATE]{@linkcode Phaser.Scenes.Events#event:POST_UPDATE}
+ * 5. [RENDER]{@linkcode Phaser.Scenes.Events#event:RENDER}
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('postupdate', listener)`.
+ * 
+ * A Scene will only run its step if it is active.
+ * 
+ * @event Phaser.Scenes.Events#POST_UPDATE
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {number} time - The current time. Either a High Resolution Timer value if it comes from Request Animation Frame, or Date.now if using SetTimeout.
+ * @param {number} delta - The delta time in ms since the last frame. This is a smoothed and capped value based on the FPS rate.
+ */
+module.exports = 'postupdate';
+
+
+/***/ }),
+/* 37 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Pre Update Event.
+ * 
+ * This event is dispatched by a Scene during the main game loop step.
+ * 
+ * The event flow for a single step of a Scene is as follows:
+ * 
+ * 1. [PRE_UPDATE]{@linkcode Phaser.Scenes.Events#event:PRE_UPDATE}
+ * 2. [UPDATE]{@linkcode Phaser.Scenes.Events#event:UPDATE}
+ * 3. The `Scene.update` method is called, if it exists
+ * 4. [POST_UPDATE]{@linkcode Phaser.Scenes.Events#event:POST_UPDATE}
+ * 5. [RENDER]{@linkcode Phaser.Scenes.Events#event:RENDER}
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('preupdate', listener)`.
+ * 
+ * A Scene will only run its step if it is active.
+ * 
+ * @event Phaser.Scenes.Events#PRE_UPDATE
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {number} time - The current time. Either a High Resolution Timer value if it comes from Request Animation Frame, or Date.now if using SetTimeout.
+ * @param {number} delta - The delta time in ms since the last frame. This is a smoothed and capped value based on the FPS rate.
+ */
+module.exports = 'preupdate';
+
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Ready Event.
+ * 
+ * This event is dispatched by a Scene during the Scene Systems start process.
+ * By this point in the process the Scene is now fully active and rendering.
+ * This event is meant for your game code to use, as all plugins have responded to the earlier 'start' event.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('ready', listener)`.
+ * 
+ * @event Phaser.Scenes.Events#READY
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {any} [data] - An optional data object that was passed to this Scene when it was started.
+ */
+module.exports = 'ready';
+
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Render Event.
+ * 
+ * This event is dispatched by a Scene during the main game loop step.
+ * 
+ * The event flow for a single step of a Scene is as follows:
+ * 
+ * 1. [PRE_UPDATE]{@linkcode Phaser.Scenes.Events#event:PRE_UPDATE}
+ * 2. [UPDATE]{@linkcode Phaser.Scenes.Events#event:UPDATE}
+ * 3. The `Scene.update` method is called, if it exists
+ * 4. [POST_UPDATE]{@linkcode Phaser.Scenes.Events#event:POST_UPDATE}
+ * 5. [RENDER]{@linkcode Phaser.Scenes.Events#event:RENDER}
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('render', listener)`.
+ * 
+ * A Scene will only render if it is visible and active.
+ * By the time this event is dispatched, the Scene will have already been rendered.
+ * 
+ * @event Phaser.Scenes.Events#RENDER
+ * 
+ * @param {(Phaser.Renderer.Canvas.CanvasRenderer|Phaser.Renderer.WebGL.WebGLRenderer)} renderer - The renderer that rendered the Scene.
+ */
+module.exports = 'render';
+
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Resume Event.
+ * 
+ * This event is dispatched by a Scene when it is resumed from a paused state, either directly via the `resume` method,
+ * or as an action from another Scene.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('resume', listener)`.
+ * 
+ * @event Phaser.Scenes.Events#RESUME
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {any} [data] - An optional data object that was passed to this Scene when it was resumed.
+ */
+module.exports = 'resume';
+
+
+/***/ }),
+/* 41 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Shutdown Event.
+ * 
+ * This event is dispatched by a Scene during the Scene Systems shutdown process.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('shutdown', listener)`.
+ * 
+ * You should free-up any resources that may be in use by your Scene in this event handler, on the understanding
+ * that the Scene may, at any time, become active again. A shutdown Scene is not 'destroyed', it's simply not
+ * currently active. Use the [DESTROY]{@linkcode Phaser.Scenes.Events#event:DESTROY} event to completely clear resources.
+ * 
+ * @event Phaser.Scenes.Events#SHUTDOWN
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {any} [data] - An optional data object that was passed to this Scene when it was shutdown.
+ */
+module.exports = 'shutdown';
+
+
+/***/ }),
+/* 42 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Sleep Event.
+ * 
+ * This event is dispatched by a Scene when it is sent to sleep, either directly via the `sleep` method,
+ * or as an action from another Scene.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('sleep', listener)`.
+ * 
+ * @event Phaser.Scenes.Events#SLEEP
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {any} [data] - An optional data object that was passed to this Scene when it was sent to sleep.
+ */
+module.exports = 'sleep';
+
+
+/***/ }),
+/* 43 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Start Event.
+ * 
+ * This event is dispatched by a Scene during the Scene Systems start process. Primarily used by Scene Plugins.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('start', listener)`.
+ * 
+ * @event Phaser.Scenes.Events#START
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ */
+module.exports = 'start';
+
+
+/***/ }),
+/* 44 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Transition Complete Event.
+ * 
+ * This event is dispatched by the Target Scene of a transition.
+ * 
+ * It happens when the transition process has completed. This occurs when the duration timer equals or exceeds the duration
+ * of the transition.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('transitioncomplete', listener)`.
+ * 
+ * The Scene Transition event flow is as follows:
+ * 
+ * 1. [TRANSITION_OUT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_OUT} - the Scene that started the transition will emit this event.
+ * 2. [TRANSITION_INIT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_INIT} - the Target Scene will emit this event if it has an `init` method.
+ * 3. [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} - the Target Scene will emit this event after its `create` method is called, OR ...
+ * 4. [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} - the Target Scene will emit this event if it was asleep and has been woken-up to be transitioned to.
+ * 5. [TRANSITION_COMPLETE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_COMPLETE} - the Target Scene will emit this event when the transition finishes.
+ * 
+ * @event Phaser.Scenes.Events#TRANSITION_COMPLETE
+ * 
+ * @param {Phaser.Scene} scene -The Scene on which the transitioned completed.
+ */
+module.exports = 'transitioncomplete';
+
+
+/***/ }),
+/* 45 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Transition Init Event.
+ * 
+ * This event is dispatched by the Target Scene of a transition.
+ * 
+ * It happens immediately after the `Scene.init` method is called. If the Scene does not have an `init` method,
+ * this event is not dispatched.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('transitioninit', listener)`.
+ * 
+ * The Scene Transition event flow is as follows:
+ * 
+ * 1. [TRANSITION_OUT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_OUT} - the Scene that started the transition will emit this event.
+ * 2. [TRANSITION_INIT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_INIT} - the Target Scene will emit this event if it has an `init` method.
+ * 3. [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} - the Target Scene will emit this event after its `create` method is called, OR ...
+ * 4. [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} - the Target Scene will emit this event if it was asleep and has been woken-up to be transitioned to.
+ * 5. [TRANSITION_COMPLETE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_COMPLETE} - the Target Scene will emit this event when the transition finishes.
+ * 
+ * @event Phaser.Scenes.Events#TRANSITION_INIT
+ * 
+ * @param {Phaser.Scene} from - A reference to the Scene that is being transitioned from.
+ * @param {number} duration - The duration of the transition in ms.
+ */
+module.exports = 'transitioninit';
+
+
+/***/ }),
+/* 46 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Transition Out Event.
+ * 
+ * This event is dispatched by a Scene when it initiates a transition to another Scene.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('transitionout', listener)`.
+ * 
+ * The Scene Transition event flow is as follows:
+ * 
+ * 1. [TRANSITION_OUT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_OUT} - the Scene that started the transition will emit this event.
+ * 2. [TRANSITION_INIT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_INIT} - the Target Scene will emit this event if it has an `init` method.
+ * 3. [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} - the Target Scene will emit this event after its `create` method is called, OR ...
+ * 4. [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} - the Target Scene will emit this event if it was asleep and has been woken-up to be transitioned to.
+ * 5. [TRANSITION_COMPLETE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_COMPLETE} - the Target Scene will emit this event when the transition finishes.
+ * 
+ * @event Phaser.Scenes.Events#TRANSITION_OUT
+ * 
+ * @param {Phaser.Scene} target - A reference to the Scene that is being transitioned to.
+ * @param {number} duration - The duration of the transition in ms.
+ */
+module.exports = 'transitionout';
+
+
+/***/ }),
+/* 47 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Transition Start Event.
+ * 
+ * This event is dispatched by the Target Scene of a transition, only if that Scene was not asleep.
+ * 
+ * It happens immediately after the `Scene.create` method is called. If the Scene does not have a `create` method,
+ * this event is dispatched anyway.
+ * 
+ * If the Target Scene was sleeping then the [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} event is
+ * dispatched instead of this event.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('transitionstart', listener)`.
+ * 
+ * The Scene Transition event flow is as follows:
+ * 
+ * 1. [TRANSITION_OUT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_OUT} - the Scene that started the transition will emit this event.
+ * 2. [TRANSITION_INIT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_INIT} - the Target Scene will emit this event if it has an `init` method.
+ * 3. [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} - the Target Scene will emit this event after its `create` method is called, OR ...
+ * 4. [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} - the Target Scene will emit this event if it was asleep and has been woken-up to be transitioned to.
+ * 5. [TRANSITION_COMPLETE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_COMPLETE} - the Target Scene will emit this event when the transition finishes.
+ * 
+ * @event Phaser.Scenes.Events#TRANSITION_START
+ * 
+ * @param {Phaser.Scene} from - A reference to the Scene that is being transitioned from.
+ * @param {number} duration - The duration of the transition in ms.
+ */
+module.exports = 'transitionstart';
+
+
+/***/ }),
+/* 48 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Transition Wake Event.
+ * 
+ * This event is dispatched by the Target Scene of a transition, only if that Scene was asleep before
+ * the transition began. If the Scene was not asleep the [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} event is dispatched instead.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('transitionwake', listener)`.
+ * 
+ * The Scene Transition event flow is as follows:
+ * 
+ * 1. [TRANSITION_OUT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_OUT} - the Scene that started the transition will emit this event.
+ * 2. [TRANSITION_INIT]{@linkcode Phaser.Scenes.Events#event:TRANSITION_INIT} - the Target Scene will emit this event if it has an `init` method.
+ * 3. [TRANSITION_START]{@linkcode Phaser.Scenes.Events#event:TRANSITION_START} - the Target Scene will emit this event after its `create` method is called, OR ...
+ * 4. [TRANSITION_WAKE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_WAKE} - the Target Scene will emit this event if it was asleep and has been woken-up to be transitioned to.
+ * 5. [TRANSITION_COMPLETE]{@linkcode Phaser.Scenes.Events#event:TRANSITION_COMPLETE} - the Target Scene will emit this event when the transition finishes.
+ * 
+ * @event Phaser.Scenes.Events#TRANSITION_WAKE
+ * 
+ * @param {Phaser.Scene} from - A reference to the Scene that is being transitioned from.
+ * @param {number} duration - The duration of the transition in ms.
+ */
+module.exports = 'transitionwake';
+
+
+/***/ }),
+/* 49 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Update Event.
+ * 
+ * This event is dispatched by a Scene during the main game loop step.
+ * 
+ * The event flow for a single step of a Scene is as follows:
+ * 
+ * 1. [PRE_UPDATE]{@linkcode Phaser.Scenes.Events#event:PRE_UPDATE}
+ * 2. [UPDATE]{@linkcode Phaser.Scenes.Events#event:UPDATE}
+ * 3. The `Scene.update` method is called, if it exists
+ * 4. [POST_UPDATE]{@linkcode Phaser.Scenes.Events#event:POST_UPDATE}
+ * 5. [RENDER]{@linkcode Phaser.Scenes.Events#event:RENDER}
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('update', listener)`.
+ * 
+ * A Scene will only run its step if it is active.
+ * 
+ * @event Phaser.Scenes.Events#UPDATE
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {number} time - The current time. Either a High Resolution Timer value if it comes from Request Animation Frame, or Date.now if using SetTimeout.
+ * @param {number} delta - The delta time in ms since the last frame. This is a smoothed and capped value based on the FPS rate.
+ */
+module.exports = 'update';
+
+
+/***/ }),
+/* 50 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Scene Systems Wake Event.
+ * 
+ * This event is dispatched by a Scene when it is woken from sleep, either directly via the `wake` method,
+ * or as an action from another Scene.
+ * 
+ * Listen to it from a Scene using `this.scene.events.on('wake', listener)`.
+ * 
+ * @event Phaser.Scenes.Events#WAKE
+ * 
+ * @param {Phaser.Scenes.Systems} sys - A reference to the Scene Systems class of the Scene that emitted this event.
+ * @param {any} [data] - An optional data object that was passed to this Scene when it was woken up.
+ */
+module.exports = 'wake';
+
+
+/***/ }),
+/* 51 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2018 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Class = __webpack_require__(0);
+var FileTypesManager = __webpack_require__(4);
+var GetFastValue = __webpack_require__(1);
+var ImageFile = __webpack_require__(52);
+var IsPlainObject = __webpack_require__(2);
+var JSONFile = __webpack_require__(67);
+var MultiFile = __webpack_require__(68);
+var TextFile = __webpack_require__(69);
+
+/**
+ * @typedef {object} Phaser.Loader.FileTypes.SpineFileConfig
+ *
+ * @property {string} key - The key of the file. Must be unique within both the Loader and the Texture Manager.
+ * @property {string} [jsonURL] - The absolute or relative URL to load the spine json file from.
+ * @property {string} [textureExtension='png'] - The default file extension to use for the image texture if no url is provided.
+ * @property {XHRSettingsObject} [jsonXhrSettings] - Extra XHR Settings specifically for the spine json file.
+ * @property {string} [atlasURL] - The absolute or relative URL to load the spine atlas file from.
+ * @property {string} [atlasExtension='txt'] - The default file extension to use for the spine atlas if no url is provided.
+ * @property {XHRSettingsObject} [atlasXhrSettings] - Extra XHR Settings specifically for the spine atlas file.
+ * @property {string} [path] - The path to use when loading the textures defined in the spine atlas file.
+ */
+
+/**
+ * @classdesc
+ * A Spine File suitable for loading by the Loader.
+ *
+ * These are created when you use the Phaser.Loader.LoaderPlugin#spine method and are not typically created directly.
+ *
+ * For documentation about what all the arguments and configuration options mean please see Phaser.Loader.LoaderPlugin#spine.
+ *
+ * @class SpineFile
+ * @extends Phaser.Loader.MultiFile
+ * @memberof Phaser.Loader.FileTypes
+ * @constructor
+ *
+ * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader that is responsible for this file.
+ * @param {(string|Phaser.Loader.FileTypes.UnityAtlasFileConfig)} key - The key to use for this file, or a file configuration object.
+ * @param {string|string[]} [jsonURL] - The absolute or relative URL to load the json file from. If undefined or `null` it will be set to `<key>.png`, i.e. if `key` was "alien" then the URL will be "alien.png".
+ * @param {string} [atlasURL] - The absolute or relative URL to load the spine atlas file from. If undefined or `null` it will be set to `<key>.txt`, i.e. if `key` was "alien" then the URL will be "alien.txt".
+ * @param {string} [path] - The path to use when loading the textures defined in the spine atlas.
+ * @param {XHRSettingsObject} [jsonXhrSettings] - An XHR Settings configuration object for the spine json file. Used in replacement of the Loaders default XHR Settings.
+ * @param {XHRSettingsObject} [atlasXhrSettings] - An XHR Settings configuration object for the spine atlas file. Used in replacement of the Loaders default XHR Settings.
+ */
+var SpineFile = new Class({
+
+    Extends: MultiFile,
+
+    initialize:
+
+    function SpineFile (loader, key, jsonURL, atlasURL, path, jsonXhrSettings, atlasXhrSettings)
+    {
+        var json;
+        var atlas;
+        var config;
+
+        if (IsPlainObject(key))
+        {
+            config = key;
+
+            key = GetFastValue(config, 'key');
+            path = GetFastValue(config, 'path');
+
+            json = new JSONFile(loader, {
+                key: key,
+                url: GetFastValue(config, 'jsonURL'),
+                extension: GetFastValue(config, 'jsonExtension', 'json'),
+                xhrSettings: GetFastValue(config, 'jsonXhrSettings')
+            });
+
+            atlas = new TextFile(loader, {
+                key: key,
+                url: GetFastValue(config, 'atlasURL'),
+                extension: GetFastValue(config, 'atlasExtension', 'atlas'),
+                xhrSettings: GetFastValue(config, 'atlasXhrSettings')
+            });
+        }
+        else
+        {
+            json = new JSONFile(loader, key, jsonURL, jsonXhrSettings);
+            atlas = new TextFile(loader, key, atlasURL, atlasXhrSettings);
+        }
+        atlas.cache = loader.cacheManager.custom.spine;
+
+        MultiFile.call(this, loader, 'spine', key, [ json, atlas ]);
+
+        this.config.path = path;
+        this.config.jsonXhrSettings = jsonXhrSettings;
+        this.config.atlasXhrSettings = atlasXhrSettings;
+    },
+
+    /**
+     * Called by each File when it finishes loading.
+     *
+     * @method Phaser.Loader.MultiFile#onFileComplete
+     * @since 3.7.0
+     *
+     * @param {Phaser.Loader.File} file - The File that has completed processing.
+     */
+    onFileComplete: function (file)
+    {
+        var index = this.files.indexOf(file);
+
+        if (index !== -1)
+        {
+            this.pending--;
+
+            if (file.type === 'text')
+            {
+                //  Inspect the data for the files to now load
+                var content = file.data.split('\n');
+
+                //  Extract the textures
+                var textures = [];
+
+                for (var t = 0; t < content.length; t++)
+                {
+                    var line = content[t];
+
+                    if (line.trim() === '' && t < content.length - 1)
+                    {
+                        line = content[t + 1];
+
+                        textures.push(line);
+                    }
+                }
+
+                var config = this.config;
+                var loader = this.loader;
+
+                var currentBaseURL = loader.baseURL;
+                var currentPath = loader.path;
+                var currentPrefix = loader.prefix;
+
+                var baseURL = GetFastValue(config, 'baseURL', currentBaseURL);
+                var path = GetFastValue(config, 'path', currentPath);
+                var prefix = GetFastValue(config, 'prefix', currentPrefix);
+                var textureXhrSettings = GetFastValue(config, 'textureXhrSettings');
+
+                loader.setBaseURL(baseURL);
+                loader.setPath(path);
+                loader.setPrefix(prefix);
+
+                for (var i = 0; i < textures.length; i++)
+                {
+                    var textureURL = textures[i];
+
+                    var key = '_SP_' + textureURL;
+
+                    var image = new ImageFile(loader, key, textureURL, textureXhrSettings);
+
+                    this.addToMultiFile(image);
+
+                    loader.addFile(image);
+                }
+
+                //  Reset the loader settings
+                loader.setBaseURL(currentBaseURL);
+                loader.setPath(currentPath);
+                loader.setPrefix(currentPrefix);
+            }
+        }
+    },
+
+    /**
+     * Adds this file to its target cache upon successful loading and processing.
+     *
+     * @method Phaser.Loader.FileTypes.SpineFile#addToCache
+     * @since 3.16.0
+     */
+    addToCache: function ()
+    {
+        if (this.isReadyToProcess())
+        {
+            var fileJSON = this.files[0];
+
+            fileJSON.addToCache();
+
+            var fileText = this.files[1];
+
+            fileText.addToCache();
+
+            for (var i = 2; i < this.files.length; i++)
+            {
+                var file = this.files[i];
+
+                var key = file.key.substr(4).trim();
+
+                this.loader.textureManager.addImage(key, file.data);
+
+                file.pendingDestroy();
+            }
+
+            this.complete = true;
+        }
+    }
+
+});
+
+/**
+ * Adds a spine objects to the current load queue, consisting of json file, atlas file & textures.
+ *
+ * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
+ *
+ * ```javascript
+ * function preload ()
+ * {
+ *     this.load.spine('spineboy', 'spine/sb/spineboy.json', 'spine/spineboy.atlas', 'spine/sb/' );
+ * }
+ * ```
+ *
+ * The file is **not** loaded right away. It is added to a queue ready to be loaded either when the loader starts,
+ * or if it's already running, when the next free load slot becomes available. This happens automatically if you
+ * are calling this from within the Scene's `preload` method, or a related callback. Because the file is queued
+ * it means you cannot use the file immediately after calling this method, but must wait for the file to complete.
+ * The typical flow for a Phaser Scene is that you load assets in the Scene's `preload` method and then when the
+ * Scene's `create` method is called you are guaranteed that all of those assets are ready for use and have been
+ * loaded.
+ *
+ * If you call this from outside of `preload` then you are responsible for starting the Loader afterwards and monitoring
+ * its events to know when it's safe to use the asset. Please see the Phaser.Loader.LoaderPlugin class for more details.
+ *
+ * Phaser expects the atlas data to be provided in a JSON format as exported from Spine.
+ *
+ * Phaser can load all common image types: png, jpg, gif and any other format the browser can natively handle.
+ *
+ * The key must be a unique String. It is used to add the file to the global Texture Manager upon a successful load.
+ * The key should be unique both in terms of files being loaded and files already present in the Texture Manager.
+ * Loading a file using a key that is already taken will result in a warning. If you wish to replace an existing file
+ * then remove it from the Texture Manager first, before loading a new one.
+ *
+ * Instead of passing arguments you can pass a configuration object, such as:
+ *
+ * ```javascript
+ * this.load.spine({
+ *     key: 'spineboy',
+ *     jsonURL: 'spine/sb/spineboy.json',
+ *     atlasURL: 'spine/spineboy.atlas',
+ *     path: 'spine/sb/'
+ * });
+ * ```
+ *
+ * See the documentation for `Phaser.Loader.FileTypes.SpineFileConfig` for more details.
+ *
+ * If you have specified a prefix in the loader, via `Loader.setPrefix` then this value will be prepended to this files
+ * key. For example, if the prefix was `MENU.` and the key was `Background` the final key will be `MENU.Background` and
+ * this is what you would use to retrieve the image from the Texture Manager.
+ *
+ * The URL can be relative or absolute. If the URL is relative the `Loader.baseURL` and `Loader.path` values will be prepended to it.
+ *
+ * Note: The ability to load this type of file will only be available if the Spine plugin has been added.
+ *
+ * @method Phaser.Loader.LoaderPlugin#spine
+ * @fires Phaser.Loader.LoaderPlugin#addFileEvent
+ * @since 3.16.0
+ *
+ * @param {(string|Phaser.Loader.FileTypes.SpineFileConfig|Phaser.Loader.FileTypes.SpineFileConfig[])} key - The key to use for this file, or a file configuration object, or array of them.
+ * @param {string|string[]} [jsonURL] - The absolute or relative URL to load the texture image file from. If undefined or `null` it will be set to `<key>.png`, i.e. if `key` was "alien" then the URL will be "alien.png".
+ * @param {string} [atlasURL] - The absolute or relative URL to load the texture atlas data file from. If undefined or `null` it will be set to `<key>.txt`, i.e. if `key` was "alien" then the URL will be "alien.txt".
+ * @param {string} [path] - Optional path to use when loading the textures defined in the atlas data.
+ * @param {XHRSettingsObject} [jsonXhrSettings] - An XHR Settings configuration object for the json file. Used in replacement of the Loaders default XHR Settings.
+ * @param {XHRSettingsObject} [atlasXhrSettings] - An XHR Settings configuration object for the atlas data file. Used in replacement of the Loaders default XHR Settings.
+ *
+ * @return {Phaser.Loader.LoaderPlugin} The Loader instance.
+ */
+FileTypesManager.register('spine', function (key, jsonURL, atlasURL, path, jsonXhrSettings, atlasXhrSettings)
+{
+    var multifile;
+
+    //  Supports an Object file definition in the key argument
+    //  Or an array of objects in the key argument
+    //  Or a single entry where all arguments have been defined
+
+    if (Array.isArray(key))
+    {
+        for (var i = 0; i < key.length; i++)
+        {
+            multifile = new SpineFile(this, key[i]);
+
+            this.addFile(multifile.files);
+        }
+    }
+    else
+    {
+        multifile = new SpineFile(this, key, jsonURL, atlasURL, path, jsonXhrSettings, atlasXhrSettings);
+
+        this.addFile(multifile.files);
+    }
+
+    return this;
+});
+
+module.exports = SpineFile;
+
+
+/***/ }),
+/* 52 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Class = __webpack_require__(0);
+var CONST = __webpack_require__(5);
+var File = __webpack_require__(6);
+var FileTypesManager = __webpack_require__(4);
+var GetFastValue = __webpack_require__(1);
+var IsPlainObject = __webpack_require__(2);
+
+/**
+ * @typedef {object} Phaser.Loader.FileTypes.ImageFrameConfig
+ *
+ * @property {integer} frameWidth - The width of the frame in pixels.
+ * @property {integer} [frameHeight] - The height of the frame in pixels. Uses the `frameWidth` value if not provided.
+ * @property {integer} [startFrame=0] - The first frame to start parsing from.
+ * @property {integer} [endFrame] - The frame to stop parsing at. If not provided it will calculate the value based on the image and frame dimensions.
+ * @property {integer} [margin=0] - The margin in the image. This is the space around the edge of the frames.
+ * @property {integer} [spacing=0] - The spacing between each frame in the image.
+ */
+
+/**
+ * @typedef {object} Phaser.Loader.FileTypes.ImageFileConfig
+ *
+ * @property {string} key - The key of the file. Must be unique within both the Loader and the Texture Manager.
+ * @property {string} [url] - The absolute or relative URL to load the file from.
+ * @property {string} [extension='png'] - The default file extension to use if no url is provided.
+ * @property {string} [normalMap] - The filename of an associated normal map. It uses the same path and url to load as the image.
+ * @property {Phaser.Loader.FileTypes.ImageFrameConfig} [frameConfig] - The frame configuration object. Only provided for, and used by, Sprite Sheets.
+ * @property {XHRSettingsObject} [xhrSettings] - Extra XHR Settings specifically for this file.
+ */
+
+/**
+ * @classdesc
+ * A single Image File suitable for loading by the Loader.
+ *
+ * These are created when you use the Phaser.Loader.LoaderPlugin#image method and are not typically created directly.
+ * 
+ * For documentation about what all the arguments and configuration options mean please see Phaser.Loader.LoaderPlugin#image.
+ *
+ * @class ImageFile
+ * @extends Phaser.Loader.File
+ * @memberof Phaser.Loader.FileTypes
+ * @constructor
+ * @since 3.0.0
+ *
+ * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader that is responsible for this file.
+ * @param {(string|Phaser.Loader.FileTypes.ImageFileConfig)} key - The key to use for this file, or a file configuration object.
+ * @param {string|string[]} [url] - The absolute or relative URL to load this file from. If undefined or `null` it will be set to `<key>.png`, i.e. if `key` was "alien" then the URL will be "alien.png".
+ * @param {XHRSettingsObject} [xhrSettings] - Extra XHR Settings specifically for this file.
+ * @param {Phaser.Loader.FileTypes.ImageFrameConfig} [frameConfig] - The frame configuration object. Only provided for, and used by, Sprite Sheets.
+ */
+var ImageFile = new Class({
+
+    Extends: File,
+
+    initialize:
+
+    function ImageFile (loader, key, url, xhrSettings, frameConfig)
+    {
+        var extension = 'png';
+        var normalMapURL;
+
+        if (IsPlainObject(key))
+        {
+            var config = key;
+
+            key = GetFastValue(config, 'key');
+            url = GetFastValue(config, 'url');
+            normalMapURL = GetFastValue(config, 'normalMap');
+            xhrSettings = GetFastValue(config, 'xhrSettings');
+            extension = GetFastValue(config, 'extension', extension);
+            frameConfig = GetFastValue(config, 'frameConfig');
+        }
+
+        if (Array.isArray(url))
+        {
+            normalMapURL = url[1];
+            url = url[0];
+        }
+
+        var fileConfig = {
+            type: 'image',
+            cache: loader.textureManager,
+            extension: extension,
+            responseType: 'blob',
+            key: key,
+            url: url,
+            xhrSettings: xhrSettings,
+            config: frameConfig
+        };
+
+        File.call(this, loader, fileConfig);
+
+        //  Do we have a normal map to load as well?
+        if (normalMapURL)
+        {
+            var normalMap = new ImageFile(loader, this.key, normalMapURL, xhrSettings, frameConfig);
+
+            normalMap.type = 'normalMap';
+
+            this.setLink(normalMap);
+
+            loader.addFile(normalMap);
+        }
+    },
+
+    /**
+     * Called automatically by Loader.nextFile.
+     * This method controls what extra work this File does with its loaded data.
+     *
+     * @method Phaser.Loader.FileTypes.ImageFile#onProcess
+     * @since 3.7.0
+     */
+    onProcess: function ()
+    {
+        this.state = CONST.FILE_PROCESSING;
+
+        this.data = new Image();
+
+        this.data.crossOrigin = this.crossOrigin;
+
+        var _this = this;
+
+        this.data.onload = function ()
+        {
+            File.revokeObjectURL(_this.data);
+
+            _this.onProcessComplete();
+        };
+
+        this.data.onerror = function ()
+        {
+            File.revokeObjectURL(_this.data);
+
+            _this.onProcessError();
+        };
+
+        File.createObjectURL(this.data, this.xhrLoader.response, 'image/png');
+    },
+
+    /**
+     * Adds this file to its target cache upon successful loading and processing.
+     *
+     * @method Phaser.Loader.FileTypes.ImageFile#addToCache
+     * @since 3.7.0
+     */
+    addToCache: function ()
+    {
+        var texture;
+        var linkFile = this.linkFile;
+
+        if (linkFile && linkFile.state === CONST.FILE_COMPLETE)
+        {
+            if (this.type === 'image')
+            {
+                texture = this.cache.addImage(this.key, this.data, linkFile.data);
+            }
+            else
+            {
+                texture = this.cache.addImage(linkFile.key, linkFile.data, this.data);
+            }
+
+            this.pendingDestroy(texture);
+
+            linkFile.pendingDestroy(texture);
+        }
+        else if (!linkFile)
+        {
+            texture = this.cache.addImage(this.key, this.data);
+
+            this.pendingDestroy(texture);
+        }
+    }
+
+});
+
+/**
+ * Adds an Image, or array of Images, to the current load queue.
+ *
+ * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
+ * 
+ * ```javascript
+ * function preload ()
+ * {
+ *     this.load.image('logo', 'images/phaserLogo.png');
+ * }
+ * ```
+ *
+ * The file is **not** loaded right away. It is added to a queue ready to be loaded either when the loader starts,
+ * or if it's already running, when the next free load slot becomes available. This happens automatically if you
+ * are calling this from within the Scene's `preload` method, or a related callback. Because the file is queued
+ * it means you cannot use the file immediately after calling this method, but must wait for the file to complete.
+ * The typical flow for a Phaser Scene is that you load assets in the Scene's `preload` method and then when the
+ * Scene's `create` method is called you are guaranteed that all of those assets are ready for use and have been
+ * loaded.
+ * 
+ * Phaser can load all common image types: png, jpg, gif and any other format the browser can natively handle.
+ * If you try to load an animated gif only the first frame will be rendered. Browsers do not natively support playback
+ * of animated gifs to Canvas elements.
+ *
+ * The key must be a unique String. It is used to add the file to the global Texture Manager upon a successful load.
+ * The key should be unique both in terms of files being loaded and files already present in the Texture Manager.
+ * Loading a file using a key that is already taken will result in a warning. If you wish to replace an existing file
+ * then remove it from the Texture Manager first, before loading a new one.
+ *
+ * Instead of passing arguments you can pass a configuration object, such as:
+ * 
+ * ```javascript
+ * this.load.image({
+ *     key: 'logo',
+ *     url: 'images/AtariLogo.png'
+ * });
+ * ```
+ *
+ * See the documentation for `Phaser.Loader.FileTypes.ImageFileConfig` for more details.
+ *
+ * Once the file has finished loading you can use it as a texture for a Game Object by referencing its key:
+ * 
+ * ```javascript
+ * this.load.image('logo', 'images/AtariLogo.png');
+ * // and later in your game ...
+ * this.add.image(x, y, 'logo');
+ * ```
+ *
+ * If you have specified a prefix in the loader, via `Loader.setPrefix` then this value will be prepended to this files
+ * key. For example, if the prefix was `MENU.` and the key was `Background` the final key will be `MENU.Background` and
+ * this is what you would use to retrieve the image from the Texture Manager.
+ *
+ * The URL can be relative or absolute. If the URL is relative the `Loader.baseURL` and `Loader.path` values will be prepended to it.
+ *
+ * If the URL isn't specified the Loader will take the key and create a filename from that. For example if the key is "alien"
+ * and no URL is given then the Loader will set the URL to be "alien.png". It will always add `.png` as the extension, although
+ * this can be overridden if using an object instead of method arguments. If you do not desire this action then provide a URL.
+ *
+ * Phaser also supports the automatic loading of associated normal maps. If you have a normal map to go with this image,
+ * then you can specify it by providing an array as the `url` where the second element is the normal map:
+ * 
+ * ```javascript
+ * this.load.image('logo', [ 'images/AtariLogo.png', 'images/AtariLogo-n.png' ]);
+ * ```
+ *
+ * Or, if you are using a config object use the `normalMap` property:
+ * 
+ * ```javascript
+ * this.load.image({
+ *     key: 'logo',
+ *     url: 'images/AtariLogo.png',
+ *     normalMap: 'images/AtariLogo-n.png'
+ * });
+ * ```
+ *
+ * The normal map file is subject to the same conditions as the image file with regard to the path, baseURL, CORs and XHR Settings.
+ * Normal maps are a WebGL only feature.
+ *
+ * Note: The ability to load this type of file will only be available if the Image File type has been built into Phaser.
+ * It is available in the default build but can be excluded from custom builds.
+ *
+ * @method Phaser.Loader.LoaderPlugin#image
+ * @fires Phaser.Loader.LoaderPlugin#addFileEvent
+ * @since 3.0.0
+ *
+ * @param {(string|Phaser.Loader.FileTypes.ImageFileConfig|Phaser.Loader.FileTypes.ImageFileConfig[])} key - The key to use for this file, or a file configuration object, or array of them.
+ * @param {string|string[]} [url] - The absolute or relative URL to load this file from. If undefined or `null` it will be set to `<key>.png`, i.e. if `key` was "alien" then the URL will be "alien.png".
+ * @param {XHRSettingsObject} [xhrSettings] - An XHR Settings configuration object. Used in replacement of the Loaders default XHR Settings.
+ *
+ * @return {Phaser.Loader.LoaderPlugin} The Loader instance.
+ */
+FileTypesManager.register('image', function (key, url, xhrSettings)
+{
+    if (Array.isArray(key))
+    {
+        for (var i = 0; i < key.length; i++)
+        {
+            //  If it's an array it has to be an array of Objects, so we get everything out of the 'key' object
+            this.addFile(new ImageFile(this, key[i]));
+        }
+    }
+    else
+    {
+        this.addFile(new ImageFile(this, key, url, xhrSettings));
+    }
+
+    return this;
+});
+
+module.exports = ImageFile;
+
+
+/***/ }),
+/* 53 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * @namespace Phaser.Loader.Events
+ */
+
+module.exports = {
+
+    ADD: __webpack_require__(54),
+    COMPLETE: __webpack_require__(55),
+    FILE_COMPLETE: __webpack_require__(56),
+    FILE_KEY_COMPLETE: __webpack_require__(57),
+    FILE_LOAD_ERROR: __webpack_require__(58),
+    FILE_LOAD: __webpack_require__(59),
+    FILE_PROGRESS: __webpack_require__(60),
+    POST_PROCESS: __webpack_require__(61),
+    PROGRESS: __webpack_require__(62),
+    START: __webpack_require__(63)
+
+};
+
+
+/***/ }),
+/* 54 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Loader Plugin Add File Event.
+ * 
+ * This event is dispatched when a new file is successfully added to the Loader and placed into the load queue.
+ * 
+ * Listen to it from a Scene using: `this.load.on('addfile', listener)`.
+ * 
+ * If you add lots of files to a Loader from a `preload` method, it will dispatch this event for each one of them.
+ *
+ * @event Phaser.Loader.Events#ADD
+ * 
+ * @param {string} key - The unique key of the file that was added to the Loader.
+ * @param {string} type - The [file type]{@link Phaser.Loader.File#type} string of the file that was added to the Loader, i.e. `image`.
+ * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader Plugin that dispatched this event.
+ * @param {Phaser.Loader.File} file - A reference to the File which was added to the Loader.
+ */
+module.exports = 'addfile';
+
+
+/***/ }),
+/* 55 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Loader Plugin Complete Event.
+ * 
+ * This event is dispatched when the Loader has fully processed everything in the load queue.
+ * By this point every loaded file will now be in its associated cache and ready for use.
+ * 
+ * Listen to it from a Scene using: `this.load.on('complete', listener)`.
+ *
+ * @event Phaser.Loader.Events#COMPLETE
+ * 
+ * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader Plugin that dispatched this event.
+ * @param {integer} totalComplete - The total number of files that successfully loaded.
+ * @param {integer} totalFailed - The total number of files that failed to load.
+ */
+module.exports = 'complete';
+
+
+/***/ }),
+/* 56 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The File Load Complete Event.
+ * 
+ * This event is dispatched by the Loader Plugin when any file in the queue finishes loading.
+ * 
+ * Listen to it from a Scene using: `this.load.on('filecomplete', listener)`.
+ * 
+ * You can also listen for the completion of a specific file. See the [FILE_KEY_COMPLETE]{@linkcode Phaser.Loader.Events#event:FILE_KEY_COMPLETE} event.
+ *
+ * @event Phaser.Loader.Events#FILE_COMPLETE
+ * 
+ * @param {string} key - The key of the file that just loaded and finished processing.
+ * @param {string} type - The [file type]{@link Phaser.Loader.File#type} of the file that just loaded, i.e. `image`.
+ * @param {any} data - The raw data the file contained.
+ */
+module.exports = 'filecomplete';
+
+
+/***/ }),
+/* 57 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The File Load Complete Event.
+ * 
+ * This event is dispatched by the Loader Plugin when any file in the queue finishes loading.
+ * 
+ * It uses a special dynamic event name constructed from the key and type of the file.
+ * 
+ * For example, if you have loaded an `image` with a key of `monster`, you can listen for it
+ * using the following:
+ *
+ * ```javascript
+ * this.load.on('filecomplete-image-monster', function (key, type, data) {
+ *     // Your handler code
+ * });
+ * ```
+ *
+ * Or, if you have loaded a texture `atlas` with a key of `Level1`:
+ * 
+ * ```javascript
+ * this.load.on('filecomplete-atlas-Level1', function (key, type, data) {
+ *     // Your handler code
+ * });
+ * ```
+ * 
+ * Or, if you have loaded a sprite sheet with a key of `Explosion` and a prefix of `GAMEOVER`:
+ * 
+ * ```javascript
+ * this.load.on('filecomplete-spritesheet-GAMEOVERExplosion', function (key, type, data) {
+ *     // Your handler code
+ * });
+ * ```
+ * 
+ * You can also listen for the generic completion of files. See the [FILE_COMPLETE]{@linkcode Phaser.Loader.Events#event:FILE_COMPLETE} event.
+ *
+ * @event Phaser.Loader.Events#FILE_KEY_COMPLETE
+ * 
+ * @param {string} key - The key of the file that just loaded and finished processing.
+ * @param {string} type - The [file type]{@link Phaser.Loader.File#type} of the file that just loaded, i.e. `image`.
+ * @param {any} data - The raw data the file contained.
+ */
+module.exports = 'filecomplete-';
+
+
+/***/ }),
+/* 58 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The File Load Error Event.
+ * 
+ * This event is dispatched by the Loader Plugin when a file fails to load.
+ * 
+ * Listen to it from a Scene using: `this.load.on('loaderror', listener)`.
+ *
+ * @event Phaser.Loader.Events#FILE_LOAD_ERROR
+ * 
+ * @param {Phaser.Loader.File} file - A reference to the File which errored during load.
+ */
+module.exports = 'loaderror';
+
+
+/***/ }),
+/* 59 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The File Load Event.
+ * 
+ * This event is dispatched by the Loader Plugin when a file finishes loading,
+ * but _before_ it is processed and added to the internal Phaser caches.
+ * 
+ * Listen to it from a Scene using: `this.load.on('load', listener)`.
+ *
+ * @event Phaser.Loader.Events#FILE_LOAD
+ * 
+ * @param {Phaser.Loader.File} file - A reference to the File which just finished loading.
+ */
+module.exports = 'load';
+
+
+/***/ }),
+/* 60 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The File Load Progress Event.
+ * 
+ * This event is dispatched by the Loader Plugin during the load of a file, if the browser receives a DOM ProgressEvent and
+ * the `lengthComputable` event property is true. Depending on the size of the file and browser in use, this may, or may not happen.
+ * 
+ * Listen to it from a Scene using: `this.load.on('fileprogress', listener)`.
+ *
+ * @event Phaser.Loader.Events#FILE_PROGRESS
+ * 
+ * @param {Phaser.Loader.File} file - A reference to the File which errored during load.
+ * @param {number} percentComplete - A value between 0 and 1 indicating how 'complete' this file is.
+ */
+module.exports = 'fileprogress';
+
+
+/***/ }),
+/* 61 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Loader Plugin Post Process Event.
+ * 
+ * This event is dispatched by the Loader Plugin when the Loader has finished loading everything in the load queue.
+ * It is dispatched before the internal lists are cleared and each File is destroyed.
+ * 
+ * Use this hook to perform any last minute processing of files that can only happen once the
+ * Loader has completed, but prior to it emitting the `complete` event.
+ * 
+ * Listen to it from a Scene using: `this.load.on('postprocess', listener)`.
+ *
+ * @event Phaser.Loader.Events#POST_PROCESS
+ * 
+ * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader Plugin that dispatched this event.
+ */
+module.exports = 'postprocess';
+
+
+/***/ }),
+/* 62 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Loader Plugin Progress Event.
+ * 
+ * This event is dispatched when the Loader updates its load progress, typically as a result of a file having completed loading.
+ * 
+ * Listen to it from a Scene using: `this.load.on('progress', listener)`.
+ *
+ * @event Phaser.Loader.Events#PROGRESS
+ * 
+ * @param {number} progress - The current progress of the load. A value between 0 and 1.
+ */
+module.exports = 'progress';
+
+
+/***/ }),
+/* 63 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Loader Plugin Start Event.
+ * 
+ * This event is dispatched when the Loader starts running. At this point load progress is zero.
+ * 
+ * This event is dispatched even if there aren't any files in the load queue.
+ * 
+ * Listen to it from a Scene using: `this.load.on('start', listener)`.
+ *
+ * @event Phaser.Loader.Events#START
+ * 
+ * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader Plugin that dispatched this event.
+ */
+module.exports = 'start';
+
+
+/***/ }),
+/* 64 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * Given a File and a baseURL value this returns the URL the File will use to download from.
+ *
+ * @function Phaser.Loader.GetURL
+ * @since 3.0.0
+ *
+ * @param {Phaser.Loader.File} file - The File object.
+ * @param {string} baseURL - A default base URL.
+ *
+ * @return {string} The URL the File will use.
+ */
+var GetURL = function (file, baseURL)
+{
+    if (!file.url)
+    {
+        return false;
+    }
+
+    if (file.url.match(/^(?:blob:|data:|http:\/\/|https:\/\/|\/\/)/))
+    {
+        return file.url;
+    }
+    else
+    {
+        return baseURL + file.url;
+    }
+};
+
+module.exports = GetURL;
+
+
+/***/ }),
+/* 65 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var IsPlainObject = __webpack_require__(2);
+
+// @param {boolean} deep - Perform a deep copy?
+// @param {object} target - The target object to copy to.
+// @return {object} The extended object.
+
+/**
+ * This is a slightly modified version of http://api.jquery.com/jQuery.extend/
+ *
+ * @function Phaser.Utils.Objects.Extend
+ * @since 3.0.0
+ *
+ * @return {object} The extended object.
+ */
+var Extend = function ()
+{
+    var options, name, src, copy, copyIsArray, clone,
+        target = arguments[0] || {},
+        i = 1,
+        length = arguments.length,
+        deep = false;
+
+    // Handle a deep copy situation
+    if (typeof target === 'boolean')
+    {
+        deep = target;
+        target = arguments[1] || {};
+
+        // skip the boolean and the target
+        i = 2;
+    }
+
+    // extend Phaser if only one argument is passed
+    if (length === i)
+    {
+        target = this;
+        --i;
+    }
+
+    for (; i < length; i++)
+    {
+        // Only deal with non-null/undefined values
+        if ((options = arguments[i]) != null)
+        {
+            // Extend the base object
+            for (name in options)
+            {
+                src = target[name];
+                copy = options[name];
+
+                // Prevent never-ending loop
+                if (target === copy)
+                {
+                    continue;
+                }
+
+                // Recurse if we're merging plain objects or arrays
+                if (deep && copy && (IsPlainObject(copy) || (copyIsArray = Array.isArray(copy))))
+                {
+                    if (copyIsArray)
+                    {
+                        copyIsArray = false;
+                        clone = src && Array.isArray(src) ? src : [];
+                    }
+                    else
+                    {
+                        clone = src && IsPlainObject(src) ? src : {};
+                    }
+
+                    // Never move original objects, clone them
+                    target[name] = Extend(deep, clone, copy);
+
+                // Don't bring in undefined values
+                }
+                else if (copy !== undefined)
+                {
+                    target[name] = copy;
+                }
+            }
+        }
+    }
+
+    // Return the modified object
+    return target;
+};
+
+module.exports = Extend;
+
+
+/***/ }),
+/* 66 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var MergeXHRSettings = __webpack_require__(8);
+
+/**
+ * Creates a new XMLHttpRequest (xhr) object based on the given File and XHRSettings
+ * and starts the download of it. It uses the Files own XHRSettings and merges them
+ * with the global XHRSettings object to set the xhr values before download.
+ *
+ * @function Phaser.Loader.XHRLoader
+ * @since 3.0.0
+ *
+ * @param {Phaser.Loader.File} file - The File to download.
+ * @param {XHRSettingsObject} globalXHRSettings - The global XHRSettings object.
+ *
+ * @return {XMLHttpRequest} The XHR object.
+ */
+var XHRLoader = function (file, globalXHRSettings)
+{
+    var config = MergeXHRSettings(globalXHRSettings, file.xhrSettings);
+
+    var xhr = new XMLHttpRequest();
+
+    xhr.open('GET', file.src, config.async, config.user, config.password);
+
+    xhr.responseType = file.xhrSettings.responseType;
+    xhr.timeout = config.timeout;
+
+    if (config.header && config.headerValue)
+    {
+        xhr.setRequestHeader(config.header, config.headerValue);
+    }
+
+    if (config.requestedWith)
+    {
+        xhr.setRequestHeader('X-Requested-With', config.requestedWith);
+    }
+
+    if (config.overrideMimeType)
+    {
+        xhr.overrideMimeType(config.overrideMimeType);
+    }
+
+    // After a successful request, the xhr.response property will contain the requested data as a DOMString, ArrayBuffer, Blob, or Document (depending on what was set for responseType.)
+
+    xhr.onload = file.onLoad.bind(file, xhr);
+    xhr.onerror = file.onError.bind(file, xhr);
+    xhr.onprogress = file.onProgress.bind(file);
+
+    //  This is the only standard method, the ones above are browser additions (maybe not universal?)
+    // xhr.onreadystatechange
+
+    xhr.send();
+
+    return xhr;
+};
+
+module.exports = XHRLoader;
+
+
+/***/ }),
+/* 67 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Class = __webpack_require__(0);
+var CONST = __webpack_require__(5);
+var File = __webpack_require__(6);
+var FileTypesManager = __webpack_require__(4);
+var GetFastValue = __webpack_require__(1);
+var GetValue = __webpack_require__(10);
+var IsPlainObject = __webpack_require__(2);
+
+/**
+ * @typedef {object} Phaser.Loader.FileTypes.JSONFileConfig
+ *
+ * @property {string} key - The key of the file. Must be unique within both the Loader and the JSON Cache.
+ * @property {string|any} [url] - The absolute or relative URL to load the file from. Or can be a ready formed JSON object, in which case it will be directly added to the Cache.
+ * @property {string} [extension='json'] - The default file extension to use if no url is provided.
+ * @property {string} [dataKey] - If specified instead of the whole JSON file being parsed and added to the Cache, only the section corresponding to this property key will be added. If the property you want to extract is nested, use periods to divide it.
+ * @property {XHRSettingsObject} [xhrSettings] - Extra XHR Settings specifically for this file.
+ */
+
+/**
+ * @classdesc
+ * A single JSON File suitable for loading by the Loader.
+ *
+ * These are created when you use the Phaser.Loader.LoaderPlugin#json method and are not typically created directly.
+ * 
+ * For documentation about what all the arguments and configuration options mean please see Phaser.Loader.LoaderPlugin#json.
+ *
+ * @class JSONFile
+ * @extends Phaser.Loader.File
+ * @memberof Phaser.Loader.FileTypes
+ * @constructor
+ * @since 3.0.0
+ *
+ * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader that is responsible for this file.
+ * @param {(string|Phaser.Loader.FileTypes.JSONFileConfig)} key - The key to use for this file, or a file configuration object.
+ * @param {string} [url] - The absolute or relative URL to load this file from. If undefined or `null` it will be set to `<key>.json`, i.e. if `key` was "alien" then the URL will be "alien.json".
+ * @param {XHRSettingsObject} [xhrSettings] - Extra XHR Settings specifically for this file.
+ * @param {string} [dataKey] - When the JSON file loads only this property will be stored in the Cache.
+ */
+var JSONFile = new Class({
+
+    Extends: File,
+
+    initialize:
+
+    //  url can either be a string, in which case it is treated like a proper url, or an object, in which case it is treated as a ready-made JS Object
+    //  dataKey allows you to pluck a specific object out of the JSON and put just that into the cache, rather than the whole thing
+
+    function JSONFile (loader, key, url, xhrSettings, dataKey)
+    {
+        var extension = 'json';
+
+        if (IsPlainObject(key))
+        {
+            var config = key;
+
+            key = GetFastValue(config, 'key');
+            url = GetFastValue(config, 'url');
+            xhrSettings = GetFastValue(config, 'xhrSettings');
+            extension = GetFastValue(config, 'extension', extension);
+            dataKey = GetFastValue(config, 'dataKey', dataKey);
+        }
+
+        var fileConfig = {
+            type: 'json',
+            cache: loader.cacheManager.json,
+            extension: extension,
+            responseType: 'text',
+            key: key,
+            url: url,
+            xhrSettings: xhrSettings,
+            config: dataKey
+        };
+
+        File.call(this, loader, fileConfig);
+
+        if (IsPlainObject(url))
+        {
+            //  Object provided instead of a URL, so no need to actually load it (populate data with value)
+            if (dataKey)
+            {
+                this.data = GetValue(url, dataKey);
+            }
+            else
+            {
+                this.data = url;
+            }
+
+            this.state = CONST.FILE_POPULATED;
+        }
+    },
+
+    /**
+     * Called automatically by Loader.nextFile.
+     * This method controls what extra work this File does with its loaded data.
+     *
+     * @method Phaser.Loader.FileTypes.JSONFile#onProcess
+     * @since 3.7.0
+     */
+    onProcess: function ()
+    {
+        if (this.state !== CONST.FILE_POPULATED)
+        {
+            this.state = CONST.FILE_PROCESSING;
+
+            var json = JSON.parse(this.xhrLoader.responseText);
+
+            var key = this.config;
+
+            if (typeof key === 'string')
+            {
+                this.data = GetValue(json, key, json);
+            }
+            else
+            {
+                this.data = json;
+            }
+        }
+
+        this.onProcessComplete();
+    }
+
+});
+
+/**
+ * Adds a JSON file, or array of JSON files, to the current load queue.
+ *
+ * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
+ * 
+ * ```javascript
+ * function preload ()
+ * {
+ *     this.load.json('wavedata', 'files/AlienWaveData.json');
+ * }
+ * ```
+ *
+ * The file is **not** loaded right away. It is added to a queue ready to be loaded either when the loader starts,
+ * or if it's already running, when the next free load slot becomes available. This happens automatically if you
+ * are calling this from within the Scene's `preload` method, or a related callback. Because the file is queued
+ * it means you cannot use the file immediately after calling this method, but must wait for the file to complete.
+ * The typical flow for a Phaser Scene is that you load assets in the Scene's `preload` method and then when the
+ * Scene's `create` method is called you are guaranteed that all of those assets are ready for use and have been
+ * loaded.
+ * 
+ * The key must be a unique String. It is used to add the file to the global JSON Cache upon a successful load.
+ * The key should be unique both in terms of files being loaded and files already present in the JSON Cache.
+ * Loading a file using a key that is already taken will result in a warning. If you wish to replace an existing file
+ * then remove it from the JSON Cache first, before loading a new one.
+ *
+ * Instead of passing arguments you can pass a configuration object, such as:
+ * 
+ * ```javascript
+ * this.load.json({
+ *     key: 'wavedata',
+ *     url: 'files/AlienWaveData.json'
+ * });
+ * ```
+ *
+ * See the documentation for `Phaser.Loader.FileTypes.JSONFileConfig` for more details.
+ *
+ * Once the file has finished loading you can access it from its Cache using its key:
+ * 
+ * ```javascript
+ * this.load.json('wavedata', 'files/AlienWaveData.json');
+ * // and later in your game ...
+ * var data = this.cache.json.get('wavedata');
+ * ```
+ *
+ * If you have specified a prefix in the loader, via `Loader.setPrefix` then this value will be prepended to this files
+ * key. For example, if the prefix was `LEVEL1.` and the key was `Waves` the final key will be `LEVEL1.Waves` and
+ * this is what you would use to retrieve the text from the JSON Cache.
+ *
+ * The URL can be relative or absolute. If the URL is relative the `Loader.baseURL` and `Loader.path` values will be prepended to it.
+ *
+ * If the URL isn't specified the Loader will take the key and create a filename from that. For example if the key is "data"
+ * and no URL is given then the Loader will set the URL to be "data.json". It will always add `.json` as the extension, although
+ * this can be overridden if using an object instead of method arguments. If you do not desire this action then provide a URL.
+ *
+ * You can also optionally provide a `dataKey` to use. This allows you to extract only a part of the JSON and store it in the Cache,
+ * rather than the whole file. For example, if your JSON data had a structure like this:
+ * 
+ * ```json
+ * {
+ *     "level1": {
+ *         "baddies": {
+ *             "aliens": {},
+ *             "boss": {}
+ *         }
+ *     },
+ *     "level2": {},
+ *     "level3": {}
+ * }
+ * ```
+ *
+ * And you only wanted to store the `boss` data in the Cache, then you could pass `level1.baddies.boss`as the `dataKey`.
+ *
+ * Note: The ability to load this type of file will only be available if the JSON File type has been built into Phaser.
+ * It is available in the default build but can be excluded from custom builds.
+ *
+ * @method Phaser.Loader.LoaderPlugin#json
+ * @fires Phaser.Loader.LoaderPlugin#addFileEvent
+ * @since 3.0.0
+ *
+ * @param {(string|Phaser.Loader.FileTypes.JSONFileConfig|Phaser.Loader.FileTypes.JSONFileConfig[])} key - The key to use for this file, or a file configuration object, or array of them.
+ * @param {string} [url] - The absolute or relative URL to load this file from. If undefined or `null` it will be set to `<key>.json`, i.e. if `key` was "alien" then the URL will be "alien.json".
+ * @param {string} [dataKey] - When the JSON file loads only this property will be stored in the Cache.
+ * @param {XHRSettingsObject} [xhrSettings] - An XHR Settings configuration object. Used in replacement of the Loaders default XHR Settings.
+ *
+ * @return {Phaser.Loader.LoaderPlugin} The Loader instance.
+ */
+FileTypesManager.register('json', function (key, url, dataKey, xhrSettings)
+{
+    if (Array.isArray(key))
+    {
+        for (var i = 0; i < key.length; i++)
+        {
+            //  If it's an array it has to be an array of Objects, so we get everything out of the 'key' object
+            this.addFile(new JSONFile(this, key[i]));
+        }
+    }
+    else
+    {
+        this.addFile(new JSONFile(this, key, url, xhrSettings, dataKey));
+    }
+
+    return this;
+});
+
+module.exports = JSONFile;
+
+
+/***/ }),
 /* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8252,10 +7659,1258 @@ module.exports = Visible;
  */
 
 var Class = __webpack_require__(0);
-var ComponentsToJSON = __webpack_require__(69);
-var DataManager = __webpack_require__(70);
-var EventEmitter = __webpack_require__(76);
-var Events = __webpack_require__(77);
+
+/**
+ * @classdesc
+ * A MultiFile is a special kind of parent that contains two, or more, Files as children and looks after
+ * the loading and processing of them all. It is commonly extended and used as a base class for file types such as AtlasJSON or BitmapFont.
+ * 
+ * You shouldn't create an instance of a MultiFile directly, but should extend it with your own class, setting a custom type and processing methods.
+ *
+ * @class MultiFile
+ * @memberof Phaser.Loader
+ * @constructor
+ * @since 3.7.0
+ *
+ * @param {Phaser.Loader.LoaderPlugin} loader - The Loader that is going to load this File.
+ * @param {string} type - The file type string for sorting within the Loader.
+ * @param {string} key - The key of the file within the loader.
+ * @param {Phaser.Loader.File[]} files - An array of Files that make-up this MultiFile.
+ */
+var MultiFile = new Class({
+
+    initialize:
+
+    function MultiFile (loader, type, key, files)
+    {
+        /**
+         * A reference to the Loader that is going to load this file.
+         *
+         * @name Phaser.Loader.MultiFile#loader
+         * @type {Phaser.Loader.LoaderPlugin}
+         * @since 3.7.0
+         */
+        this.loader = loader;
+
+        /**
+         * The file type string for sorting within the Loader.
+         *
+         * @name Phaser.Loader.MultiFile#type
+         * @type {string}
+         * @since 3.7.0
+         */
+        this.type = type;
+
+        /**
+         * Unique cache key (unique within its file type)
+         *
+         * @name Phaser.Loader.MultiFile#key
+         * @type {string}
+         * @since 3.7.0
+         */
+        this.key = key;
+
+        /**
+         * Array of files that make up this MultiFile.
+         *
+         * @name Phaser.Loader.MultiFile#files
+         * @type {Phaser.Loader.File[]}
+         * @since 3.7.0
+         */
+        this.files = files;
+
+        /**
+         * The completion status of this MultiFile.
+         *
+         * @name Phaser.Loader.MultiFile#complete
+         * @type {boolean}
+         * @default false
+         * @since 3.7.0
+         */
+        this.complete = false;
+
+        /**
+         * The number of files to load.
+         *
+         * @name Phaser.Loader.MultiFile#pending
+         * @type {integer}
+         * @since 3.7.0
+         */
+
+        this.pending = files.length;
+
+        /**
+         * The number of files that failed to load.
+         *
+         * @name Phaser.Loader.MultiFile#failed
+         * @type {integer}
+         * @default 0
+         * @since 3.7.0
+         */
+        this.failed = 0;
+
+        /**
+         * A storage container for transient data that the loading files need.
+         *
+         * @name Phaser.Loader.MultiFile#config
+         * @type {any}
+         * @since 3.7.0
+         */
+        this.config = {};
+
+        //  Link the files
+        for (var i = 0; i < files.length; i++)
+        {
+            files[i].multiFile = this;
+        }
+    },
+
+    /**
+     * Checks if this MultiFile is ready to process its children or not.
+     *
+     * @method Phaser.Loader.MultiFile#isReadyToProcess
+     * @since 3.7.0
+     *
+     * @return {boolean} `true` if all children of this MultiFile have loaded, otherwise `false`.
+     */
+    isReadyToProcess: function ()
+    {
+        return (this.pending === 0 && this.failed === 0 && !this.complete);
+    },
+
+    /**
+     * Adds another child to this MultiFile, increases the pending count and resets the completion status.
+     *
+     * @method Phaser.Loader.MultiFile#addToMultiFile
+     * @since 3.7.0
+     *
+     * @param {Phaser.Loader.File} files - The File to add to this MultiFile.
+     *
+     * @return {Phaser.Loader.MultiFile} This MultiFile instance.
+     */
+    addToMultiFile: function (file)
+    {
+        this.files.push(file);
+
+        file.multiFile = this;
+
+        this.pending++;
+
+        this.complete = false;
+
+        return this;
+    },
+
+    /**
+     * Called by each File when it finishes loading.
+     *
+     * @method Phaser.Loader.MultiFile#onFileComplete
+     * @since 3.7.0
+     *
+     * @param {Phaser.Loader.File} file - The File that has completed processing.
+     */
+    onFileComplete: function (file)
+    {
+        var index = this.files.indexOf(file);
+
+        if (index !== -1)
+        {
+            this.pending--;
+        }
+    },
+
+    /**
+     * Called by each File that fails to load.
+     *
+     * @method Phaser.Loader.MultiFile#onFileFailed
+     * @since 3.7.0
+     *
+     * @param {Phaser.Loader.File} file - The File that has failed to load.
+     */
+    onFileFailed: function (file)
+    {
+        var index = this.files.indexOf(file);
+
+        if (index !== -1)
+        {
+            this.failed++;
+        }
+    }
+
+});
+
+module.exports = MultiFile;
+
+
+/***/ }),
+/* 69 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Class = __webpack_require__(0);
+var CONST = __webpack_require__(5);
+var File = __webpack_require__(6);
+var FileTypesManager = __webpack_require__(4);
+var GetFastValue = __webpack_require__(1);
+var IsPlainObject = __webpack_require__(2);
+
+/**
+ * @typedef {object} Phaser.Loader.FileTypes.TextFileConfig
+ *
+ * @property {string} key - The key of the file. Must be unique within both the Loader and the Text Cache.
+ * @property {string} [url] - The absolute or relative URL to load the file from.
+ * @property {string} [extension='txt'] - The default file extension to use if no url is provided.
+ * @property {XHRSettingsObject} [xhrSettings] - Extra XHR Settings specifically for this file.
+ */
+
+/**
+ * @classdesc
+ * A single Text File suitable for loading by the Loader.
+ *
+ * These are created when you use the Phaser.Loader.LoaderPlugin#text method and are not typically created directly.
+ *
+ * For documentation about what all the arguments and configuration options mean please see Phaser.Loader.LoaderPlugin#text.
+ *
+ * @class TextFile
+ * @extends Phaser.Loader.File
+ * @memberof Phaser.Loader.FileTypes
+ * @constructor
+ * @since 3.0.0
+ *
+ * @param {Phaser.Loader.LoaderPlugin} loader - A reference to the Loader that is responsible for this file.
+ * @param {(string|Phaser.Loader.FileTypes.TextFileConfig)} key - The key to use for this file, or a file configuration object.
+ * @param {string} [url] - The absolute or relative URL to load this file from. If undefined or `null` it will be set to `<key>.txt`, i.e. if `key` was "alien" then the URL will be "alien.txt".
+ * @param {XHRSettingsObject} [xhrSettings] - Extra XHR Settings specifically for this file.
+ */
+var TextFile = new Class({
+
+    Extends: File,
+
+    initialize:
+
+    function TextFile (loader, key, url, xhrSettings)
+    {
+        var extension = 'txt';
+
+        if (IsPlainObject(key))
+        {
+            var config = key;
+
+            key = GetFastValue(config, 'key');
+            url = GetFastValue(config, 'url');
+            xhrSettings = GetFastValue(config, 'xhrSettings');
+            extension = GetFastValue(config, 'extension', extension);
+        }
+
+        var fileConfig = {
+            type: 'text',
+            cache: loader.cacheManager.text,
+            extension: extension,
+            responseType: 'text',
+            key: key,
+            url: url,
+            xhrSettings: xhrSettings
+        };
+
+        File.call(this, loader, fileConfig);
+    },
+
+    /**
+     * Called automatically by Loader.nextFile.
+     * This method controls what extra work this File does with its loaded data.
+     *
+     * @method Phaser.Loader.FileTypes.TextFile#onProcess
+     * @since 3.7.0
+     */
+    onProcess: function ()
+    {
+        this.state = CONST.FILE_PROCESSING;
+
+        this.data = this.xhrLoader.responseText;
+
+        this.onProcessComplete();
+    }
+
+});
+
+/**
+ * Adds a Text file, or array of Text files, to the current load queue.
+ *
+ * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
+ *
+ * ```javascript
+ * function preload ()
+ * {
+ *     this.load.text('story', 'files/IntroStory.txt');
+ * }
+ * ```
+ *
+ * The file is **not** loaded right away. It is added to a queue ready to be loaded either when the loader starts,
+ * or if it's already running, when the next free load slot becomes available. This happens automatically if you
+ * are calling this from within the Scene's `preload` method, or a related callback. Because the file is queued
+ * it means you cannot use the file immediately after calling this method, but must wait for the file to complete.
+ * The typical flow for a Phaser Scene is that you load assets in the Scene's `preload` method and then when the
+ * Scene's `create` method is called you are guaranteed that all of those assets are ready for use and have been
+ * loaded.
+ *
+ * The key must be a unique String. It is used to add the file to the global Text Cache upon a successful load.
+ * The key should be unique both in terms of files being loaded and files already present in the Text Cache.
+ * Loading a file using a key that is already taken will result in a warning. If you wish to replace an existing file
+ * then remove it from the Text Cache first, before loading a new one.
+ *
+ * Instead of passing arguments you can pass a configuration object, such as:
+ *
+ * ```javascript
+ * this.load.text({
+ *     key: 'story',
+ *     url: 'files/IntroStory.txt'
+ * });
+ * ```
+ *
+ * See the documentation for `Phaser.Loader.FileTypes.TextFileConfig` for more details.
+ *
+ * Once the file has finished loading you can access it from its Cache using its key:
+ *
+ * ```javascript
+ * this.load.text('story', 'files/IntroStory.txt');
+ * // and later in your game ...
+ * var data = this.cache.text.get('story');
+ * ```
+ *
+ * If you have specified a prefix in the loader, via `Loader.setPrefix` then this value will be prepended to this files
+ * key. For example, if the prefix was `LEVEL1.` and the key was `Story` the final key will be `LEVEL1.Story` and
+ * this is what you would use to retrieve the text from the Text Cache.
+ *
+ * The URL can be relative or absolute. If the URL is relative the `Loader.baseURL` and `Loader.path` values will be prepended to it.
+ *
+ * If the URL isn't specified the Loader will take the key and create a filename from that. For example if the key is "story"
+ * and no URL is given then the Loader will set the URL to be "story.txt". It will always add `.txt` as the extension, although
+ * this can be overridden if using an object instead of method arguments. If you do not desire this action then provide a URL.
+ *
+ * Note: The ability to load this type of file will only be available if the Text File type has been built into Phaser.
+ * It is available in the default build but can be excluded from custom builds.
+ *
+ * @method Phaser.Loader.LoaderPlugin#text
+ * @fires Phaser.Loader.LoaderPlugin#addFileEvent
+ * @since 3.0.0
+ *
+ * @param {(string|Phaser.Loader.FileTypes.TextFileConfig|Phaser.Loader.FileTypes.TextFileConfig[])} key - The key to use for this file, or a file configuration object, or array of them.
+ * @param {string} [url] - The absolute or relative URL to load this file from. If undefined or `null` it will be set to `<key>.txt`, i.e. if `key` was "alien" then the URL will be "alien.txt".
+ * @param {XHRSettingsObject} [xhrSettings] - An XHR Settings configuration object. Used in replacement of the Loaders default XHR Settings.
+ *
+ * @return {Phaser.Loader.LoaderPlugin} The Loader instance.
+ */
+FileTypesManager.register('text', function (key, url, xhrSettings)
+{
+    if (Array.isArray(key))
+    {
+        for (var i = 0; i < key.length; i++)
+        {
+            //  If it's an array it has to be an array of Objects, so we get everything out of the 'key' object
+            this.addFile(new TextFile(this, key[i]));
+        }
+    }
+    else
+    {
+        this.addFile(new TextFile(this, key, url, xhrSettings));
+    }
+
+    return this;
+});
+
+module.exports = TextFile;
+
+
+/***/ }),
+/* 70 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2018 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Class = __webpack_require__(0);
+var ComponentsAlpha = __webpack_require__(11);
+var ComponentsBlendMode = __webpack_require__(13);
+var ComponentsDepth = __webpack_require__(14);
+var ComponentsFlip = __webpack_require__(15);
+var ComponentsScrollFactor = __webpack_require__(16);
+var ComponentsTransform = __webpack_require__(17);
+var ComponentsVisible = __webpack_require__(21);
+var GameObject = __webpack_require__(74);
+var SpineGameObjectRender = __webpack_require__(130);
+
+/**
+ * @classdesc
+ * TODO
+ *
+ * @class SpineGameObject
+ * @extends Phaser.GameObjects.GameObject
+ * @extends Phaser.GameObjects.Components.Alpha
+ * @extends Phaser.GameObjects.Components.BlendMode
+ * @extends Phaser.GameObjects.Components.Depth
+ * @extends Phaser.GameObjects.Components.Flip
+ * @extends Phaser.GameObjects.Components.Transform
+ * @extends Phaser.GameObjects.Components.Visible
+ * @extends Phaser.GameObjects.Components.ScrollFactor
+ *
+ * @memberof Phaser.GameObjects
+ * @constructor
+ * @since 3.16.0
+ *
+ * @param {Phaser.Scene} scene - A reference to the Scene that has installed this plugin.
+ * @param {Phaser.Plugins.PluginManager} plugin - A reference to the Phaser Plugin Manager.
+ * @param {number} x
+ * @param {number} y
+ * @param {string} animationName
+ * @param {boolean} loop
+ */
+var SpineGameObject = new Class({
+
+    Extends: GameObject,
+
+    Mixins: [
+        ComponentsAlpha,
+        ComponentsBlendMode,
+        ComponentsDepth,
+        ComponentsFlip,
+        ComponentsScrollFactor,
+        ComponentsTransform,
+        ComponentsVisible,
+        SpineGameObjectRender
+    ],
+
+    initialize:
+
+    function SpineGameObject (scene, plugin, x, y, key, animationName, loop)
+    {
+        GameObject.call(this, scene, 'Spine');
+
+        this.plugin = plugin;
+
+        this.runtime = plugin.getRuntime();
+
+        this.skeleton = null;
+        this.skeletonData = null;
+
+        this.state = null;
+        this.stateData = null;
+
+        /**
+         * Draw debug info for the spine object
+         *
+         * @name Phaser.GameObjects.SpineGameObject#drawDebug
+         * @type {boolean}
+         * @since 3.16.0
+         */
+        this.drawDebug = false;
+
+        /**
+         * The timeScale used for spine runtime
+         *
+         * @name Phaser.GameObjects.SpineGameObject#timeScale
+         * @type {number}
+         * @since 3.16.0
+         */
+        this.timeScale = 1;
+
+        this.setPosition(x, y);
+
+        if (key)
+        {
+            this.setSkeleton(key, animationName, loop);
+        }
+    },
+
+    /**
+     * Sets the spine skeleton.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#setSkeleton
+     * @public
+     * @since 3.16.0
+     *
+     * @param {string} textureKey - The key of the atlas Texture this Spine Game Object will use to render with, as stored in the Texture Manager.
+     * @param {string} animationName - The animation name.
+     * @param {boolean} loop - loop the animation?
+     * @param {skeletonJSON} [skeletonJSON] - The skeletonJSON file to read skeleton data from, if undefined then will get json with textureKey provided
+     *
+     * @returns {Phaser.GameObjects.SpineGameObject} the spine game object.
+     */
+    setSkeleton: function (textureKey, animationName, loop, skeletonJSON)
+    {
+        var data = this.plugin.createSkeleton(textureKey, skeletonJSON);
+
+        this.skeletonData = data.skeletonData;
+
+        var skeleton = data.skeleton;
+
+        skeleton.flipY = (this.scene.sys.game.config.renderType === 1);
+
+        skeleton.setToSetupPose();
+
+        skeleton.updateWorldTransform();
+
+        skeleton.setSkinByName('default');
+
+        this.skeleton = skeleton;
+
+        //  AnimationState
+        data = this.plugin.createAnimationState(skeleton);
+
+        if (this.state)
+        {
+            this.state.clearListeners();
+            this.state.clearListenerNotifications();
+        }
+
+        this.state = data.state;
+
+        this.stateData = data.stateData;
+
+        var _this = this;
+
+        this.state.addListener({
+            event: function (trackEntry, event)
+            {
+                //  Event on a Track
+                _this.emit('spine.event', _this, trackEntry, event);
+            },
+            complete: function (trackEntry, loopCount)
+            {
+                //  Animation on Track x completed, loop count
+                _this.emit('spine.complete', _this, trackEntry, loopCount);
+            },
+            start: function (trackEntry)
+            {
+                //  Animation on Track x started
+                _this.emit('spine.start', _this, trackEntry);
+            },
+            end: function (trackEntry)
+            {
+                //  Animation on Track x ended
+                _this.emit('spine.end', _this, trackEntry);
+            },
+            dispose: function (trackEntry)
+            {
+                // Animation on Track x disposed
+                _this.emit('spine.dispose', _this, trackEntry);
+            }
+        });
+
+        if (animationName)
+        {
+            this.setAnimation(0, animationName, loop);
+        }
+
+        return this;
+    },
+
+    // http://esotericsoftware.com/spine-runtimes-guide
+
+    /**
+     * Gets a list of the animations available.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#getAnimationList
+     * @public
+     * @since 3.16.0
+     *
+     * @returns {string[]} an array of the animation names.
+     */
+    getAnimationList: function ()
+    {
+        var output = [];
+
+        var skeletonData = this.skeletonData;
+
+        if (skeletonData)
+        {
+            for (var i = 0; i < skeletonData.animations.length; i++)
+            {
+                output.push(skeletonData.animations[i].name);
+            }
+        }
+
+        return output;
+    },
+
+    /**
+     * Plays an animation by name.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#play
+     * @public
+     * @since 3.16.0
+     *
+     * @param {string} animationName - The animation name.
+     * @param {boolean} loop - If true, the animation will repeat. If false it will not, instead its last frame is applied if played beyond its duration.
+     * In either case trackEnd determines when the track is cleared.
+     *
+     * @returns {Phaser.GameObjects.SpineGameObject}
+     */
+    play: function (animationName, loop)
+    {
+        if (loop === undefined)
+        {
+            loop = false;
+        }
+
+        return this.setAnimation(0, animationName, loop);
+    },
+
+    /**
+     * Sets an animation by name.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#setAnimation
+     * @public
+     * @since 3.16.0
+     *
+     * @param {number} trackIndex - The index of the track.
+     * @param {string} animationName - The animation name.
+     * @param {boolean} loop - If true, the animation will repeat. If false it will not, instead its last frame is applied if played beyond its duration.
+     * In either case trackEnd determines when the track is cleared.
+     *
+     * @returns {Phaser.GameObjects.SpineGameObject}
+     */
+    setAnimation: function (trackIndex, animationName, loop)
+    {
+        this.state.setAnimation(trackIndex, animationName, loop);
+
+        return this;
+    },
+
+    /**
+     * Adds an animation to be played after the current or last queued animation for a track.
+     * If the track is empty, it is equivalent to calling setAnimation.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#addAnimation
+     * @public
+     * @since 3.16.0
+     *
+     * @param {number} trackIndex - The index of the track.
+     * @param {string} animationName - The index of the track.
+     * @param {string} loop - The index of the track.
+     * @param {string} delay - The index of the track.
+     *
+     * @returns {spine.trackEntry} A track entry to allow further customization of animation playback.
+     */
+    addAnimation: function (trackIndex, animationName, loop, delay)
+    {
+        return this.state.addAnimation(trackIndex, animationName, loop, delay);
+    },
+
+    /**
+     * Sets an empty animation for a track, discarding any queued animations, and sets the track entry's mixDuration.
+     * An empty animation has no timelines and serves as a placeholder for mixing in or out.
+     *
+     * Mixing out is done by setting an empty animation with a mix duration using either setEmptyAnimation, setEmptyAnimations,
+     * or addEmptyAnimation. Mixing to an empty animation causes the previous animation to be applied less and less over the mix duration.
+     * Properties keyed in the previous animation transition to the value from lower tracks or to the setup pose value if no lower
+     * tracks key the property. A mix duration of 0 still mixes out over one frame.
+     *
+     * Mixing in is done by first setting an empty animation, then adding an animation using addAnimation and on the returned track entry,
+     * set the mixDuration. Mixing from an empty animation causes the new animation to be applied more and more over the mix duration.
+     * Properties keyed in the new animation transition from the value from lower tracks or from the setup pose value if no lower tracks
+     * key the property to the value keyed in the new animation.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#setEmptyAnimation
+     * @public
+     * @since 3.16.0
+     *
+     * @param {number} trackIndex - The index of the track.
+     * @param {number} mixDuration - The index of the track.
+     *
+     * @returns {Phaser.GameObjects.SpineGameObject}
+     */
+    setEmptyAnimation: function (trackIndex, mixDuration)
+    {
+        this.state.setEmptyAnimation(trackIndex, mixDuration);
+
+        return this;
+    },
+
+    /**
+     * Returns the track entry for the animation currently playing on the track, or null if no animation is currently playing.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#getCurrent
+     * @public
+     * @since 3.16.0
+     *
+     * @param {number} trackIndex - The index of the track.
+     *
+     * @returns {spine.trackEntry}
+     */
+    getCurrent: function (trackIndex)
+    {
+        return this.state.getCurrent(trackIndex);
+    },
+
+    /**
+     * Removes all animations from the track, leaving skeletons in their previous pose.
+     * It may be desired to use setEmptyAnimations to mix the skeletons back to the setup pose,
+     * rather than leaving them in their previous pose.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#clearTrack
+     * @public
+     * @since 3.16.0
+     *
+     * @param {number} trackIndex - The index of the track.
+     *
+     * @returns {Phaser.GameObjects.SpineGameObject}
+     */
+    clearTrack: function (trackIndex)
+    {
+        this.state.clearTrack(trackIndex);
+
+        return this;
+    },
+
+    /**
+     * Removes all animations from all tracks, leaving skeletons in their previous pose.
+     * It may be desired to use setEmptyAnimations to mix the skeletons back to the setup pose,
+     * rather than leaving them in their previous pose.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#clearTracks
+     * @public
+     * @since 3.16.0
+     *
+     * @returns {Phaser.GameObjects.SpineGameObject}
+     *
+     */
+    clearTracks: function ()
+    {
+        this.state.clearTracks();
+
+        return this;
+    },
+
+    /**
+     * Sets a skin by name.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#setSkinByName
+     * @public
+     * @since 3.16.0
+     *
+     * @param {string} skinName - The name of the new skin.
+     *
+     * @returns {boolean} True if any animations were applied.
+     *
+     */
+    setSkinByName: function (skinName)
+    {
+        var skeleton = this.skeleton;
+
+        skeleton.setSkinByName(skinName);
+
+        skeleton.setSlotsToSetupPose();
+
+        return this.state.apply(skeleton);
+    },
+
+    /**
+     * Sets a skin
+     *
+     * @method Phaser.GameObjects.SpineGameObject#setSkin
+     * @public
+     * @since 3.16.0
+     *
+     * @param {spine.Skin} newSkin - The new skin.
+     *
+     * @returns {Phaser.GameObjects.SpineGameObject}
+     *
+     */
+    setSkin: function (newSkin)
+    {
+        var skeleton = this.skeleton;
+
+        skeleton.setSkin(newSkin);
+
+        skeleton.setSlotsToSetupPose();
+
+        this.state.apply(skeleton);
+
+        return this;
+    },
+
+    /**
+     * Sets a mix duration by animation name.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#setMix
+     * @public
+     * @since 3.16.0
+     *
+     * @param {string} fromName - The name state to mix from.
+     * @param {string} toName - The name of the state to mix to.
+     * @param {string} duration - The duration of the mix.
+     *
+     * @returns {Phaser.GameObjects.SpineGameObject}
+     *
+     */
+    setMix: function (fromName, toName, duration)
+    {
+        this.stateData.setMix(fromName, toName, duration);
+
+        return this;
+    },
+
+    /**
+     * Finds a bone by comparing each bone's name. It is more efficient to cache the results of this method than to call it multiple times.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#findBone
+     * @public
+     * @since 3.16.0
+     *
+     * @param {string} boneName - The name of the bone.
+     *
+     * @returns {spine.Bone|null}
+     *
+     */
+    findBone: function (boneName)
+    {
+        return this.skeleton.findBone(boneName);
+    },
+
+    /**
+     * Finds a slot by comparing each slot's name. It is more efficient to cache the results of this method than to call it multiple times.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#findSlot
+     * @public
+     * @since 3.16.0
+     *
+     * @param {string} slotName - The name of the slot.
+     *
+     * @returns {spine.SlotData|null}
+     *
+     */
+    findSlot: function (slotName)
+    {
+        return this.skeleton.findSlot(slotName);
+    },
+
+    /**
+     * The skeleton's slots.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#getSlots
+     * @public
+     * @since 3.16.0
+     *
+     *
+     * @returns {list<spine.SlotData>}
+     *
+     */
+    getSlots: function ()
+    {
+        return this.skeleton.slots;
+    },
+
+    /**
+     * todo
+     *
+     * @method Phaser.GameObjects.SpineGameObject#getBounds
+     * @public
+     * @since 3.16.0
+     */
+    getBounds: function ()
+    {
+        return this.plugin.getBounds(this.skeleton);
+    },
+
+    /**
+     * Update this SpineGameObject's animations.
+     *
+     * @method Phaser.GameObjects.SpineGameObject#preUpdate
+     * @protected
+     * @since 3.16.0
+     *
+     * @param {number} time - The current timestamp.
+     * @param {number} delta - The delta time, in ms, elapsed since the last frame.
+     */
+    preUpdate: function (time, delta)
+    {
+        var skeleton = this.skeleton;
+
+        skeleton.flipX = this.flipX;
+        skeleton.flipY = this.flipY;
+
+        this.state.update((delta / 1000) * this.timeScale);
+
+        this.state.apply(skeleton);
+
+        this.emit('spine.update', skeleton);
+
+        skeleton.updateWorldTransform();
+    },
+
+    /**
+     * Internal destroy handler, called as part of the destroy process.
+     *
+     * @method Phaser.GameObjects.RenderTexture#preDestroy
+     * @protected
+     * @since 3.16.0
+     */
+    preDestroy: function ()
+    {
+        if (this.state)
+        {
+            this.state.clearListeners();
+            this.state.clearListenerNotifications();
+        }
+
+        this.plugin = null;
+        this.runtime = null;
+
+        this.skeleton = null;
+        this.skeletonData = null;
+
+        this.state = null;
+        this.stateData = null;
+    }
+
+});
+
+module.exports = SpineGameObject;
+
+
+/***/ }),
+/* 71 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * Phaser Blend Modes.
+ * 
+ * @name Phaser.BlendModes
+ * @enum {integer}
+ * @memberof Phaser
+ * @readonly
+ * @since 3.0.0
+ */
+
+module.exports = {
+
+    /**
+     * Skips the Blend Mode check in the renderer.
+     * 
+     * @name Phaser.BlendModes.SKIP_CHECK
+     */
+    SKIP_CHECK: -1,
+
+    /**
+     * Normal blend mode. For Canvas and WebGL.
+     * This is the default setting and draws new shapes on top of the existing canvas content.
+     * 
+     * @name Phaser.BlendModes.NORMAL
+     */
+    NORMAL: 0,
+
+    /**
+     * Add blend mode. For Canvas and WebGL.
+     * Where both shapes overlap the color is determined by adding color values.
+     * 
+     * @name Phaser.BlendModes.ADD
+     */
+    ADD: 1,
+
+    /**
+     * Multiply blend mode. For Canvas and WebGL.
+     * The pixels are of the top layer are multiplied with the corresponding pixel of the bottom layer. A darker picture is the result.
+     * 
+     * @name Phaser.BlendModes.MULTIPLY
+     */
+    MULTIPLY: 2,
+
+    /**
+     * Screen blend mode. For Canvas and WebGL.
+     * The pixels are inverted, multiplied, and inverted again. A lighter picture is the result (opposite of multiply)
+     * 
+     * @name Phaser.BlendModes.SCREEN
+     */
+    SCREEN: 3,
+
+    /**
+     * Overlay blend mode. For Canvas only.
+     * A combination of multiply and screen. Dark parts on the base layer become darker, and light parts become lighter.
+     * 
+     * @name Phaser.BlendModes.OVERLAY
+     */
+    OVERLAY: 4,
+
+    /**
+     * Darken blend mode. For Canvas only.
+     * Retains the darkest pixels of both layers.
+     * 
+     * @name Phaser.BlendModes.DARKEN
+     */
+    DARKEN: 5,
+
+    /**
+     * Lighten blend mode. For Canvas only.
+     * Retains the lightest pixels of both layers.
+     * 
+     * @name Phaser.BlendModes.LIGHTEN
+     */
+    LIGHTEN: 6,
+
+    /**
+     * Color Dodge blend mode. For Canvas only.
+     * Divides the bottom layer by the inverted top layer.
+     * 
+     * @name Phaser.BlendModes.COLOR_DODGE
+     */
+    COLOR_DODGE: 7,
+
+    /**
+     * Color Burn blend mode. For Canvas only.
+     * Divides the inverted bottom layer by the top layer, and then inverts the result.
+     * 
+     * @name Phaser.BlendModes.COLOR_BURN
+     */
+    COLOR_BURN: 8,
+
+    /**
+     * Hard Light blend mode. For Canvas only.
+     * A combination of multiply and screen like overlay, but with top and bottom layer swapped.
+     * 
+     * @name Phaser.BlendModes.HARD_LIGHT
+     */
+    HARD_LIGHT: 9,
+
+    /**
+     * Soft Light blend mode. For Canvas only.
+     * A softer version of hard-light. Pure black or white does not result in pure black or white.
+     * 
+     * @name Phaser.BlendModes.SOFT_LIGHT
+     */
+    SOFT_LIGHT: 10,
+
+    /**
+     * Difference blend mode. For Canvas only.
+     * Subtracts the bottom layer from the top layer or the other way round to always get a positive value.
+     * 
+     * @name Phaser.BlendModes.DIFFERENCE
+     */
+    DIFFERENCE: 11,
+
+    /**
+     * Exclusion blend mode. For Canvas only.
+     * Like difference, but with lower contrast.
+     * 
+     * @name Phaser.BlendModes.EXCLUSION
+     */
+    EXCLUSION: 12,
+
+    /**
+     * Hue blend mode. For Canvas only.
+     * Preserves the luma and chroma of the bottom layer, while adopting the hue of the top layer.
+     * 
+     * @name Phaser.BlendModes.HUE
+     */
+    HUE: 13,
+
+    /**
+     * Saturation blend mode. For Canvas only.
+     * Preserves the luma and hue of the bottom layer, while adopting the chroma of the top layer.
+     * 
+     * @name Phaser.BlendModes.SATURATION
+     */
+    SATURATION: 14,
+
+    /**
+     * Color blend mode. For Canvas only.
+     * Preserves the luma of the bottom layer, while adopting the hue and chroma of the top layer.
+     * 
+     * @name Phaser.BlendModes.COLOR
+     */
+    COLOR: 15,
+
+    /**
+     * Luminosity blend mode. For Canvas only.
+     * Preserves the hue and chroma of the bottom layer, while adopting the luma of the top layer.
+     * 
+     * @name Phaser.BlendModes.LUMINOSITY
+     */
+    LUMINOSITY: 16,
+
+    /**
+     * Alpha erase blend mode. For Canvas and WebGL.
+     * 
+     * @name Phaser.BlendModes.ERASE
+     */
+    ERASE: 17,
+
+    /**
+     * Source-in blend mode. For Canvas only.
+     * The new shape is drawn only where both the new shape and the destination canvas overlap. Everything else is made transparent.
+     * 
+     * @name Phaser.BlendModes.SOURCE_IN
+     */
+    SOURCE_IN: 18,
+
+    /**
+     * Source-out blend mode. For Canvas only.
+     * The new shape is drawn where it doesn't overlap the existing canvas content.
+     * 
+     * @name Phaser.BlendModes.SOURCE_OUT
+     */
+    SOURCE_OUT: 19,
+
+    /**
+     * Source-out blend mode. For Canvas only.
+     * The new shape is only drawn where it overlaps the existing canvas content.
+     * 
+     * @name Phaser.BlendModes.SOURCE_ATOP
+     */
+    SOURCE_ATOP: 20,
+
+    /**
+     * Destination-over blend mode. For Canvas only.
+     * New shapes are drawn behind the existing canvas content.
+     * 
+     * @name Phaser.BlendModes.DESTINATION_OVER
+     */
+    DESTINATION_OVER: 21,
+
+    /**
+     * Destination-in blend mode. For Canvas only.
+     * The existing canvas content is kept where both the new shape and existing canvas content overlap. Everything else is made transparent.
+     * 
+     * @name Phaser.BlendModes.DESTINATION_IN
+     */
+    DESTINATION_IN: 22,
+
+    /**
+     * Destination-out blend mode. For Canvas only.
+     * The existing content is kept where it doesn't overlap the new shape.
+     * 
+     * @name Phaser.BlendModes.DESTINATION_OUT
+     */
+    DESTINATION_OUT: 23,
+
+    /**
+     * Destination-out blend mode. For Canvas only.
+     * The existing canvas is only kept where it overlaps the new shape. The new shape is drawn behind the canvas content.
+     * 
+     * @name Phaser.BlendModes.DESTINATION_ATOP
+     */
+    DESTINATION_ATOP: 24,
+
+    /**
+     * Lighten blend mode. For Canvas only.
+     * Where both shapes overlap the color is determined by adding color values.
+     * 
+     * @name Phaser.BlendModes.LIGHTER
+     */
+    LIGHTER: 25,
+
+    /**
+     * Copy blend mode. For Canvas only.
+     * Only the new shape is shown.
+     * 
+     * @name Phaser.BlendModes.COPY
+     */
+    COPY: 26,
+
+    /**
+     * xor blend mode. For Canvas only.
+     * Shapes are made transparent where both overlap and drawn normal everywhere else.
+     * 
+     * @name Phaser.BlendModes.XOR
+     */
+    XOR: 27
+
+};
+
+
+/***/ }),
+/* 72 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var MathWrap = __webpack_require__(20);
+
+/**
+ * Wrap an angle.
+ *
+ * Wraps the angle to a value in the range of -PI to PI.
+ *
+ * @function Phaser.Math.Angle.Wrap
+ * @since 3.0.0
+ *
+ * @param {number} angle - The angle to wrap, in radians.
+ *
+ * @return {number} The wrapped angle, in radians.
+ */
+var Wrap = function (angle)
+{
+    return MathWrap(angle, -Math.PI, Math.PI);
+};
+
+module.exports = Wrap;
+
+
+/***/ }),
+/* 73 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Wrap = __webpack_require__(20);
+
+/**
+ * Wrap an angle in degrees.
+ *
+ * Wraps the angle to a value in the range of -180 to 180.
+ *
+ * @function Phaser.Math.Angle.WrapDegrees
+ * @since 3.0.0
+ *
+ * @param {number} angle - The angle to wrap, in degrees.
+ *
+ * @return {number} The wrapped angle, in degrees.
+ */
+var WrapDegrees = function (angle)
+{
+    return Wrap(angle, -180, 180);
+};
+
+module.exports = WrapDegrees;
+
+
+/***/ }),
+/* 74 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Class = __webpack_require__(0);
+var Components = __webpack_require__(75);
+var ComponentsToJSON = __webpack_require__(26);
+var DataManager = __webpack_require__(122);
+var EventEmitter = __webpack_require__(22);
+var Events = __webpack_require__(128);
 
 /**
  * @classdesc
@@ -8266,6 +8921,7 @@ var Events = __webpack_require__(77);
  * @class GameObject
  * @memberof Phaser.GameObjects
  * @extends Phaser.Events.EventEmitter
+ * @extends Phaser.GameObjects.Components.Transform
  * @constructor
  * @since 3.0.0
  *
@@ -8275,6 +8931,10 @@ var Events = __webpack_require__(77);
 var GameObject = new Class({
 
     Extends: EventEmitter,
+
+    Mixins: [
+        Components.Transform
+    ],
 
     initialize:
 
@@ -8478,9 +9138,9 @@ var GameObject = new Class({
 
     /**
      * Sets the current state of this Game Object.
-     * 
+     *
      * Phaser itself will never modify the State of a Game Object, although plugins may do so.
-     * 
+     *
      * For example, a Game Object could change from a state of 'moving', to 'attacking', to 'dead'.
      * The state value should typically be an integer (ideally mapped to a constant
      * in your game code), but could also be a string. It is recommended to keep it light and simple.
@@ -8884,7 +9544,2157 @@ module.exports = GameObject;
 
 
 /***/ }),
-/* 69 */
+/* 75 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * @namespace Phaser.GameObjects.Components
+ */
+
+module.exports = {
+
+    Alpha: __webpack_require__(11),
+    Animation: __webpack_require__(76),
+    BlendMode: __webpack_require__(13),
+    ComputedSize: __webpack_require__(98),
+    Crop: __webpack_require__(99),
+    Depth: __webpack_require__(14),
+    Flip: __webpack_require__(15),
+    GetBounds: __webpack_require__(100),
+    Mask: __webpack_require__(111),
+    Origin: __webpack_require__(114),
+    Pipeline: __webpack_require__(115),
+    ScaleMode: __webpack_require__(116),
+    ScrollFactor: __webpack_require__(16),
+    Size: __webpack_require__(118),
+    Texture: __webpack_require__(119),
+    TextureCrop: __webpack_require__(120),
+    Tint: __webpack_require__(121),
+    ToJSON: __webpack_require__(26),
+    Transform: __webpack_require__(17),
+    TransformMatrix: __webpack_require__(19),
+    Visible: __webpack_require__(21)
+
+};
+
+
+/***/ }),
+/* 76 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var BaseAnimation = __webpack_require__(77);
+var Class = __webpack_require__(0);
+var Events = __webpack_require__(23);
+
+/**
+ * @classdesc
+ * A Game Object Animation Controller.
+ *
+ * This controller lives as an instance within a Game Object, accessible as `sprite.anims`.
+ *
+ * @class Animation
+ * @memberof Phaser.GameObjects.Components
+ * @constructor
+ * @since 3.0.0
+ *
+ * @param {Phaser.GameObjects.GameObject} parent - The Game Object to which this animation controller belongs.
+ */
+var Animation = new Class({
+
+    initialize:
+
+    function Animation (parent)
+    {
+        /**
+         * The Game Object to which this animation controller belongs.
+         *
+         * @name Phaser.GameObjects.Components.Animation#parent
+         * @type {Phaser.GameObjects.GameObject}
+         * @since 3.0.0
+         */
+        this.parent = parent;
+
+        /**
+         * A reference to the global Animation Manager.
+         *
+         * @name Phaser.GameObjects.Components.Animation#animationManager
+         * @type {Phaser.Animations.AnimationManager}
+         * @since 3.0.0
+         */
+        this.animationManager = parent.scene.sys.anims;
+
+        this.animationManager.once(Events.REMOVE_ANIMATION, this.remove, this);
+
+        /**
+         * Is an animation currently playing or not?
+         *
+         * @name Phaser.GameObjects.Components.Animation#isPlaying
+         * @type {boolean}
+         * @default false
+         * @since 3.0.0
+         */
+        this.isPlaying = false;
+
+        /**
+         * The current Animation loaded into this Animation Controller.
+         *
+         * @name Phaser.GameObjects.Components.Animation#currentAnim
+         * @type {?Phaser.Animations.Animation}
+         * @default null
+         * @since 3.0.0
+         */
+        this.currentAnim = null;
+
+        /**
+         * The current AnimationFrame being displayed by this Animation Controller.
+         *
+         * @name Phaser.GameObjects.Components.Animation#currentFrame
+         * @type {?Phaser.Animations.AnimationFrame}
+         * @default null
+         * @since 3.0.0
+         */
+        this.currentFrame = null;
+
+        /**
+         * The key of the next Animation to be loaded into this Animation Controller when the current animation completes.
+         *
+         * @name Phaser.GameObjects.Components.Animation#nextAnim
+         * @type {?string}
+         * @default null
+         * @since 3.16.0
+         */
+        this.nextAnim = null;
+
+        /**
+         * Time scale factor.
+         *
+         * @name Phaser.GameObjects.Components.Animation#_timeScale
+         * @type {number}
+         * @private
+         * @default 1
+         * @since 3.0.0
+         */
+        this._timeScale = 1;
+
+        /**
+         * The frame rate of playback in frames per second.
+         * The default is 24 if the `duration` property is `null`.
+         *
+         * @name Phaser.GameObjects.Components.Animation#frameRate
+         * @type {number}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.frameRate = 0;
+
+        /**
+         * How long the animation should play for, in milliseconds.
+         * If the `frameRate` property has been set then it overrides this value,
+         * otherwise the `frameRate` is derived from `duration`.
+         *
+         * @name Phaser.GameObjects.Components.Animation#duration
+         * @type {number}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.duration = 0;
+
+        /**
+         * ms per frame, not including frame specific modifiers that may be present in the Animation data.
+         *
+         * @name Phaser.GameObjects.Components.Animation#msPerFrame
+         * @type {number}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.msPerFrame = 0;
+
+        /**
+         * Skip frames if the time lags, or always advanced anyway?
+         *
+         * @name Phaser.GameObjects.Components.Animation#skipMissedFrames
+         * @type {boolean}
+         * @default true
+         * @since 3.0.0
+         */
+        this.skipMissedFrames = true;
+
+        /**
+         * A delay before starting playback, in milliseconds.
+         *
+         * @name Phaser.GameObjects.Components.Animation#_delay
+         * @type {number}
+         * @private
+         * @default 0
+         * @since 3.0.0
+         */
+        this._delay = 0;
+
+        /**
+         * Number of times to repeat the animation (-1 for infinity)
+         *
+         * @name Phaser.GameObjects.Components.Animation#_repeat
+         * @type {number}
+         * @private
+         * @default 0
+         * @since 3.0.0
+         */
+        this._repeat = 0;
+
+        /**
+         * Delay before the repeat starts, in milliseconds.
+         *
+         * @name Phaser.GameObjects.Components.Animation#_repeatDelay
+         * @type {number}
+         * @private
+         * @default 0
+         * @since 3.0.0
+         */
+        this._repeatDelay = 0;
+
+        /**
+         * Should the animation yoyo? (reverse back down to the start) before repeating?
+         *
+         * @name Phaser.GameObjects.Components.Animation#_yoyo
+         * @type {boolean}
+         * @private
+         * @default false
+         * @since 3.0.0
+         */
+        this._yoyo = false;
+
+        /**
+         * Will the playhead move forwards (`true`) or in reverse (`false`).
+         *
+         * @name Phaser.GameObjects.Components.Animation#forward
+         * @type {boolean}
+         * @default true
+         * @since 3.0.0
+         */
+        this.forward = true;
+
+        /**
+         * An Internal trigger that's play the animation in reverse mode ('true') or not ('false'),
+         * needed because forward can be changed by yoyo feature.
+         *
+         * @name Phaser.GameObjects.Components.Animation#_reverse
+         * @type {boolean}
+         * @default false
+         * @private
+         * @since 3.12.0
+         */
+        this._reverse = false;
+
+        /**
+         * Internal time overflow accumulator.
+         *
+         * @name Phaser.GameObjects.Components.Animation#accumulator
+         * @type {number}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.accumulator = 0;
+
+        /**
+         * The time point at which the next animation frame will change.
+         *
+         * @name Phaser.GameObjects.Components.Animation#nextTick
+         * @type {number}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.nextTick = 0;
+
+        /**
+         * An internal counter keeping track of how many repeats are left to play.
+         *
+         * @name Phaser.GameObjects.Components.Animation#repeatCounter
+         * @type {number}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.repeatCounter = 0;
+
+        /**
+         * An internal flag keeping track of pending repeats.
+         *
+         * @name Phaser.GameObjects.Components.Animation#pendingRepeat
+         * @type {boolean}
+         * @default false
+         * @since 3.0.0
+         */
+        this.pendingRepeat = false;
+
+        /**
+         * Is the Animation paused?
+         *
+         * @name Phaser.GameObjects.Components.Animation#_paused
+         * @type {boolean}
+         * @private
+         * @default false
+         * @since 3.0.0
+         */
+        this._paused = false;
+
+        /**
+         * Was the animation previously playing before being paused?
+         *
+         * @name Phaser.GameObjects.Components.Animation#_wasPlaying
+         * @type {boolean}
+         * @private
+         * @default false
+         * @since 3.0.0
+         */
+        this._wasPlaying = false;
+
+        /**
+         * Internal property tracking if this Animation is waiting to stop.
+         *
+         * 0 = No
+         * 1 = Waiting for ms to pass
+         * 2 = Waiting for repeat
+         * 3 = Waiting for specific frame
+         *
+         * @name Phaser.GameObjects.Components.Animation#_pendingStop
+         * @type {integer}
+         * @private
+         * @since 3.4.0
+         */
+        this._pendingStop = 0;
+
+        /**
+         * Internal property used by _pendingStop.
+         *
+         * @name Phaser.GameObjects.Components.Animation#_pendingStopValue
+         * @type {any}
+         * @private
+         * @since 3.4.0
+         */
+        this._pendingStopValue;
+    },
+
+    /**
+     * Sets an animation to be played immediately after the current one completes.
+     * 
+     * The current animation must enter a 'completed' state for this to happen, i.e. finish all of its repeats, delays, etc, or have the `stop` method called directly on it.
+     * 
+     * An animation set to repeat forever will never enter a completed state.
+     * 
+     * You can chain a new animation at any point, including before the current one starts playing, during it, or when it ends (via its `animationcomplete` callback).
+     * Chained animations are specific to a Game Object, meaning different Game Objects can have different chained animations without impacting the global animation they're playing.
+     * 
+     * Call this method with no arguments to reset the chained animation.
+     *
+     * @method Phaser.GameObjects.Components.Animation#chain
+     * @since 3.16.0
+     *
+     * @param {(string|Phaser.Animations.Animation)} [key] - The string-based key of the animation to play next, as defined previously in the Animation Manager. Or an Animation instance.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    chain: function (key)
+    {
+        if (key instanceof BaseAnimation)
+        {
+            key = key.key;
+        }
+
+        this.nextAnim = key;
+
+        return this.parent;
+    },
+
+    /**
+     * Sets the amount of time, in milliseconds, that the animation will be delayed before starting playback.
+     *
+     * @method Phaser.GameObjects.Components.Animation#setDelay
+     * @since 3.4.0
+     *
+     * @param {integer} [value=0] - The amount of time, in milliseconds, to wait before starting playback.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    setDelay: function (value)
+    {
+        if (value === undefined) { value = 0; }
+
+        this._delay = value;
+
+        return this.parent;
+    },
+
+    /**
+     * Gets the amount of time, in milliseconds that the animation will be delayed before starting playback.
+     *
+     * @method Phaser.GameObjects.Components.Animation#getDelay
+     * @since 3.4.0
+     *
+     * @return {integer} The amount of time, in milliseconds, the Animation will wait before starting playback.
+     */
+    getDelay: function ()
+    {
+        return this._delay;
+    },
+
+    /**
+     * Waits for the specified delay, in milliseconds, then starts playback of the requested animation.
+     *
+     * @method Phaser.GameObjects.Components.Animation#delayedPlay
+     * @since 3.0.0
+     *
+     * @param {integer} delay - The delay, in milliseconds, to wait before starting the animation playing.
+     * @param {string} key - The key of the animation to play.
+     * @param {integer} [startFrame=0] - The frame of the animation to start from.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    delayedPlay: function (delay, key, startFrame)
+    {
+        this.play(key, true, startFrame);
+
+        this.nextTick += delay;
+
+        return this.parent;
+    },
+
+    /**
+     * Returns the key of the animation currently loaded into this component.
+     *
+     * @method Phaser.GameObjects.Components.Animation#getCurrentKey
+     * @since 3.0.0
+     *
+     * @return {string} The key of the Animation loaded into this component.
+     */
+    getCurrentKey: function ()
+    {
+        if (this.currentAnim)
+        {
+            return this.currentAnim.key;
+        }
+    },
+
+    /**
+     * Internal method used to load an animation into this component.
+     *
+     * @method Phaser.GameObjects.Components.Animation#load
+     * @protected
+     * @since 3.0.0
+     *
+     * @param {string} key - The key of the animation to load.
+     * @param {integer} [startFrame=0] - The start frame of the animation to load.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    load: function (key, startFrame)
+    {
+        if (startFrame === undefined) { startFrame = 0; }
+
+        if (this.isPlaying)
+        {
+            this.stop();
+        }
+
+        //  Load the new animation in
+        this.animationManager.load(this, key, startFrame);
+
+        return this.parent;
+    },
+
+    /**
+     * Pause the current animation and set the `isPlaying` property to `false`.
+     * You can optionally pause it at a specific frame.
+     *
+     * @method Phaser.GameObjects.Components.Animation#pause
+     * @since 3.0.0
+     *
+     * @param {Phaser.Animations.AnimationFrame} [atFrame] - An optional frame to set after pausing the animation.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    pause: function (atFrame)
+    {
+        if (!this._paused)
+        {
+            this._paused = true;
+            this._wasPlaying = this.isPlaying;
+            this.isPlaying = false;
+        }
+
+        if (atFrame !== undefined)
+        {
+            this.updateFrame(atFrame);
+        }
+
+        return this.parent;
+    },
+
+    /**
+     * Resumes playback of a paused animation and sets the `isPlaying` property to `true`.
+     * You can optionally tell it to start playback from a specific frame.
+     *
+     * @method Phaser.GameObjects.Components.Animation#resume
+     * @since 3.0.0
+     *
+     * @param {Phaser.Animations.AnimationFrame} [fromFrame] - An optional frame to set before restarting playback.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    resume: function (fromFrame)
+    {
+        if (this._paused)
+        {
+            this._paused = false;
+            this.isPlaying = this._wasPlaying;
+        }
+
+        if (fromFrame !== undefined)
+        {
+            this.updateFrame(fromFrame);
+        }
+
+        return this.parent;
+    },
+
+    /**
+     * `true` if the current animation is paused, otherwise `false`.
+     *
+     * @name Phaser.GameObjects.Components.Animation#isPaused
+     * @readonly
+     * @type {boolean}
+     * @since 3.4.0
+     */
+    isPaused: {
+
+        get: function ()
+        {
+            return this._paused;
+        }
+
+    },
+
+    /**
+     * Plays an Animation on a Game Object that has the Animation component, such as a Sprite.
+     * 
+     * Animations are stored in the global Animation Manager and are referenced by a unique string-based key.
+     *
+     * @method Phaser.GameObjects.Components.Animation#play
+     * @fires Phaser.GameObjects.Components.Animation#onStartEvent
+     * @since 3.0.0
+     *
+     * @param {(string|Phaser.Animations.Animation)} key - The string-based key of the animation to play, as defined previously in the Animation Manager. Or an Animation instance.
+     * @param {boolean} [ignoreIfPlaying=false] - If an animation is already playing then ignore this call.
+     * @param {integer} [startFrame=0] - Optionally start the animation playing from this frame index.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    play: function (key, ignoreIfPlaying, startFrame)
+    {
+        if (ignoreIfPlaying === undefined) { ignoreIfPlaying = false; }
+        if (startFrame === undefined) { startFrame = 0; }
+
+        if (key instanceof BaseAnimation)
+        {
+            key = key.key;
+        }
+
+        if (ignoreIfPlaying && this.isPlaying && this.currentAnim.key === key)
+        {
+            return this.parent;
+        }
+
+        this.forward = true;
+        this._reverse = false;
+
+        return this._startAnimation(key, startFrame);
+    },
+
+    /**
+     * Plays an Animation (in reverse mode) on the Game Object that owns this Animation Component.
+     *
+     * @method Phaser.GameObjects.Components.Animation#playReverse
+     * @fires Phaser.GameObjects.Components.Animation#onStartEvent
+     * @since 3.12.0
+     *
+     * @param {(string|Phaser.Animations.Animation)} key - The string-based key of the animation to play, as defined previously in the Animation Manager. Or an Animation instance.
+     * @param {boolean} [ignoreIfPlaying=false] - If an animation is already playing then ignore this call.
+     * @param {integer} [startFrame=0] - Optionally start the animation playing from this frame index.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    playReverse: function (key, ignoreIfPlaying, startFrame)
+    {
+        if (ignoreIfPlaying === undefined) { ignoreIfPlaying = false; }
+        if (startFrame === undefined) { startFrame = 0; }
+
+        if (key instanceof BaseAnimation)
+        {
+            key = key.key;
+        }
+
+        if (ignoreIfPlaying && this.isPlaying && this.currentAnim.key === key)
+        {
+            return this.parent;
+        }
+
+        this.forward = false;
+        this._reverse = true;
+
+        return this._startAnimation(key, startFrame);
+    },
+
+    /**
+     * Load an Animation and fires 'onStartEvent' event, extracted from 'play' method.
+     *
+     * @method Phaser.GameObjects.Components.Animation#_startAnimation
+     * @fires Phaser.Animations.Events#START_ANIMATION_EVENT
+     * @fires Phaser.Animations.Events#SPRITE_START_ANIMATION_EVENT
+     * @fires Phaser.Animations.Events#SPRITE_START_KEY_ANIMATION_EVENT
+     * @since 3.12.0
+     *
+     * @param {string} key - The string-based key of the animation to play, as defined previously in the Animation Manager.
+     * @param {integer} [startFrame=0] - Optionally start the animation playing from this frame index.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    _startAnimation: function (key, startFrame)
+    {
+        this.load(key, startFrame);
+
+        var anim = this.currentAnim;
+        var gameObject = this.parent;
+
+        //  Should give us 9,007,199,254,740,991 safe repeats
+        this.repeatCounter = (this._repeat === -1) ? Number.MAX_VALUE : this._repeat;
+
+        anim.getFirstTick(this);
+
+        this.isPlaying = true;
+        this.pendingRepeat = false;
+
+        if (anim.showOnStart)
+        {
+            gameObject.visible = true;
+        }
+
+        var frame = this.currentFrame;
+
+        anim.emit(Events.ANIMATION_START, anim, frame, gameObject);
+
+        gameObject.emit(Events.SPRITE_ANIMATION_KEY_START + key, anim, frame, gameObject);
+
+        gameObject.emit(Events.SPRITE_ANIMATION_START, anim, frame, gameObject);
+
+        return gameObject;
+    },
+
+    /**
+     * Reverse the Animation that is already playing on the Game Object.
+     *
+     * @method Phaser.GameObjects.Components.Animation#reverse
+     * @since 3.12.0
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    reverse: function ()
+    {
+        if (this.isPlaying)
+        {
+            this._reverse = !this._reverse;
+
+            this.forward = !this.forward;
+        }
+
+        return this.parent;
+    },
+
+    /**
+     * Returns a value between 0 and 1 indicating how far this animation is through, ignoring repeats and yoyos.
+     * If the animation has a non-zero repeat defined, `getProgress` and `getTotalProgress` will be different
+     * because `getProgress` doesn't include any repeats or repeat delays, whereas `getTotalProgress` does.
+     *
+     * @method Phaser.GameObjects.Components.Animation#getProgress
+     * @since 3.4.0
+     *
+     * @return {number} The progress of the current animation, between 0 and 1.
+     */
+    getProgress: function ()
+    {
+        var p = this.currentFrame.progress;
+
+        if (!this.forward)
+        {
+            p = 1 - p;
+        }
+
+        return p;
+    },
+
+    /**
+     * Takes a value between 0 and 1 and uses it to set how far this animation is through playback.
+     * Does not factor in repeats or yoyos, but does handle playing forwards or backwards.
+     *
+     * @method Phaser.GameObjects.Components.Animation#setProgress
+     * @since 3.4.0
+     *
+     * @param {number} [value=0] - The progress value, between 0 and 1.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    setProgress: function (value)
+    {
+        if (!this.forward)
+        {
+            value = 1 - value;
+        }
+
+        this.setCurrentFrame(this.currentAnim.getFrameByProgress(value));
+
+        return this.parent;
+    },
+
+    /**
+     * Handle the removal of an animation from the Animation Manager.
+     *
+     * @method Phaser.GameObjects.Components.Animation#remove
+     * @since 3.0.0
+     *
+     * @param {string} [key] - The key of the removed Animation.
+     * @param {Phaser.Animations.Animation} [animation] - The removed Animation.
+     */
+    remove: function (key, animation)
+    {
+        if (animation === undefined) { animation = this.currentAnim; }
+
+        if (this.isPlaying && animation.key === this.currentAnim.key)
+        {
+            this.stop();
+
+            this.setCurrentFrame(this.currentAnim.frames[0]);
+        }
+    },
+
+    /**
+     * Gets the number of times that the animation will repeat
+     * after its first iteration. For example, if returns 1, the animation will
+     * play a total of twice (the initial play plus 1 repeat).
+     * A value of -1 means the animation will repeat indefinitely.
+     *
+     * @method Phaser.GameObjects.Components.Animation#getRepeat
+     * @since 3.4.0
+     *
+     * @return {integer} The number of times that the animation will repeat.
+     */
+    getRepeat: function ()
+    {
+        return this._repeat;
+    },
+
+    /**
+     * Sets the number of times that the animation should repeat
+     * after its first iteration. For example, if repeat is 1, the animation will
+     * play a total of twice (the initial play plus 1 repeat).
+     * To repeat indefinitely, use -1. repeat should always be an integer.
+     *
+     * @method Phaser.GameObjects.Components.Animation#setRepeat
+     * @since 3.4.0
+     *
+     * @param {integer} value - The number of times that the animation should repeat.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    setRepeat: function (value)
+    {
+        this._repeat = value;
+
+        this.repeatCounter = 0;
+
+        return this.parent;
+    },
+
+    /**
+     * Gets the amount of delay between repeats, if any.
+     *
+     * @method Phaser.GameObjects.Components.Animation#getRepeatDelay
+     * @since 3.4.0
+     *
+     * @return {number} The delay between repeats.
+     */
+    getRepeatDelay: function ()
+    {
+        return this._repeatDelay;
+    },
+
+    /**
+     * Sets the amount of time in seconds between repeats.
+     * For example, if `repeat` is 2 and `repeatDelay` is 10, the animation will play initially,
+     * then wait for 10 seconds before repeating, then play again, then wait another 10 seconds
+     * before doing its final repeat.
+     *
+     * @method Phaser.GameObjects.Components.Animation#setRepeatDelay
+     * @since 3.4.0
+     *
+     * @param {number} value - The delay to wait between repeats, in seconds.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    setRepeatDelay: function (value)
+    {
+        this._repeatDelay = value;
+
+        return this.parent;
+    },
+
+    /**
+     * Restarts the current animation from its beginning, optionally including its delay value.
+     *
+     * @method Phaser.GameObjects.Components.Animation#restart
+     * @fires Phaser.Animations.Events#RESTART_ANIMATION_EVENT
+     * @fires Phaser.Animations.Events#SPRITE_RESTART_ANIMATION_EVENT
+     * @fires Phaser.Animations.Events#SPRITE_RESTART_KEY_ANIMATION_EVENT
+     * @since 3.0.0
+     *
+     * @param {boolean} [includeDelay=false] - Whether to include the delay value of the animation when restarting.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    restart: function (includeDelay)
+    {
+        if (includeDelay === undefined) { includeDelay = false; }
+
+        var anim = this.currentAnim;
+
+        anim.getFirstTick(this, includeDelay);
+
+        this.forward = true;
+        this.isPlaying = true;
+        this.pendingRepeat = false;
+        this._paused = false;
+
+        //  Set frame
+        this.updateFrame(anim.frames[0]);
+
+        var gameObject = this.parent;
+        var frame = this.currentFrame;
+
+        anim.emit(Events.ANIMATION_RESTART, anim, frame, gameObject);
+
+        gameObject.emit(Events.SPRITE_ANIMATION_KEY_RESTART + anim.key, anim, frame, gameObject);
+
+        gameObject.emit(Events.SPRITE_ANIMATION_RESTART, anim, frame, gameObject);
+
+        return this.parent;
+    },
+
+    /**
+     * Immediately stops the current animation from playing and dispatches the `animationcomplete` event.
+     * 
+     * If no animation is set, no event will be dispatched.
+     * 
+     * If there is another animation queued (via the `chain` method) then it will start playing immediately.
+     *
+     * @method Phaser.GameObjects.Components.Animation#stop
+     * @fires Phaser.GameObjects.Components.Animation#onCompleteEvent
+     * @since 3.0.0
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    stop: function ()
+    {
+        this._pendingStop = 0;
+
+        this.isPlaying = false;
+
+        var gameObject = this.parent;
+        var anim = this.currentAnim;
+        var frame = this.currentFrame;
+
+        if (anim)
+        {
+            anim.emit(Events.ANIMATION_COMPLETE, anim, frame, gameObject);
+
+            gameObject.emit(Events.SPRITE_ANIMATION_KEY_COMPLETE + anim.key, anim, frame, gameObject);
+    
+            gameObject.emit(Events.SPRITE_ANIMATION_COMPLETE, anim, frame, gameObject);
+        }
+
+        if (this.nextAnim)
+        {
+            var key = this.nextAnim;
+
+            this.nextAnim = null;
+
+            this.play(key);
+        }
+
+        return gameObject;
+    },
+
+    /**
+     * Stops the current animation from playing after the specified time delay, given in milliseconds.
+     *
+     * @method Phaser.GameObjects.Components.Animation#stopAfterDelay
+     * @fires Phaser.GameObjects.Components.Animation#onCompleteEvent
+     * @since 3.4.0
+     *
+     * @param {integer} delay - The number of milliseconds to wait before stopping this animation.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    stopAfterDelay: function (delay)
+    {
+        this._pendingStop = 1;
+        this._pendingStopValue = delay;
+
+        return this.parent;
+    },
+
+    /**
+     * Stops the current animation from playing when it next repeats.
+     *
+     * @method Phaser.GameObjects.Components.Animation#stopOnRepeat
+     * @fires Phaser.GameObjects.Components.Animation#onCompleteEvent
+     * @since 3.4.0
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    stopOnRepeat: function ()
+    {
+        this._pendingStop = 2;
+
+        return this.parent;
+    },
+
+    /**
+     * Stops the current animation from playing when it next sets the given frame.
+     * If this frame doesn't exist within the animation it will not stop it from playing.
+     *
+     * @method Phaser.GameObjects.Components.Animation#stopOnFrame
+     * @fires Phaser.GameObjects.Components.Animation#onCompleteEvent
+     * @since 3.4.0
+     *
+     * @param {Phaser.Animations.AnimationFrame} frame - The frame to check before stopping this animation.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    stopOnFrame: function (frame)
+    {
+        this._pendingStop = 3;
+        this._pendingStopValue = frame;
+
+        return this.parent;
+    },
+
+    /**
+     * Sets the Time Scale factor, allowing you to make the animation go go faster or slower than default.
+     * Where 1 = normal speed (the default), 0.5 = half speed, 2 = double speed, etc.
+     *
+     * @method Phaser.GameObjects.Components.Animation#setTimeScale
+     * @since 3.4.0
+     *
+     * @param {number} [value=1] - The time scale factor, where 1 is no change, 0.5 is half speed, etc.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object that owns this Animation Component.
+     */
+    setTimeScale: function (value)
+    {
+        if (value === undefined) { value = 1; }
+
+        this._timeScale = value;
+
+        return this.parent;
+    },
+
+    /**
+     * Gets the Time Scale factor.
+     *
+     * @method Phaser.GameObjects.Components.Animation#getTimeScale
+     * @since 3.4.0
+     *
+     * @return {number} The Time Scale value.
+     */
+    getTimeScale: function ()
+    {
+        return this._timeScale;
+    },
+
+    /**
+     * Returns the total number of frames in this animation.
+     *
+     * @method Phaser.GameObjects.Components.Animation#getTotalFrames
+     * @since 3.4.0
+     *
+     * @return {integer} The total number of frames in this animation.
+     */
+    getTotalFrames: function ()
+    {
+        return this.currentAnim.frames.length;
+    },
+
+    /**
+     * The internal update loop for the Animation Component.
+     *
+     * @method Phaser.GameObjects.Components.Animation#update
+     * @since 3.0.0
+     *
+     * @param {number} time - The current timestamp.
+     * @param {number} delta - The delta time, in ms, elapsed since the last frame.
+     */
+    update: function (time, delta)
+    {
+        if (!this.currentAnim || !this.isPlaying || this.currentAnim.paused)
+        {
+            return;
+        }
+
+        this.accumulator += delta * this._timeScale;
+
+        if (this._pendingStop === 1)
+        {
+            this._pendingStopValue -= delta;
+
+            if (this._pendingStopValue <= 0)
+            {
+                return this.currentAnim.completeAnimation(this);
+            }
+        }
+
+        if (this.accumulator >= this.nextTick)
+        {
+            this.currentAnim.setFrame(this);
+        }
+    },
+
+    /**
+     * Sets the given Animation Frame as being the current frame
+     * and applies it to the parent Game Object, adjusting its size and origin as needed.
+     *
+     * @method Phaser.GameObjects.Components.Animation#setCurrentFrame
+     * @since 3.4.0
+     *
+     * @param {Phaser.Animations.AnimationFrame} animationFrame - The Animation Frame to set as being current.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object this Animation Component belongs to.
+     */
+    setCurrentFrame: function (animationFrame)
+    {
+        var gameObject = this.parent;
+
+        this.currentFrame = animationFrame;
+
+        gameObject.texture = animationFrame.frame.texture;
+        gameObject.frame = animationFrame.frame;
+
+        if (gameObject.isCropped)
+        {
+            gameObject.frame.updateCropUVs(gameObject._crop, gameObject.flipX, gameObject.flipY);
+        }
+
+        gameObject.setSizeToFrame();
+
+        if (animationFrame.frame.customPivot)
+        {
+            gameObject.setOrigin(animationFrame.frame.pivotX, animationFrame.frame.pivotY);
+        }
+        else
+        {
+            gameObject.updateDisplayOrigin();
+        }
+
+        return gameObject;
+    },
+
+    /**
+     * Internal frame change handler.
+     *
+     * @method Phaser.GameObjects.Components.Animation#updateFrame
+     * @fires Phaser.Animations.Events#SPRITE_ANIMATION_UPDATE_EVENT
+     * @fires Phaser.Animations.Events#SPRITE_ANIMATION_KEY_UPDATE_EVENT
+     * @private
+     * @since 3.0.0
+     *
+     * @param {Phaser.Animations.AnimationFrame} animationFrame - The animation frame to change to.
+     */
+    updateFrame: function (animationFrame)
+    {
+        var gameObject = this.setCurrentFrame(animationFrame);
+
+        if (this.isPlaying)
+        {
+            if (animationFrame.setAlpha)
+            {
+                gameObject.alpha = animationFrame.alpha;
+            }
+
+            var anim = this.currentAnim;
+
+            gameObject.emit(Events.SPRITE_ANIMATION_KEY_UPDATE + anim.key, anim, animationFrame, gameObject);
+
+            gameObject.emit(Events.SPRITE_ANIMATION_UPDATE, anim, animationFrame, gameObject);
+
+            if (this._pendingStop === 3 && this._pendingStopValue === animationFrame)
+            {
+                this.currentAnim.completeAnimation(this);
+            }
+        }
+    },
+
+    /**
+     * Advances the animation to the next frame, regardless of the time or animation state.
+     * If the animation is set to repeat, or yoyo, this will still take effect.
+     * 
+     * Calling this does not change the direction of the animation. I.e. if it was currently
+     * playing in reverse, calling this method doesn't then change the direction to forwards.
+     *
+     * @method Phaser.GameObjects.Components.Animation#nextFrame
+     * @since 3.16.0
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object this Animation Component belongs to.
+     */
+    nextFrame: function ()
+    {
+        if (this.currentAnim)
+        {
+            this.currentAnim.nextFrame(this);
+        }
+
+        return this.parent;
+    },
+
+    /**
+     * Advances the animation to the previous frame, regardless of the time or animation state.
+     * If the animation is set to repeat, or yoyo, this will still take effect.
+     * 
+     * Calling this does not change the direction of the animation. I.e. if it was currently
+     * playing in forwards, calling this method doesn't then change the direction to backwards.
+     *
+     * @method Phaser.GameObjects.Components.Animation#previousFrame
+     * @since 3.16.0
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object this Animation Component belongs to.
+     */
+    previousFrame: function ()
+    {
+        if (this.currentAnim)
+        {
+            this.currentAnim.previousFrame(this);
+        }
+
+        return this.parent;
+    },
+
+    /**
+     * Sets if the current Animation will yoyo when it reaches the end.
+     * A yoyo'ing animation will play through consecutively, and then reverse-play back to the start again.
+     *
+     * @method Phaser.GameObjects.Components.Animation#setYoyo
+     * @since 3.4.0
+     *
+     * @param {boolean} [value=false] - `true` if the animation should yoyo, `false` to not.
+     *
+     * @return {Phaser.GameObjects.GameObject} The Game Object this Animation Component belongs to.
+     */
+    setYoyo: function (value)
+    {
+        if (value === undefined) { value = false; }
+
+        this._yoyo = value;
+
+        return this.parent;
+    },
+
+    /**
+     * Gets if the current Animation will yoyo when it reaches the end.
+     * A yoyo'ing animation will play through consecutively, and then reverse-play back to the start again.
+     *
+     * @method Phaser.GameObjects.Components.Animation#getYoyo
+     * @since 3.4.0
+     *
+     * @return {boolean} `true` if the animation is set to yoyo, `false` if not.
+     */
+    getYoyo: function ()
+    {
+        return this._yoyo;
+    },
+
+    /**
+     * Destroy this Animation component.
+     *
+     * Unregisters event listeners and cleans up its references.
+     *
+     * @method Phaser.GameObjects.Components.Animation#destroy
+     * @since 3.0.0
+     */
+    destroy: function ()
+    {
+        this.animationManager.off(Events.REMOVE_ANIMATION, this.remove, this);
+
+        this.animationManager = null;
+        this.parent = null;
+
+        this.currentAnim = null;
+        this.currentFrame = null;
+    }
+
+});
+
+module.exports = Animation;
+
+
+/***/ }),
+/* 77 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Clamp = __webpack_require__(12);
+var Class = __webpack_require__(0);
+var EventEmitter = __webpack_require__(22);
+var Events = __webpack_require__(23);
+var FindClosestInSorted = __webpack_require__(96);
+var Frame = __webpack_require__(97);
+var GetValue = __webpack_require__(10);
+
+/**
+ * @classdesc
+ * A Frame based Animation.
+ *
+ * This consists of a key, some default values (like the frame rate) and a bunch of Frame objects.
+ *
+ * The Animation Manager creates these. Game Objects don't own an instance of these directly.
+ * Game Objects have the Animation Component, which are like playheads to global Animations (these objects)
+ * So multiple Game Objects can have playheads all pointing to this one Animation instance.
+ *
+ * @class Animation
+ * @memberof Phaser.Animations
+ * @extends Phaser.Events.EventEmitter
+ * @constructor
+ * @since 3.0.0
+ *
+ * @param {Phaser.Animations.AnimationManager} manager - A reference to the global Animation Manager
+ * @param {string} key - The unique identifying string for this animation.
+ * @param {Phaser.Animations.Types.Animation} config - The Animation configuration.
+ */
+var Animation = new Class({
+
+    Extends: EventEmitter,
+
+    initialize:
+
+    function Animation (manager, key, config)
+    {
+        EventEmitter.call(this);
+
+        /**
+         * A reference to the global Animation Manager.
+         *
+         * @name Phaser.Animations.Animation#manager
+         * @type {Phaser.Animations.AnimationManager}
+         * @since 3.0.0
+         */
+        this.manager = manager;
+
+        /**
+         * The unique identifying string for this animation.
+         *
+         * @name Phaser.Animations.Animation#key
+         * @type {string}
+         * @since 3.0.0
+         */
+        this.key = key;
+
+        /**
+         * A frame based animation (as opposed to a bone based animation)
+         *
+         * @name Phaser.Animations.Animation#type
+         * @type {string}
+         * @default frame
+         * @since 3.0.0
+         */
+        this.type = 'frame';
+
+        /**
+         * Extract all the frame data into the frames array.
+         *
+         * @name Phaser.Animations.Animation#frames
+         * @type {Phaser.Animations.AnimationFrame[]}
+         * @since 3.0.0
+         */
+        this.frames = this.getFrames(
+            manager.textureManager,
+            GetValue(config, 'frames', []),
+            GetValue(config, 'defaultTextureKey', null)
+        );
+
+        /**
+         * The frame rate of playback in frames per second (default 24 if duration is null)
+         *
+         * @name Phaser.Animations.Animation#frameRate
+         * @type {integer}
+         * @default 24
+         * @since 3.0.0
+         */
+        this.frameRate = GetValue(config, 'frameRate', null);
+
+        /**
+         * How long the animation should play for, in milliseconds.
+         * If the `frameRate` property has been set then it overrides this value,
+         * otherwise the `frameRate` is derived from `duration`.
+         *
+         * @name Phaser.Animations.Animation#duration
+         * @type {integer}
+         * @since 3.0.0
+         */
+        this.duration = GetValue(config, 'duration', null);
+
+        if (this.duration === null && this.frameRate === null)
+        {
+            //  No duration or frameRate given, use default frameRate of 24fps
+            this.frameRate = 24;
+            this.duration = (this.frameRate / this.frames.length) * 1000;
+        }
+        else if (this.duration && this.frameRate === null)
+        {
+            //  Duration given but no frameRate, so set the frameRate based on duration
+            //  I.e. 12 frames in the animation, duration = 4000 ms
+            //  So frameRate is 12 / (4000 / 1000) = 3 fps
+            this.frameRate = this.frames.length / (this.duration / 1000);
+        }
+        else
+        {
+            //  frameRate given, derive duration from it (even if duration also specified)
+            //  I.e. 15 frames in the animation, frameRate = 30 fps
+            //  So duration is 15 / 30 = 0.5 * 1000 (half a second, or 500ms)
+            this.duration = (this.frames.length / this.frameRate) * 1000;
+        }
+
+        /**
+         * How many ms per frame, not including frame specific modifiers.
+         *
+         * @name Phaser.Animations.Animation#msPerFrame
+         * @type {integer}
+         * @since 3.0.0
+         */
+        this.msPerFrame = 1000 / this.frameRate;
+
+        /**
+         * Skip frames if the time lags, or always advanced anyway?
+         *
+         * @name Phaser.Animations.Animation#skipMissedFrames
+         * @type {boolean}
+         * @default false
+         * @since 3.0.0
+         */
+        this.skipMissedFrames = GetValue(config, 'skipMissedFrames', true);
+
+        /**
+         * The delay in ms before the playback will begin.
+         *
+         * @name Phaser.Animations.Animation#delay
+         * @type {integer}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.delay = GetValue(config, 'delay', 0);
+
+        /**
+         * Number of times to repeat the animation. Set to -1 to repeat forever.
+         *
+         * @name Phaser.Animations.Animation#repeat
+         * @type {integer}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.repeat = GetValue(config, 'repeat', 0);
+
+        /**
+         * The delay in ms before the a repeat play starts.
+         *
+         * @name Phaser.Animations.Animation#repeatDelay
+         * @type {integer}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.repeatDelay = GetValue(config, 'repeatDelay', 0);
+
+        /**
+         * Should the animation yoyo (reverse back down to the start) before repeating?
+         *
+         * @name Phaser.Animations.Animation#yoyo
+         * @type {boolean}
+         * @default false
+         * @since 3.0.0
+         */
+        this.yoyo = GetValue(config, 'yoyo', false);
+
+        /**
+         * Should the GameObject's `visible` property be set to `true` when the animation starts to play?
+         *
+         * @name Phaser.Animations.Animation#showOnStart
+         * @type {boolean}
+         * @default false
+         * @since 3.0.0
+         */
+        this.showOnStart = GetValue(config, 'showOnStart', false);
+
+        /**
+         * Should the GameObject's `visible` property be set to `false` when the animation finishes?
+         *
+         * @name Phaser.Animations.Animation#hideOnComplete
+         * @type {boolean}
+         * @default false
+         * @since 3.0.0
+         */
+        this.hideOnComplete = GetValue(config, 'hideOnComplete', false);
+
+        /**
+         * Global pause. All Game Objects using this Animation instance are impacted by this property.
+         *
+         * @name Phaser.Animations.Animation#paused
+         * @type {boolean}
+         * @default false
+         * @since 3.0.0
+         */
+        this.paused = false;
+
+        this.manager.on(Events.PAUSE_ALL, this.pause, this);
+        this.manager.on(Events.RESUME_ALL, this.resume, this);
+    },
+
+    /**
+     * Add frames to the end of the animation.
+     *
+     * @method Phaser.Animations.Animation#addFrame
+     * @since 3.0.0
+     *
+     * @param {(string|Phaser.Animations.Types.AnimationFrame[])} config - [description]
+     *
+     * @return {Phaser.Animations.Animation} This Animation object.
+     */
+    addFrame: function (config)
+    {
+        return this.addFrameAt(this.frames.length, config);
+    },
+
+    /**
+     * Add frame/s into the animation.
+     *
+     * @method Phaser.Animations.Animation#addFrameAt
+     * @since 3.0.0
+     *
+     * @param {integer} index - The index to insert the frame at within the animation.
+     * @param {(string|Phaser.Animations.Types.AnimationFrame[])} config - [description]
+     *
+     * @return {Phaser.Animations.Animation} This Animation object.
+     */
+    addFrameAt: function (index, config)
+    {
+        var newFrames = this.getFrames(this.manager.textureManager, config);
+
+        if (newFrames.length > 0)
+        {
+            if (index === 0)
+            {
+                this.frames = newFrames.concat(this.frames);
+            }
+            else if (index === this.frames.length)
+            {
+                this.frames = this.frames.concat(newFrames);
+            }
+            else
+            {
+                var pre = this.frames.slice(0, index);
+                var post = this.frames.slice(index);
+
+                this.frames = pre.concat(newFrames, post);
+            }
+
+            this.updateFrameSequence();
+        }
+
+        return this;
+    },
+
+    /**
+     * Check if the given frame index is valid.
+     *
+     * @method Phaser.Animations.Animation#checkFrame
+     * @since 3.0.0
+     *
+     * @param {integer} index - The index to be checked.
+     *
+     * @return {boolean} `true` if the index is valid, otherwise `false`.
+     */
+    checkFrame: function (index)
+    {
+        return (index >= 0 && index < this.frames.length);
+    },
+
+    /**
+     * [description]
+     *
+     * @method Phaser.Animations.Animation#completeAnimation
+     * @protected
+     * @since 3.0.0
+     *
+     * @param {Phaser.GameObjects.Components.Animation} component - [description]
+     */
+    completeAnimation: function (component)
+    {
+        if (this.hideOnComplete)
+        {
+            component.parent.visible = false;
+        }
+
+        component.stop();
+    },
+
+    /**
+     * [description]
+     *
+     * @method Phaser.Animations.Animation#getFirstTick
+     * @protected
+     * @since 3.0.0
+     *
+     * @param {Phaser.GameObjects.Components.Animation} component - [description]
+     * @param {boolean} [includeDelay=true] - [description]
+     */
+    getFirstTick: function (component, includeDelay)
+    {
+        if (includeDelay === undefined) { includeDelay = true; }
+
+        //  When is the first update due?
+        component.accumulator = 0;
+        component.nextTick = component.msPerFrame + component.currentFrame.duration;
+
+        if (includeDelay)
+        {
+            component.nextTick += component._delay;
+        }
+    },
+
+    /**
+     * Returns the AnimationFrame at the provided index
+     *
+     * @method Phaser.Animations.Animation#getFrameAt
+     * @protected
+     * @since 3.0.0
+     *
+     * @param {integer} index - The index in the AnimationFrame array
+     *
+     * @return {Phaser.Animations.AnimationFrame} The frame at the index provided from the animation sequence
+     */
+    getFrameAt: function (index)
+    {
+        return this.frames[index];
+    },
+
+    /**
+     * [description]
+     *
+     * @method Phaser.Animations.Animation#getFrames
+     * @since 3.0.0
+     *
+     * @param {Phaser.Textures.TextureManager} textureManager - [description]
+     * @param {(string|Phaser.Animations.Types.AnimationFrame[])} frames - [description]
+     * @param {string} [defaultTextureKey] - [description]
+     *
+     * @return {Phaser.Animations.AnimationFrame[]} [description]
+     */
+    getFrames: function (textureManager, frames, defaultTextureKey)
+    {
+        var out = [];
+        var prev;
+        var animationFrame;
+        var index = 1;
+        var i;
+        var textureKey;
+
+        //  if frames is a string, we'll get all the frames from the texture manager as if it's a sprite sheet
+        if (typeof frames === 'string')
+        {
+            textureKey = frames;
+
+            var texture = textureManager.get(textureKey);
+            var frameKeys = texture.getFrameNames();
+
+            frames = [];
+
+            frameKeys.forEach(function (idx, value)
+            {
+                frames.push({ key: textureKey, frame: value });
+            });
+        }
+
+        if (!Array.isArray(frames) || frames.length === 0)
+        {
+            return out;
+        }
+
+        for (i = 0; i < frames.length; i++)
+        {
+            var item = frames[i];
+
+            var key = GetValue(item, 'key', defaultTextureKey);
+
+            if (!key)
+            {
+                continue;
+            }
+
+            //  Could be an integer or a string
+            var frame = GetValue(item, 'frame', 0);
+
+            //  The actual texture frame
+            var textureFrame = textureManager.getFrame(key, frame);
+
+            animationFrame = new Frame(key, frame, index, textureFrame);
+
+            animationFrame.duration = GetValue(item, 'duration', 0);
+
+            animationFrame.isFirst = (!prev);
+
+            //  The previously created animationFrame
+            if (prev)
+            {
+                prev.nextFrame = animationFrame;
+
+                animationFrame.prevFrame = prev;
+            }
+
+            out.push(animationFrame);
+
+            prev = animationFrame;
+
+            index++;
+        }
+
+        if (out.length > 0)
+        {
+            animationFrame.isLast = true;
+
+            //  Link them end-to-end, so they loop
+            animationFrame.nextFrame = out[0];
+
+            out[0].prevFrame = animationFrame;
+
+            //  Generate the progress data
+
+            var slice = 1 / (out.length - 1);
+
+            for (i = 0; i < out.length; i++)
+            {
+                out[i].progress = i * slice;
+            }
+        }
+
+        return out;
+    },
+
+    /**
+     * [description]
+     *
+     * @method Phaser.Animations.Animation#getNextTick
+     * @since 3.0.0
+     *
+     * @param {Phaser.GameObjects.Components.Animation} component - [description]
+     */
+    getNextTick: function (component)
+    {
+        // accumulator += delta * _timeScale
+        // after a large delta surge (perf issue for example) we need to adjust for it here
+
+        //  When is the next update due?
+        component.accumulator -= component.nextTick;
+
+        component.nextTick = component.msPerFrame + component.currentFrame.duration;
+    },
+
+    /**
+     * Loads the Animation values into the Animation Component.
+     *
+     * @method Phaser.Animations.Animation#load
+     * @private
+     * @since 3.0.0
+     *
+     * @param {Phaser.GameObjects.Components.Animation} component - The Animation Component to load values into.
+     * @param {integer} startFrame - The start frame of the animation to load.
+     */
+    load: function (component, startFrame)
+    {
+        if (startFrame >= this.frames.length)
+        {
+            startFrame = 0;
+        }
+
+        if (component.currentAnim !== this)
+        {
+            component.currentAnim = this;
+
+            component.frameRate = this.frameRate;
+            component.duration = this.duration;
+            component.msPerFrame = this.msPerFrame;
+            component.skipMissedFrames = this.skipMissedFrames;
+
+            component._delay = this.delay;
+            component._repeat = this.repeat;
+            component._repeatDelay = this.repeatDelay;
+            component._yoyo = this.yoyo;
+        }
+
+        var frame = this.frames[startFrame];
+
+        if (startFrame === 0 && !component.forward)
+        {
+            frame = this.getLastFrame();
+        }
+
+        component.updateFrame(frame);
+    },
+
+    /**
+     * Returns the frame closest to the given progress value between 0 and 1.
+     *
+     * @method Phaser.Animations.Animation#getFrameByProgress
+     * @since 3.4.0
+     *
+     * @param {number} value - A value between 0 and 1.
+     *
+     * @return {Phaser.Animations.AnimationFrame} The frame closest to the given progress value.
+     */
+    getFrameByProgress: function (value)
+    {
+        value = Clamp(value, 0, 1);
+
+        return FindClosestInSorted(value, this.frames, 'progress');
+    },
+
+    /**
+     * Advance the animation frame.
+     *
+     * @method Phaser.Animations.Animation#nextFrame
+     * @since 3.0.0
+     *
+     * @param {Phaser.GameObjects.Components.Animation} component - The Animation Component to advance.
+     */
+    nextFrame: function (component)
+    {
+        var frame = component.currentFrame;
+
+        //  TODO: Add frame skip support
+
+        if (frame.isLast)
+        {
+            //  We're at the end of the animation
+
+            //  Yoyo? (happens before repeat)
+            if (component._yoyo)
+            {
+                this.handleYoyoFrame(component, false);
+            }
+            else if (component.repeatCounter > 0)
+            {
+                //  Repeat (happens before complete)
+
+                if (component._reverse && component.forward)
+                {
+                    component.forward = false;
+                }
+                else
+                {
+                    this.repeatAnimation(component);
+                }
+            }
+            else
+            {
+                this.completeAnimation(component);
+            }
+        }
+        else
+        {
+            this.updateAndGetNextTick(component, frame.nextFrame);
+        }
+    },
+
+    /**
+     * Handle the yoyo functionality in nextFrame and previousFrame methods.
+     *
+     * @method Phaser.Animations.Animation#handleYoyoFrame
+     * @private
+     * @since 3.12.0
+     *
+     * @param {Phaser.GameObjects.Components.Animation} component - The Animation Component to advance.
+     * @param {boolean} isReverse - Is animation in reverse mode? (Default: false)
+     */
+    handleYoyoFrame: function (component, isReverse)
+    {
+        if (!isReverse) { isReverse = false; }
+
+        if (component._reverse === !isReverse && component.repeatCounter > 0)
+        {
+            component.forward = isReverse;
+
+            this.repeatAnimation(component);
+
+            return;
+        }
+
+        if (component._reverse !== isReverse && component.repeatCounter === 0)
+        {
+            this.completeAnimation(component);
+
+            return;
+        }
+        
+        component.forward = isReverse;
+
+        var frame = (isReverse) ? component.currentFrame.nextFrame : component.currentFrame.prevFrame;
+
+        this.updateAndGetNextTick(component, frame);
+    },
+
+    /**
+     * Returns the animation last frame.
+     *
+     * @method Phaser.Animations.Animation#getLastFrame
+     * @since 3.12.0
+     *
+     * @return {Phaser.Animations.AnimationFrame} component - The Animation Last Frame.
+     */
+    getLastFrame: function ()
+    {
+        return this.frames[this.frames.length - 1];
+    },
+
+    /**
+     * [description]
+     *
+     * @method Phaser.Animations.Animation#previousFrame
+     * @since 3.0.0
+     *
+     * @param {Phaser.GameObjects.Components.Animation} component - [description]
+     */
+    previousFrame: function (component)
+    {
+        var frame = component.currentFrame;
+
+        //  TODO: Add frame skip support
+
+        if (frame.isFirst)
+        {
+            //  We're at the start of the animation
+
+            if (component._yoyo)
+            {
+                this.handleYoyoFrame(component, true);
+            }
+            else if (component.repeatCounter > 0)
+            {
+                if (component._reverse && !component.forward)
+                {
+                    component.currentFrame = this.getLastFrame();
+                    this.repeatAnimation(component);
+                }
+                else
+                {
+                    //  Repeat (happens before complete)
+                    component.forward = true;
+                    this.repeatAnimation(component);
+                }
+            }
+            else
+            {
+                this.completeAnimation(component);
+            }
+        }
+        else
+        {
+            this.updateAndGetNextTick(component, frame.prevFrame);
+        }
+    },
+
+    /**
+     * Update Frame and Wait next tick.
+     *
+     * @method Phaser.Animations.Animation#updateAndGetNextTick
+     * @private
+     * @since 3.12.0
+     *
+     * @param {Phaser.Animations.AnimationFrame} frame - An Animation frame.
+     */
+    updateAndGetNextTick: function (component, frame)
+    {
+        component.updateFrame(frame);
+
+        this.getNextTick(component);
+    },
+
+    /**
+     * [description]
+     *
+     * @method Phaser.Animations.Animation#removeFrame
+     * @since 3.0.0
+     *
+     * @param {Phaser.Animations.AnimationFrame} frame - [description]
+     *
+     * @return {Phaser.Animations.Animation} This Animation object.
+     */
+    removeFrame: function (frame)
+    {
+        var index = this.frames.indexOf(frame);
+
+        if (index !== -1)
+        {
+            this.removeFrameAt(index);
+        }
+
+        return this;
+    },
+
+    /**
+     * Removes a frame from the AnimationFrame array at the provided index
+     * and updates the animation accordingly.
+     *
+     * @method Phaser.Animations.Animation#removeFrameAt
+     * @since 3.0.0
+     *
+     * @param {integer} index - The index in the AnimationFrame array
+     *
+     * @return {Phaser.Animations.Animation} This Animation object.
+     */
+    removeFrameAt: function (index)
+    {
+        this.frames.splice(index, 1);
+
+        this.updateFrameSequence();
+
+        return this;
+    },
+
+    /**
+     * [description]
+     *
+     * @method Phaser.Animations.Animation#repeatAnimation
+     * @fires Phaser.Animations.Events#ANIMATION_REPEAT
+     * @fires Phaser.Animations.Events#SPRITE_ANIMATION_REPEAT
+     * @fires Phaser.Animations.Events#SPRITE_ANIMATION_KEY_REPEAT
+     * @since 3.0.0
+     *
+     * @param {Phaser.GameObjects.Components.Animation} component - [description]
+     */
+    repeatAnimation: function (component)
+    {
+        if (component._pendingStop === 2)
+        {
+            return this.completeAnimation(component);
+        }
+
+        if (component._repeatDelay > 0 && component.pendingRepeat === false)
+        {
+            component.pendingRepeat = true;
+            component.accumulator -= component.nextTick;
+            component.nextTick += component._repeatDelay;
+        }
+        else
+        {
+            component.repeatCounter--;
+
+            component.updateFrame(component.currentFrame[(component.forward) ? 'nextFrame' : 'prevFrame']);
+
+            if (component.isPlaying)
+            {
+                this.getNextTick(component);
+
+                component.pendingRepeat = false;
+
+                var frame = component.currentFrame;
+                var parent = component.parent;
+
+                this.emit(Events.ANIMATION_REPEAT, this, frame);
+
+                parent.emit(Events.SPRITE_ANIMATION_KEY_REPEAT + this.key, this, frame, component.repeatCounter, parent);
+
+                parent.emit(Events.SPRITE_ANIMATION_REPEAT, this, frame, component.repeatCounter, parent);
+            }
+        }
+    },
+
+    /**
+     * Sets the texture frame the animation uses for rendering.
+     *
+     * @method Phaser.Animations.Animation#setFrame
+     * @since 3.0.0
+     *
+     * @param {Phaser.GameObjects.Components.Animation} component - [description]
+     */
+    setFrame: function (component)
+    {
+        //  Work out which frame should be set next on the child, and set it
+        if (component.forward)
+        {
+            this.nextFrame(component);
+        }
+        else
+        {
+            this.previousFrame(component);
+        }
+    },
+
+    /**
+     * Converts the animation data to JSON.
+     *
+     * @method Phaser.Animations.Animation#toJSON
+     * @since 3.0.0
+     *
+     * @return {Phaser.Animations.Types.JSONAnimation} [description]
+     */
+    toJSON: function ()
+    {
+        var output = {
+            key: this.key,
+            type: this.type,
+            frames: [],
+            frameRate: this.frameRate,
+            duration: this.duration,
+            skipMissedFrames: this.skipMissedFrames,
+            delay: this.delay,
+            repeat: this.repeat,
+            repeatDelay: this.repeatDelay,
+            yoyo: this.yoyo,
+            showOnStart: this.showOnStart,
+            hideOnComplete: this.hideOnComplete
+        };
+
+        this.frames.forEach(function (frame)
+        {
+            output.frames.push(frame.toJSON());
+        });
+
+        return output;
+    },
+
+    /**
+     * [description]
+     *
+     * @method Phaser.Animations.Animation#updateFrameSequence
+     * @since 3.0.0
+     *
+     * @return {Phaser.Animations.Animation} This Animation object.
+     */
+    updateFrameSequence: function ()
+    {
+        var len = this.frames.length;
+        var slice = 1 / (len - 1);
+
+        for (var i = 0; i < len; i++)
+        {
+            var frame = this.frames[i];
+
+            frame.index = i + 1;
+            frame.isFirst = false;
+            frame.isLast = false;
+            frame.progress = i * slice;
+
+            if (i === 0)
+            {
+                frame.isFirst = true;
+                frame.isLast = (len === 1);
+                frame.prevFrame = this.frames[len - 1];
+                frame.nextFrame = this.frames[i + 1];
+            }
+            else if (i === len - 1)
+            {
+                frame.isLast = true;
+                frame.prevFrame = this.frames[len - 2];
+                frame.nextFrame = this.frames[0];
+            }
+            else if (len > 1)
+            {
+                frame.prevFrame = this.frames[i - 1];
+                frame.nextFrame = this.frames[i + 1];
+            }
+        }
+
+        return this;
+    },
+
+    /**
+     * [description]
+     *
+     * @method Phaser.Animations.Animation#pause
+     * @since 3.0.0
+     *
+     * @return {Phaser.Animations.Animation} This Animation object.
+     */
+    pause: function ()
+    {
+        this.paused = true;
+
+        return this;
+    },
+
+    /**
+     * [description]
+     *
+     * @method Phaser.Animations.Animation#resume
+     * @since 3.0.0
+     *
+     * @return {Phaser.Animations.Animation} This Animation object.
+     */
+    resume: function ()
+    {
+        this.paused = false;
+
+        return this;
+    },
+
+    /**
+     * [description]
+     *
+     * @method Phaser.Animations.Animation#destroy
+     * @since 3.0.0
+     */
+    destroy: function ()
+    {
+        this.removeAllListeners();
+
+        this.manager.off(Events.PAUSE_ALL, this.pause, this);
+        this.manager.off(Events.RESUME_ALL, this.resume, this);
+
+        this.manager.remove(this.key);
+
+        for (var i = 0; i < this.frames.length; i++)
+        {
+            this.frames[i].destroy();
+        }
+
+        this.frames = [];
+
+        this.manager = null;
+    }
+
+});
+
+module.exports = Animation;
+
+
+/***/ }),
+/* 78 */
 /***/ (function(module, exports) {
 
 /**
@@ -8894,84 +11704,561 @@ module.exports = GameObject;
  */
 
 /**
- * @typedef {object} JSONGameObject
+ * The Add Animation Event.
+ * 
+ * This event is dispatched when a new animation is added to the global Animation Manager.
+ * 
+ * This can happen either as a result of an animation instance being added to the Animation Manager,
+ * or the Animation Manager creating a new animation directly.
  *
- * @property {string} name - The name of this Game Object.
- * @property {string} type - A textual representation of this Game Object, i.e. `sprite`.
- * @property {number} x - The x position of this Game Object.
- * @property {number} y - The y position of this Game Object.
- * @property {object} scale - The scale of this Game Object
- * @property {number} scale.x - The horizontal scale of this Game Object.
- * @property {number} scale.y - The vertical scale of this Game Object.
- * @property {object} origin - The origin of this Game Object.
- * @property {number} origin.x - The horizontal origin of this Game Object.
- * @property {number} origin.y - The vertical origin of this Game Object.
- * @property {boolean} flipX - The horizontally flipped state of the Game Object.
- * @property {boolean} flipY - The vertically flipped state of the Game Object.
- * @property {number} rotation - The angle of this Game Object in radians.
- * @property {number} alpha - The alpha value of the Game Object.
- * @property {boolean} visible - The visible state of the Game Object.
- * @property {integer} scaleMode - The Scale Mode being used by this Game Object.
- * @property {(integer|string)} blendMode - Sets the Blend Mode being used by this Game Object.
- * @property {string} textureKey - The texture key of this Game Object.
- * @property {string} frameKey - The frame key of this Game Object.
- * @property {object} data - The data of this Game Object.
+ * @event Phaser.Animations.Events#ADD_ANIMATION
+ * 
+ * @param {string} key - The key of the Animation that was added to the global Animation Manager.
+ * @param {Phaser.Animations.Animation} animation - An instance of the newly created Animation.
  */
-
-/**
- * Build a JSON representation of the given Game Object.
- *
- * This is typically extended further by Game Object specific implementations.
- *
- * @method Phaser.GameObjects.Components.ToJSON
- * @since 3.0.0
- *
- * @param {Phaser.GameObjects.GameObject} gameObject - The Game Object to export as JSON.
- *
- * @return {JSONGameObject} A JSON representation of the Game Object.
- */
-var ToJSON = function (gameObject)
-{
-    var out = {
-        name: gameObject.name,
-        type: gameObject.type,
-        x: gameObject.x,
-        y: gameObject.y,
-        depth: gameObject.depth,
-        scale: {
-            x: gameObject.scaleX,
-            y: gameObject.scaleY
-        },
-        origin: {
-            x: gameObject.originX,
-            y: gameObject.originY
-        },
-        flipX: gameObject.flipX,
-        flipY: gameObject.flipY,
-        rotation: gameObject.rotation,
-        alpha: gameObject.alpha,
-        visible: gameObject.visible,
-        scaleMode: gameObject.scaleMode,
-        blendMode: gameObject.blendMode,
-        textureKey: '',
-        frameKey: '',
-        data: {}
-    };
-
-    if (gameObject.texture)
-    {
-        out.textureKey = gameObject.texture.key;
-        out.frameKey = gameObject.frame.name;
-    }
-
-    return out;
-};
-
-module.exports = ToJSON;
+module.exports = 'add';
 
 
 /***/ }),
-/* 70 */
+/* 79 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Animation Complete Event.
+ * 
+ * This event is dispatched by an Animation instance when it completes, i.e. finishes playing or is manually stopped.
+ * 
+ * Be careful with the volume of events this could generate. If a group of Sprites all complete the same
+ * animation at the same time, this event will invoke its handler for each one of them.
+ *
+ * @event Phaser.Animations.Events#ANIMATION_COMPLETE
+ * 
+ * @param {Phaser.Animations.Animation} animation - A reference to the Animation that completed.
+ * @param {Phaser.Animations.AnimationFrame} frame - The current Animation Frame that the Animation completed on.
+ * @param {Phaser.GameObjects.Sprite} gameObject - A reference to the Game Object on which the animation completed.
+ */
+module.exports = 'complete';
+
+
+/***/ }),
+/* 80 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Animation Repeat Event.
+ * 
+ * This event is dispatched when a currently playing animation repeats.
+ * 
+ * The event is dispatched directly from the Animation object itself. Which means that listeners
+ * bound to this event will be invoked every time the Animation repeats, for every Game Object that may have it.
+ *
+ * @event Phaser.Animations.Events#ANIMATION_REPEAT
+ * 
+ * @param {Phaser.Animations.Animation} animation - A reference to the Animation that repeated.
+ * @param {Phaser.Animations.AnimationFrame} frame - The current Animation Frame that the Animation was on when it repeated.
+ */
+module.exports = 'repeat';
+
+
+/***/ }),
+/* 81 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Animation Restart Event.
+ * 
+ * This event is dispatched by an Animation instance when it restarts.
+ * 
+ * Be careful with the volume of events this could generate. If a group of Sprites all restart the same
+ * animation at the same time, this event will invoke its handler for each one of them.
+ *
+ * @event Phaser.Animations.Events#ANIMATION_RESTART
+ * 
+ * @param {Phaser.Animations.Animation} animation - A reference to the Animation that restarted playing.
+ * @param {Phaser.Animations.AnimationFrame} frame - The current Animation Frame that the Animation restarted with.
+ * @param {Phaser.GameObjects.Sprite} gameObject - A reference to the Game Object on which the animation restarted playing.
+ */
+module.exports = 'restart';
+
+
+/***/ }),
+/* 82 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Animation Start Event.
+ * 
+ * This event is dispatched by an Animation instance when it starts playing.
+ * 
+ * Be careful with the volume of events this could generate. If a group of Sprites all play the same
+ * animation at the same time, this event will invoke its handler for each one of them.
+ *
+ * @event Phaser.Animations.Events#ANIMATION_START
+ * 
+ * @param {Phaser.Animations.Animation} animation - A reference to the Animation that started playing.
+ * @param {Phaser.Animations.AnimationFrame} frame - The current Animation Frame that the Animation started with.
+ * @param {Phaser.GameObjects.Sprite} gameObject - A reference to the Game Object on which the animation started playing.
+ */
+module.exports = 'start';
+
+
+/***/ }),
+/* 83 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Pause All Animations Event.
+ * 
+ * This event is dispatched when the global Animation Manager is told to pause.
+ * 
+ * When this happens all current animations will stop updating, although it doesn't necessarily mean
+ * that the game has paused as well.
+ *
+ * @event Phaser.Animations.Events#PAUSE_ALL
+ */
+module.exports = 'pauseall';
+
+
+/***/ }),
+/* 84 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Remove Animation Event.
+ * 
+ * This event is dispatched when an animation is removed from the global Animation Manager.
+ *
+ * @event Phaser.Animations.Events#REMOVE_ANIMATION
+ * 
+ * @param {string} key - The key of the Animation that was removed from the global Animation Manager.
+ * @param {Phaser.Animations.Animation} animation - An instance of the removed Animation.
+ */
+module.exports = 'remove';
+
+
+/***/ }),
+/* 85 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Resume All Animations Event.
+ * 
+ * This event is dispatched when the global Animation Manager resumes, having been previously paused.
+ * 
+ * When this happens all current animations will continue updating again.
+ *
+ * @event Phaser.Animations.Events#RESUME_ALL
+ */
+module.exports = 'resumeall';
+
+
+/***/ }),
+/* 86 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Sprite Animation Complete Event.
+ * 
+ * This event is dispatched by a Sprite when an animation finishes playing on it.
+ * 
+ * Listen for it on the Sprite using `sprite.on('animationcomplete', listener)`
+ * 
+ * This same event is dispatched for all animations. To listen for a specific animation, use the `SPRITE_ANIMATION_KEY_COMPLETE` event.
+ *
+ * @event Phaser.Animations.Events#SPRITE_ANIMATION_COMPLETE
+ * 
+ * @param {Phaser.Animations.Animation} animation - A reference to the Animation that completed.
+ * @param {Phaser.Animations.AnimationFrame} frame - The current Animation Frame that the Animation completed on.
+ * @param {Phaser.GameObjects.Sprite} gameObject - A reference to the Game Object on which the animation completed.
+ */
+module.exports = 'animationcomplete';
+
+
+/***/ }),
+/* 87 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Sprite Animation Key Complete Event.
+ * 
+ * This event is dispatched by a Sprite when a specific animation finishes playing on it.
+ * 
+ * Listen for it on the Sprite using `sprite.on('animationcomplete-key', listener)` where `key` is the key of
+ * the animation. For example, if you had an animation with the key 'explode' you should listen for `animationcomplete-explode`.
+ *
+ * @event Phaser.Animations.Events#SPRITE_ANIMATION_KEY_COMPLETE
+ * 
+ * @param {Phaser.Animations.Animation} animation - A reference to the Animation that completed.
+ * @param {Phaser.Animations.AnimationFrame} frame - The current Animation Frame that the Animation completed on.
+ * @param {Phaser.GameObjects.Sprite} gameObject - A reference to the Game Object on which the animation completed.
+ */
+module.exports = 'animationcomplete-';
+
+
+/***/ }),
+/* 88 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Sprite Animation Key Repeat Event.
+ * 
+ * This event is dispatched by a Sprite when a specific animation repeats playing on it.
+ * 
+ * Listen for it on the Sprite using `sprite.on('animationrepeat-key', listener)` where `key` is the key of
+ * the animation. For example, if you had an animation with the key 'explode' you should listen for `animationrepeat-explode`.
+ *
+ * @event Phaser.Animations.Events#SPRITE_ANIMATION_KEY_REPEAT
+ * 
+ * @param {Phaser.Animations.Animation} animation - A reference to the Animation that is repeating on the Sprite.
+ * @param {Phaser.Animations.AnimationFrame} frame - The current Animation Frame that the Animation started with.
+ * @param {integer} repeatCount - The number of times the Animation has repeated so far.
+ * @param {Phaser.GameObjects.Sprite} gameObject - A reference to the Game Object on which the animation repeated playing.
+ */
+module.exports = 'animationrepeat-';
+
+
+/***/ }),
+/* 89 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Sprite Animation Key Restart Event.
+ * 
+ * This event is dispatched by a Sprite when a specific animation restarts playing on it.
+ * 
+ * Listen for it on the Sprite using `sprite.on('animationrestart-key', listener)` where `key` is the key of
+ * the animation. For example, if you had an animation with the key 'explode' you should listen for `animationrestart-explode`.
+ *
+ * @event Phaser.Animations.Events#SPRITE_ANIMATION_KEY_RESTART
+ * 
+ * @param {Phaser.Animations.Animation} animation - A reference to the Animation that was restarted on the Sprite.
+ * @param {Phaser.Animations.AnimationFrame} frame - The current Animation Frame that the Animation restarted with.
+ * @param {Phaser.GameObjects.Sprite} gameObject - A reference to the Game Object on which the animation restarted playing.
+ */
+module.exports = 'animationrestart-';
+
+
+/***/ }),
+/* 90 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Sprite Animation Key Start Event.
+ * 
+ * This event is dispatched by a Sprite when a specific animation starts playing on it.
+ * 
+ * Listen for it on the Sprite using `sprite.on('animationstart-key', listener)` where `key` is the key of
+ * the animation. For example, if you had an animation with the key 'explode' you should listen for `animationstart-explode`.
+ *
+ * @event Phaser.Animations.Events#SPRITE_ANIMATION_KEY_START
+ * 
+ * @param {Phaser.Animations.Animation} animation - A reference to the Animation that was started on the Sprite.
+ * @param {Phaser.Animations.AnimationFrame} frame - The current Animation Frame that the Animation started with.
+ * @param {Phaser.GameObjects.Sprite} gameObject - A reference to the Game Object on which the animation started playing.
+ */
+module.exports = 'animationstart-';
+
+
+/***/ }),
+/* 91 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Sprite Animation Key Update Event.
+ * 
+ * This event is dispatched by a Sprite when a specific animation playing on it updates. This happens when the animation changes frame,
+ * based on the animation frame rate and other factors like `timeScale` and `delay`.
+ * 
+ * Listen for it on the Sprite using `sprite.on('animationupdate-key', listener)` where `key` is the key of
+ * the animation. For example, if you had an animation with the key 'explode' you should listen for `animationupdate-explode`.
+ *
+ * @event Phaser.Animations.Events#SPRITE_ANIMATION_KEY_UPDATE
+ * 
+ * @param {Phaser.Animations.Animation} animation - A reference to the Animation that has updated on the Sprite.
+ * @param {Phaser.Animations.AnimationFrame} frame - The current Animation Frame of the Animation.
+ * @param {Phaser.GameObjects.Sprite} gameObject - A reference to the Game Object on which the animation updated.
+ */
+module.exports = 'animationupdate-';
+
+
+/***/ }),
+/* 92 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Sprite Animation Repeat Event.
+ * 
+ * This event is dispatched by a Sprite when an animation repeats playing on it.
+ * 
+ * Listen for it on the Sprite using `sprite.on('animationrepeat', listener)`
+ * 
+ * This same event is dispatched for all animations. To listen for a specific animation, use the `SPRITE_ANIMATION_KEY_REPEAT` event.
+ *
+ * @event Phaser.Animations.Events#SPRITE_ANIMATION_REPEAT
+ * 
+ * @param {Phaser.Animations.Animation} animation - A reference to the Animation that is repeating on the Sprite.
+ * @param {Phaser.Animations.AnimationFrame} frame - The current Animation Frame that the Animation started with.
+ * @param {integer} repeatCount - The number of times the Animation has repeated so far.
+ * @param {Phaser.GameObjects.Sprite} gameObject - A reference to the Game Object on which the animation repeated playing.
+ */
+module.exports = 'animationrepeat';
+
+
+/***/ }),
+/* 93 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Sprite Animation Restart Event.
+ * 
+ * This event is dispatched by a Sprite when an animation restarts playing on it.
+ * 
+ * Listen for it on the Sprite using `sprite.on('animationrestart', listener)`
+ * 
+ * This same event is dispatched for all animations. To listen for a specific animation, use the `SPRITE_ANIMATION_KEY_RESTART` event.
+ *
+ * @event Phaser.Animations.Events#SPRITE_ANIMATION_RESTART
+ * 
+ * @param {Phaser.Animations.Animation} animation - A reference to the Animation that was restarted on the Sprite.
+ * @param {Phaser.Animations.AnimationFrame} frame - The current Animation Frame that the Animation restarted with.
+ * @param {Phaser.GameObjects.Sprite} gameObject - A reference to the Game Object on which the animation restarted playing.
+ */
+module.exports = 'animationrestart';
+
+
+/***/ }),
+/* 94 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Sprite Animation Start Event.
+ * 
+ * This event is dispatched by a Sprite when an animation starts playing on it.
+ * 
+ * Listen for it on the Sprite using `sprite.on('animationstart', listener)`
+ * 
+ * This same event is dispatched for all animations. To listen for a specific animation, use the `SPRITE_ANIMATION_KEY_START` event.
+ *
+ * @event Phaser.Animations.Events#SPRITE_ANIMATION_START
+ * 
+ * @param {Phaser.Animations.Animation} animation - A reference to the Animation that was started on the Sprite.
+ * @param {Phaser.Animations.AnimationFrame} frame - The current Animation Frame that the Animation started with.
+ * @param {Phaser.GameObjects.Sprite} gameObject - A reference to the Game Object on which the animation started playing.
+ */
+module.exports = 'animationstart';
+
+
+/***/ }),
+/* 95 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * The Sprite Animation Update Event.
+ * 
+ * This event is dispatched by a Sprite when an animation playing on it updates. This happens when the animation changes frame,
+ * based on the animation frame rate and other factors like `timeScale` and `delay`.
+ * 
+ * Listen for it on the Sprite using `sprite.on('animationupdate', listener)`
+ * 
+ * This same event is dispatched for all animations. To listen for a specific animation, use the `SPRITE_ANIMATION_KEY_UPDATE` event.
+ *
+ * @event Phaser.Animations.Events#SPRITE_ANIMATION_UPDATE
+ * 
+ * @param {Phaser.Animations.Animation} animation - A reference to the Animation that has updated on the Sprite.
+ * @param {Phaser.Animations.AnimationFrame} frame - The current Animation Frame of the Animation.
+ * @param {Phaser.GameObjects.Sprite} gameObject - A reference to the Game Object on which the animation updated.
+ */
+module.exports = 'animationupdate';
+
+
+/***/ }),
+/* 96 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * Searches a pre-sorted array for the closet value to the given number.
+ *
+ * If the `key` argument is given it will assume the array contains objects that all have the required `key` property name,
+ * and will check for the closest value of those to the given number.
+ *
+ * @function Phaser.Utils.Array.FindClosestInSorted
+ * @since 3.0.0
+ *
+ * @param {number} value - The value to search for in the array.
+ * @param {array} array - The array to search, which must be sorted.
+ * @param {string} [key] - An optional property key. If specified the array elements property will be checked against value.
+ *
+ * @return {(number|any)} The nearest value found in the array, or if a `key` was given, the nearest object with the matching property value.
+ */
+var FindClosestInSorted = function (value, array, key)
+{
+    if (!array.length)
+    {
+        return NaN;
+    }
+    else if (array.length === 1)
+    {
+        return array[0];
+    }
+
+    var i = 1;
+    var low;
+    var high;
+
+    if (key)
+    {
+        if (value < array[0][key])
+        {
+            return array[0];
+        }
+
+        while (array[i][key] < value)
+        {
+            i++;
+        }
+    }
+    else
+    {
+        while (array[i] < value)
+        {
+            i++;
+        }
+    }
+
+    if (i > array.length)
+    {
+        i = array.length;
+    }
+
+    if (key)
+    {
+        low = array[i - 1][key];
+        high = array[i][key];
+
+        return ((high - value) <= (value - low)) ? array[i] : array[i - 1];
+    }
+    else
+    {
+        low = array[i - 1];
+        high = array[i];
+
+        return ((high - value) <= (value - low)) ? high : low;
+    }
+};
+
+module.exports = FindClosestInSorted;
+
+
+/***/ }),
+/* 97 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -8981,7 +12268,3825 @@ module.exports = ToJSON;
  */
 
 var Class = __webpack_require__(0);
-var Events = __webpack_require__(71);
+
+/**
+ * @classdesc
+ * A single frame in an Animation sequence.
+ *
+ * An AnimationFrame consists of a reference to the Texture it uses for rendering, references to other
+ * frames in the animation, and index data. It also has the ability to modify the animation timing.
+ *
+ * AnimationFrames are generated automatically by the Animation class.
+ *
+ * @class AnimationFrame
+ * @memberof Phaser.Animations
+ * @constructor
+ * @since 3.0.0
+ *
+ * @param {string} textureKey - The key of the Texture this AnimationFrame uses.
+ * @param {(string|integer)} textureFrame - The key of the Frame within the Texture that this AnimationFrame uses.
+ * @param {integer} index - The index of this AnimationFrame within the Animation sequence.
+ * @param {Phaser.Textures.Frame} frame - A reference to the Texture Frame this AnimationFrame uses for rendering.
+ */
+var AnimationFrame = new Class({
+
+    initialize:
+
+    function AnimationFrame (textureKey, textureFrame, index, frame)
+    {
+        /**
+         * The key of the Texture this AnimationFrame uses.
+         *
+         * @name Phaser.Animations.AnimationFrame#textureKey
+         * @type {string}
+         * @since 3.0.0
+         */
+        this.textureKey = textureKey;
+
+        /**
+         * The key of the Frame within the Texture that this AnimationFrame uses.
+         *
+         * @name Phaser.Animations.AnimationFrame#textureFrame
+         * @type {(string|integer)}
+         * @since 3.0.0
+         */
+        this.textureFrame = textureFrame;
+
+        /**
+         * The index of this AnimationFrame within the Animation sequence.
+         *
+         * @name Phaser.Animations.AnimationFrame#index
+         * @type {integer}
+         * @since 3.0.0
+         */
+        this.index = index;
+
+        /**
+         * A reference to the Texture Frame this AnimationFrame uses for rendering.
+         *
+         * @name Phaser.Animations.AnimationFrame#frame
+         * @type {Phaser.Textures.Frame}
+         * @since 3.0.0
+         */
+        this.frame = frame;
+
+        /**
+         * Is this the first frame in an animation sequence?
+         *
+         * @name Phaser.Animations.AnimationFrame#isFirst
+         * @type {boolean}
+         * @default false
+         * @readonly
+         * @since 3.0.0
+         */
+        this.isFirst = false;
+
+        /**
+         * Is this the last frame in an animation sequence?
+         *
+         * @name Phaser.Animations.AnimationFrame#isLast
+         * @type {boolean}
+         * @default false
+         * @readonly
+         * @since 3.0.0
+         */
+        this.isLast = false;
+
+        /**
+         * A reference to the AnimationFrame that comes before this one in the animation, if any.
+         *
+         * @name Phaser.Animations.AnimationFrame#prevFrame
+         * @type {?Phaser.Animations.AnimationFrame}
+         * @default null
+         * @readonly
+         * @since 3.0.0
+         */
+        this.prevFrame = null;
+
+        /**
+         * A reference to the AnimationFrame that comes after this one in the animation, if any.
+         *
+         * @name Phaser.Animations.AnimationFrame#nextFrame
+         * @type {?Phaser.Animations.AnimationFrame}
+         * @default null
+         * @readonly
+         * @since 3.0.0
+         */
+        this.nextFrame = null;
+
+        /**
+         * Additional time (in ms) that this frame should appear for during playback.
+         * The value is added onto the msPerFrame set by the animation.
+         *
+         * @name Phaser.Animations.AnimationFrame#duration
+         * @type {number}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.duration = 0;
+
+        /**
+         * What % through the animation does this frame come?
+         * This value is generated when the animation is created and cached here.
+         *
+         * @name Phaser.Animations.AnimationFrame#progress
+         * @type {number}
+         * @default 0
+         * @readonly
+         * @since 3.0.0
+         */
+        this.progress = 0;
+    },
+
+    /**
+     * Generates a JavaScript object suitable for converting to JSON.
+     *
+     * @method Phaser.Animations.AnimationFrame#toJSON
+     * @since 3.0.0
+     *
+     * @return {Phaser.Animations.Types.JSONAnimationFrame} The AnimationFrame data.
+     */
+    toJSON: function ()
+    {
+        return {
+            key: this.textureKey,
+            frame: this.textureFrame,
+            duration: this.duration
+        };
+    },
+
+    /**
+     * Destroys this object by removing references to external resources and callbacks.
+     *
+     * @method Phaser.Animations.AnimationFrame#destroy
+     * @since 3.0.0
+     */
+    destroy: function ()
+    {
+        this.frame = undefined;
+    }
+
+});
+
+module.exports = AnimationFrame;
+
+
+/***/ }),
+/* 98 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * Provides methods used for calculating and setting the size of a non-Frame based Game Object.
+ * Should be applied as a mixin and not used directly.
+ * 
+ * @name Phaser.GameObjects.Components.ComputedSize
+ * @since 3.0.0
+ */
+
+var ComputedSize = {
+
+    /**
+     * The native (un-scaled) width of this Game Object.
+     * 
+     * Changing this value will not change the size that the Game Object is rendered in-game.
+     * For that you need to either set the scale of the Game Object (`setScale`) or use
+     * the `displayWidth` property.
+     * 
+     * @name Phaser.GameObjects.Components.ComputedSize#width
+     * @type {number}
+     * @since 3.0.0
+     */
+    width: 0,
+
+    /**
+     * The native (un-scaled) height of this Game Object.
+     * 
+     * Changing this value will not change the size that the Game Object is rendered in-game.
+     * For that you need to either set the scale of the Game Object (`setScale`) or use
+     * the `displayHeight` property.
+     * 
+     * @name Phaser.GameObjects.Components.ComputedSize#height
+     * @type {number}
+     * @since 3.0.0
+     */
+    height: 0,
+
+    /**
+     * The displayed width of this Game Object.
+     * 
+     * This value takes into account the scale factor.
+     * 
+     * Setting this value will adjust the Game Object's scale property.
+     * 
+     * @name Phaser.GameObjects.Components.ComputedSize#displayWidth
+     * @type {number}
+     * @since 3.0.0
+     */
+    displayWidth: {
+
+        get: function ()
+        {
+            return this.scaleX * this.width;
+        },
+
+        set: function (value)
+        {
+            this.scaleX = value / this.width;
+        }
+
+    },
+
+    /**
+     * The displayed height of this Game Object.
+     * 
+     * This value takes into account the scale factor.
+     * 
+     * Setting this value will adjust the Game Object's scale property.
+     * 
+     * @name Phaser.GameObjects.Components.ComputedSize#displayHeight
+     * @type {number}
+     * @since 3.0.0
+     */
+    displayHeight: {
+
+        get: function ()
+        {
+            return this.scaleY * this.height;
+        },
+
+        set: function (value)
+        {
+            this.scaleY = value / this.height;
+        }
+
+    },
+
+    /**
+     * Sets the internal size of this Game Object, as used for frame or physics body creation.
+     * 
+     * This will not change the size that the Game Object is rendered in-game.
+     * For that you need to either set the scale of the Game Object (`setScale`) or call the
+     * `setDisplaySize` method, which is the same thing as changing the scale but allows you
+     * to do so by giving pixel values.
+     * 
+     * If you have enabled this Game Object for input, changing the size will _not_ change the
+     * size of the hit area. To do this you should adjust the `input.hitArea` object directly.
+     * 
+     * @method Phaser.GameObjects.Components.ComputedSize#setSize
+     * @since 3.4.0
+     *
+     * @param {number} width - The width of this Game Object.
+     * @param {number} height - The height of this Game Object.
+     * 
+     * @return {this} This Game Object instance.
+     */
+    setSize: function (width, height)
+    {
+        this.width = width;
+        this.height = height;
+
+        return this;
+    },
+
+    /**
+     * Sets the display size of this Game Object.
+     * 
+     * Calling this will adjust the scale.
+     * 
+     * @method Phaser.GameObjects.Components.ComputedSize#setDisplaySize
+     * @since 3.4.0
+     *
+     * @param {number} width - The width of this Game Object.
+     * @param {number} height - The height of this Game Object.
+     * 
+     * @return {this} This Game Object instance.
+     */
+    setDisplaySize: function (width, height)
+    {
+        this.displayWidth = width;
+        this.displayHeight = height;
+
+        return this;
+    }
+
+};
+
+module.exports = ComputedSize;
+
+
+/***/ }),
+/* 99 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * Provides methods used for getting and setting the texture of a Game Object.
+ *
+ * @name Phaser.GameObjects.Components.Crop
+ * @since 3.12.0
+ */
+
+var Crop = {
+
+    /**
+     * The Texture this Game Object is using to render with.
+     *
+     * @name Phaser.GameObjects.Components.Crop#texture
+     * @type {Phaser.Textures.Texture|Phaser.Textures.CanvasTexture}
+     * @since 3.0.0
+     */
+    texture: null,
+
+    /**
+     * The Texture Frame this Game Object is using to render with.
+     *
+     * @name Phaser.GameObjects.Components.Crop#frame
+     * @type {Phaser.Textures.Frame}
+     * @since 3.0.0
+     */
+    frame: null,
+
+    /**
+     * A boolean flag indicating if this Game Object is being cropped or not.
+     * You can toggle this at any time after `setCrop` has been called, to turn cropping on or off.
+     * Equally, calling `setCrop` with no arguments will reset the crop and disable it.
+     *
+     * @name Phaser.GameObjects.Components.Crop#isCropped
+     * @type {boolean}
+     * @since 3.11.0
+     */
+    isCropped: false,
+
+    /**
+     * Applies a crop to a texture based Game Object, such as a Sprite or Image.
+     * 
+     * The crop is a rectangle that limits the area of the texture frame that is visible during rendering.
+     * 
+     * Cropping a Game Object does not change its size, dimensions, physics body or hit area, it just
+     * changes what is shown when rendered.
+     * 
+     * The crop coordinates are relative to the texture frame, not the Game Object, meaning 0 x 0 is the top-left.
+     * 
+     * Therefore, if you had a Game Object that had an 800x600 sized texture, and you wanted to show only the left
+     * half of it, you could call `setCrop(0, 0, 400, 600)`.
+     * 
+     * It is also scaled to match the Game Object scale automatically. Therefore a crop rect of 100x50 would crop
+     * an area of 200x100 when applied to a Game Object that had a scale factor of 2.
+     * 
+     * You can either pass in numeric values directly, or you can provide a single Rectangle object as the first argument.
+     * 
+     * Call this method with no arguments at all to reset the crop, or toggle the property `isCropped` to `false`.
+     * 
+     * You should do this if the crop rectangle becomes the same size as the frame itself, as it will allow
+     * the renderer to skip several internal calculations.
+     *
+     * @method Phaser.GameObjects.Components.Crop#setCrop
+     * @since 3.11.0
+     *
+     * @param {(number|Phaser.Geom.Rectangle)} [x] - The x coordinate to start the crop from. Or a Phaser.Geom.Rectangle object, in which case the rest of the arguments are ignored.
+     * @param {number} [y] - The y coordinate to start the crop from.
+     * @param {number} [width] - The width of the crop rectangle in pixels.
+     * @param {number} [height] - The height of the crop rectangle in pixels.
+     *
+     * @return {this} This Game Object instance.
+     */
+    setCrop: function (x, y, width, height)
+    {
+        if (x === undefined)
+        {
+            this.isCropped = false;
+        }
+        else if (this.frame)
+        {
+            if (typeof x === 'number')
+            {
+                this.frame.setCropUVs(this._crop, x, y, width, height, this.flipX, this.flipY);
+            }
+            else
+            {
+                var rect = x;
+
+                this.frame.setCropUVs(this._crop, rect.x, rect.y, rect.width, rect.height, this.flipX, this.flipY);
+            }
+
+            this.isCropped = true;
+        }
+
+        return this;
+    },
+
+    /**
+     * Internal method that returns a blank, well-formed crop object for use by a Game Object.
+     *
+     * @method Phaser.GameObjects.Components.Crop#resetCropObject
+     * @private
+     * @since 3.12.0
+     * 
+     * @return {object} The crop object.
+     */
+    resetCropObject: function ()
+    {
+        return { u0: 0, v0: 0, u1: 0, v1: 0, width: 0, height: 0, x: 0, y: 0, flipX: false, flipY: false, cx: 0, cy: 0, cw: 0, ch: 0 };
+    }
+
+};
+
+module.exports = Crop;
+
+
+/***/ }),
+/* 100 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Rectangle = __webpack_require__(101);
+var RotateAround = __webpack_require__(110);
+var Vector2 = __webpack_require__(7);
+
+/**
+ * Provides methods used for obtaining the bounds of a Game Object.
+ * Should be applied as a mixin and not used directly.
+ *
+ * @name Phaser.GameObjects.Components.GetBounds
+ * @since 3.0.0
+ */
+
+var GetBounds = {
+
+    /**
+     * Gets the center coordinate of this Game Object, regardless of origin.
+     * The returned point is calculated in local space and does not factor in any parent containers
+     *
+     * @method Phaser.GameObjects.Components.GetBounds#getCenter
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Math.Vector2} O - [output,$return]
+     *
+     * @param {(Phaser.Math.Vector2|object)} [output] - An object to store the values in. If not provided a new Vector2 will be created.
+     *
+     * @return {(Phaser.Math.Vector2|object)} The values stored in the output object.
+     */
+    getCenter: function (output)
+    {
+        if (output === undefined) { output = new Vector2(); }
+
+        output.x = this.x - (this.displayWidth * this.originX) + (this.displayWidth / 2);
+        output.y = this.y - (this.displayHeight * this.originY) + (this.displayHeight / 2);
+
+        return output;
+    },
+
+    /**
+     * Gets the top-left corner coordinate of this Game Object, regardless of origin.
+     * The returned point is calculated in local space and does not factor in any parent containers
+     *
+     * @method Phaser.GameObjects.Components.GetBounds#getTopLeft
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Math.Vector2} O - [output,$return]
+     *
+     * @param {(Phaser.Math.Vector2|object)} [output] - An object to store the values in. If not provided a new Vector2 will be created.
+     * @param {boolean} [includeParent=false] - If this Game Object has a parent Container, include it (and all other ancestors) in the resulting vector?
+     *
+     * @return {(Phaser.Math.Vector2|object)} The values stored in the output object.
+     */
+    getTopLeft: function (output, includeParent)
+    {
+        if (!output) { output = new Vector2(); }
+        if (includeParent === undefined) { includeParent = false; }
+
+        output.x = this.x - (this.displayWidth * this.originX);
+        output.y = this.y - (this.displayHeight * this.originY);
+
+        if (this.rotation !== 0)
+        {
+            RotateAround(output, this.x, this.y, this.rotation);
+        }
+
+        if (includeParent && this.parentContainer)
+        {
+            var parentMatrix = this.parentContainer.getBoundsTransformMatrix();
+
+            parentMatrix.transformPoint(output.x, output.y, output);
+        }
+
+        return output;
+    },
+
+    /**
+     * Gets the top-right corner coordinate of this Game Object, regardless of origin.
+     * The returned point is calculated in local space and does not factor in any parent containers
+     *
+     * @method Phaser.GameObjects.Components.GetBounds#getTopRight
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Math.Vector2} O - [output,$return]
+     *
+     * @param {(Phaser.Math.Vector2|object)} [output] - An object to store the values in. If not provided a new Vector2 will be created.
+     * @param {boolean} [includeParent=false] - If this Game Object has a parent Container, include it (and all other ancestors) in the resulting vector?
+     *
+     * @return {(Phaser.Math.Vector2|object)} The values stored in the output object.
+     */
+    getTopRight: function (output, includeParent)
+    {
+        if (!output) { output = new Vector2(); }
+        if (includeParent === undefined) { includeParent = false; }
+
+        output.x = (this.x - (this.displayWidth * this.originX)) + this.displayWidth;
+        output.y = this.y - (this.displayHeight * this.originY);
+
+        if (this.rotation !== 0)
+        {
+            RotateAround(output, this.x, this.y, this.rotation);
+        }
+
+        if (includeParent && this.parentContainer)
+        {
+            var parentMatrix = this.parentContainer.getBoundsTransformMatrix();
+
+            parentMatrix.transformPoint(output.x, output.y, output);
+        }
+
+        return output;
+    },
+
+    /**
+     * Gets the bottom-left corner coordinate of this Game Object, regardless of origin.
+     * The returned point is calculated in local space and does not factor in any parent containers
+     *
+     * @method Phaser.GameObjects.Components.GetBounds#getBottomLeft
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Math.Vector2} O - [output,$return]
+     *
+     * @param {(Phaser.Math.Vector2|object)} [output] - An object to store the values in. If not provided a new Vector2 will be created.
+     * @param {boolean} [includeParent=false] - If this Game Object has a parent Container, include it (and all other ancestors) in the resulting vector?
+     *
+     * @return {(Phaser.Math.Vector2|object)} The values stored in the output object.
+     */
+    getBottomLeft: function (output, includeParent)
+    {
+        if (!output) { output = new Vector2(); }
+        if (includeParent === undefined) { includeParent = false; }
+
+        output.x = this.x - (this.displayWidth * this.originX);
+        output.y = (this.y - (this.displayHeight * this.originY)) + this.displayHeight;
+
+        if (this.rotation !== 0)
+        {
+            RotateAround(output, this.x, this.y, this.rotation);
+        }
+
+        if (includeParent && this.parentContainer)
+        {
+            var parentMatrix = this.parentContainer.getBoundsTransformMatrix();
+
+            parentMatrix.transformPoint(output.x, output.y, output);
+        }
+
+        return output;
+    },
+
+    /**
+     * Gets the bottom-right corner coordinate of this Game Object, regardless of origin.
+     * The returned point is calculated in local space and does not factor in any parent containers
+     *
+     * @method Phaser.GameObjects.Components.GetBounds#getBottomRight
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Math.Vector2} O - [output,$return]
+     *
+     * @param {(Phaser.Math.Vector2|object)} [output] - An object to store the values in. If not provided a new Vector2 will be created.
+     * @param {boolean} [includeParent=false] - If this Game Object has a parent Container, include it (and all other ancestors) in the resulting vector?
+     *
+     * @return {(Phaser.Math.Vector2|object)} The values stored in the output object.
+     */
+    getBottomRight: function (output, includeParent)
+    {
+        if (!output) { output = new Vector2(); }
+        if (includeParent === undefined) { includeParent = false; }
+
+        output.x = (this.x - (this.displayWidth * this.originX)) + this.displayWidth;
+        output.y = (this.y - (this.displayHeight * this.originY)) + this.displayHeight;
+
+        if (this.rotation !== 0)
+        {
+            RotateAround(output, this.x, this.y, this.rotation);
+        }
+
+        if (includeParent && this.parentContainer)
+        {
+            var parentMatrix = this.parentContainer.getBoundsTransformMatrix();
+
+            parentMatrix.transformPoint(output.x, output.y, output);
+        }
+
+        return output;
+    },
+
+    /**
+     * Gets the bounds of this Game Object, regardless of origin.
+     * The values are stored and returned in a Rectangle, or Rectangle-like, object.
+     *
+     * @method Phaser.GameObjects.Components.GetBounds#getBounds
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Geom.Rectangle} O - [output,$return]
+     *
+     * @param {(Phaser.Geom.Rectangle|object)} [output] - An object to store the values in. If not provided a new Rectangle will be created.
+     *
+     * @return {(Phaser.Geom.Rectangle|object)} The values stored in the output object.
+     */
+    getBounds: function (output)
+    {
+        if (output === undefined) { output = new Rectangle(); }
+
+        //  We can use the output object to temporarily store the x/y coords in:
+
+        var TLx, TLy, TRx, TRy, BLx, BLy, BRx, BRy;
+
+        // Instead of doing a check if parent container is 
+        // defined per corner we only do it once.
+        if (this.parentContainer)
+        {
+            var parentMatrix = this.parentContainer.getBoundsTransformMatrix();
+
+            this.getTopLeft(output);
+            parentMatrix.transformPoint(output.x, output.y, output);
+
+            TLx = output.x;
+            TLy = output.y;
+
+            this.getTopRight(output);
+            parentMatrix.transformPoint(output.x, output.y, output);
+
+            TRx = output.x;
+            TRy = output.y;
+
+            this.getBottomLeft(output);
+            parentMatrix.transformPoint(output.x, output.y, output);
+
+            BLx = output.x;
+            BLy = output.y;
+
+            this.getBottomRight(output);
+            parentMatrix.transformPoint(output.x, output.y, output);
+
+            BRx = output.x;
+            BRy = output.y;
+        }
+        else
+        {
+            this.getTopLeft(output);
+
+            TLx = output.x;
+            TLy = output.y;
+
+            this.getTopRight(output);
+
+            TRx = output.x;
+            TRy = output.y;
+
+            this.getBottomLeft(output);
+
+            BLx = output.x;
+            BLy = output.y;
+
+            this.getBottomRight(output);
+
+            BRx = output.x;
+            BRy = output.y;
+        }
+
+        output.x = Math.min(TLx, TRx, BLx, BRx);
+        output.y = Math.min(TLy, TRy, BLy, BRy);
+        output.width = Math.max(TLx, TRx, BLx, BRx) - output.x;
+        output.height = Math.max(TLy, TRy, BLy, BRy) - output.y;
+
+        return output;
+    }
+
+};
+
+module.exports = GetBounds;
+
+
+/***/ }),
+/* 101 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Class = __webpack_require__(0);
+var Contains = __webpack_require__(102);
+var GetPoint = __webpack_require__(24);
+var GetPoints = __webpack_require__(103);
+var Line = __webpack_require__(104);
+var Random = __webpack_require__(109);
+
+/**
+ * @classdesc
+ * Encapsulates a 2D rectangle defined by its corner point in the top-left and its extends in x (width) and y (height)
+ *
+ * @class Rectangle
+ * @memberof Phaser.Geom
+ * @constructor
+ * @since 3.0.0
+ *
+ * @param {number} [x=0] - The X coordinate of the top left corner of the Rectangle.
+ * @param {number} [y=0] - The Y coordinate of the top left corner of the Rectangle.
+ * @param {number} [width=0] - The width of the Rectangle.
+ * @param {number} [height=0] - The height of the Rectangle.
+ */
+var Rectangle = new Class({
+
+    initialize:
+
+    function Rectangle (x, y, width, height)
+    {
+        if (x === undefined) { x = 0; }
+        if (y === undefined) { y = 0; }
+        if (width === undefined) { width = 0; }
+        if (height === undefined) { height = 0; }
+
+        /**
+         * The X coordinate of the top left corner of the Rectangle.
+         *
+         * @name Phaser.Geom.Rectangle#x
+         * @type {number}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.x = x;
+
+        /**
+         * The Y coordinate of the top left corner of the Rectangle.
+         *
+         * @name Phaser.Geom.Rectangle#y
+         * @type {number}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.y = y;
+
+        /**
+         * The width of the Rectangle, i.e. the distance between its left side (defined by `x`) and its right side.
+         *
+         * @name Phaser.Geom.Rectangle#width
+         * @type {number}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.width = width;
+
+        /**
+         * The height of the Rectangle, i.e. the distance between its top side (defined by `y`) and its bottom side.
+         *
+         * @name Phaser.Geom.Rectangle#height
+         * @type {number}
+         * @default 0
+         * @since 3.0.0
+         */
+        this.height = height;
+    },
+
+    /**
+     * Checks if the given point is inside the Rectangle's bounds.
+     *
+     * @method Phaser.Geom.Rectangle#contains
+     * @since 3.0.0
+     *
+     * @param {number} x - The X coordinate of the point to check.
+     * @param {number} y - The Y coordinate of the point to check.
+     *
+     * @return {boolean} `true` if the point is within the Rectangle's bounds, otherwise `false`.
+     */
+    contains: function (x, y)
+    {
+        return Contains(this, x, y);
+    },
+
+    /**
+     * Calculates the coordinates of a point at a certain `position` on the Rectangle's perimeter.
+     * 
+     * The `position` is a fraction between 0 and 1 which defines how far into the perimeter the point is.
+     * 
+     * A value of 0 or 1 returns the point at the top left corner of the rectangle, while a value of 0.5 returns the point at the bottom right corner of the rectangle. Values between 0 and 0.5 are on the top or the right side and values between 0.5 and 1 are on the bottom or the left side.
+     *
+     * @method Phaser.Geom.Rectangle#getPoint
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Geom.Point} O - [output,$return]
+     *
+     * @param {number} position - The normalized distance into the Rectangle's perimeter to return.
+     * @param {(Phaser.Geom.Point|object)} [output] - An object to update with the `x` and `y` coordinates of the point.
+     *
+     * @return {(Phaser.Geom.Point|object)} The updated `output` object, or a new Point if no `output` object was given.
+     */
+    getPoint: function (position, output)
+    {
+        return GetPoint(this, position, output);
+    },
+
+    /**
+     * Returns an array of points from the perimeter of the Rectangle, each spaced out based on the quantity or step required.
+     *
+     * @method Phaser.Geom.Rectangle#getPoints
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Geom.Point[]} O - [output,$return]
+     *
+     * @param {integer} quantity - The number of points to return. Set to `false` or 0 to return an arbitrary number of points (`perimeter / stepRate`) evenly spaced around the Rectangle based on the `stepRate`.
+     * @param {number} [stepRate] - If `quantity` is 0, determines the normalized distance between each returned point.
+     * @param {(array|Phaser.Geom.Point[])} [output] - An array to which to append the points.
+     *
+     * @return {(array|Phaser.Geom.Point[])} The modified `output` array, or a new array if none was provided.
+     */
+    getPoints: function (quantity, stepRate, output)
+    {
+        return GetPoints(this, quantity, stepRate, output);
+    },
+
+    /**
+     * Returns a random point within the Rectangle's bounds.
+     *
+     * @method Phaser.Geom.Rectangle#getRandomPoint
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Geom.Point} O - [point,$return]
+     *
+     * @param {Phaser.Geom.Point} [point] - The object in which to store the `x` and `y` coordinates of the point.
+     *
+     * @return {Phaser.Geom.Point} The updated `point`, or a new Point if none was provided.
+     */
+    getRandomPoint: function (point)
+    {
+        return Random(this, point);
+    },
+
+    /**
+     * Sets the position, width, and height of the Rectangle.
+     *
+     * @method Phaser.Geom.Rectangle#setTo
+     * @since 3.0.0
+     *
+     * @param {number} x - The X coordinate of the top left corner of the Rectangle.
+     * @param {number} y - The Y coordinate of the top left corner of the Rectangle.
+     * @param {number} width - The width of the Rectangle.
+     * @param {number} height - The height of the Rectangle.
+     *
+     * @return {Phaser.Geom.Rectangle} This Rectangle object.
+     */
+    setTo: function (x, y, width, height)
+    {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+
+        return this;
+    },
+
+    /**
+     * Resets the position, width, and height of the Rectangle to 0.
+     *
+     * @method Phaser.Geom.Rectangle#setEmpty
+     * @since 3.0.0
+     *
+     * @return {Phaser.Geom.Rectangle} This Rectangle object.
+     */
+    setEmpty: function ()
+    {
+        return this.setTo(0, 0, 0, 0);
+    },
+
+    /**
+     * Sets the position of the Rectangle.
+     *
+     * @method Phaser.Geom.Rectangle#setPosition
+     * @since 3.0.0
+     *
+     * @param {number} x - The X coordinate of the top left corner of the Rectangle.
+     * @param {number} [y=x] - The Y coordinate of the top left corner of the Rectangle.
+     *
+     * @return {Phaser.Geom.Rectangle} This Rectangle object.
+     */
+    setPosition: function (x, y)
+    {
+        if (y === undefined) { y = x; }
+
+        this.x = x;
+        this.y = y;
+
+        return this;
+    },
+
+    /**
+     * Sets the width and height of the Rectangle.
+     *
+     * @method Phaser.Geom.Rectangle#setSize
+     * @since 3.0.0
+     *
+     * @param {number} width - The width to set the Rectangle to.
+     * @param {number} [height=width] - The height to set the Rectangle to.
+     *
+     * @return {Phaser.Geom.Rectangle} This Rectangle object.
+     */
+    setSize: function (width, height)
+    {
+        if (height === undefined) { height = width; }
+
+        this.width = width;
+        this.height = height;
+
+        return this;
+    },
+
+    /**
+     * Determines if the Rectangle is empty. A Rectangle is empty if its width or height is less than or equal to 0.
+     *
+     * @method Phaser.Geom.Rectangle#isEmpty
+     * @since 3.0.0
+     *
+     * @return {boolean} `true` if the Rectangle is empty. A Rectangle object is empty if its width or height is less than or equal to 0.
+     */
+    isEmpty: function ()
+    {
+        return (this.width <= 0 || this.height <= 0);
+    },
+
+    /**
+     * Returns a Line object that corresponds to the top of this Rectangle.
+     *
+     * @method Phaser.Geom.Rectangle#getLineA
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Geom.Line} O - [line,$return]
+     *
+     * @param {Phaser.Geom.Line} [line] - A Line object to set the results in. If `undefined` a new Line will be created.
+     *
+     * @return {Phaser.Geom.Line} A Line object that corresponds to the top of this Rectangle.
+     */
+    getLineA: function (line)
+    {
+        if (line === undefined) { line = new Line(); }
+
+        line.setTo(this.x, this.y, this.right, this.y);
+
+        return line;
+    },
+
+    /**
+     * Returns a Line object that corresponds to the right of this Rectangle.
+     *
+     * @method Phaser.Geom.Rectangle#getLineB
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Geom.Line} O - [line,$return]
+     *
+     * @param {Phaser.Geom.Line} [line] - A Line object to set the results in. If `undefined` a new Line will be created.
+     *
+     * @return {Phaser.Geom.Line} A Line object that corresponds to the right of this Rectangle.
+     */
+    getLineB: function (line)
+    {
+        if (line === undefined) { line = new Line(); }
+
+        line.setTo(this.right, this.y, this.right, this.bottom);
+
+        return line;
+    },
+
+    /**
+     * Returns a Line object that corresponds to the bottom of this Rectangle.
+     *
+     * @method Phaser.Geom.Rectangle#getLineC
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Geom.Line} O - [line,$return]
+     *
+     * @param {Phaser.Geom.Line} [line] - A Line object to set the results in. If `undefined` a new Line will be created.
+     *
+     * @return {Phaser.Geom.Line} A Line object that corresponds to the bottom of this Rectangle.
+     */
+    getLineC: function (line)
+    {
+        if (line === undefined) { line = new Line(); }
+
+        line.setTo(this.right, this.bottom, this.x, this.bottom);
+
+        return line;
+    },
+
+    /**
+     * Returns a Line object that corresponds to the left of this Rectangle.
+     *
+     * @method Phaser.Geom.Rectangle#getLineD
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Geom.Line} O - [line,$return]
+     *
+     * @param {Phaser.Geom.Line} [line] - A Line object to set the results in. If `undefined` a new Line will be created.
+     *
+     * @return {Phaser.Geom.Line} A Line object that corresponds to the left of this Rectangle.
+     */
+    getLineD: function (line)
+    {
+        if (line === undefined) { line = new Line(); }
+
+        line.setTo(this.x, this.bottom, this.x, this.y);
+
+        return line;
+    },
+
+    /**
+     * The x coordinate of the left of the Rectangle.
+     * Changing the left property of a Rectangle object has no effect on the y and height properties. However it does affect the width property, whereas changing the x value does not affect the width property.
+     *
+     * @name Phaser.Geom.Rectangle#left
+     * @type {number}
+     * @since 3.0.0
+     */
+    left: {
+
+        get: function ()
+        {
+            return this.x;
+        },
+
+        set: function (value)
+        {
+            if (value >= this.right)
+            {
+                this.width = 0;
+            }
+            else
+            {
+                this.width = this.right - value;
+            }
+
+            this.x = value;
+        }
+
+    },
+
+    /**
+     * The sum of the x and width properties.
+     * Changing the right property of a Rectangle object has no effect on the x, y and height properties, however it does affect the width property.
+     *
+     * @name Phaser.Geom.Rectangle#right
+     * @type {number}
+     * @since 3.0.0
+     */
+    right: {
+
+        get: function ()
+        {
+            return this.x + this.width;
+        },
+
+        set: function (value)
+        {
+            if (value <= this.x)
+            {
+                this.width = 0;
+            }
+            else
+            {
+                this.width = value - this.x;
+            }
+        }
+
+    },
+
+    /**
+     * The y coordinate of the top of the Rectangle. Changing the top property of a Rectangle object has no effect on the x and width properties.
+     * However it does affect the height property, whereas changing the y value does not affect the height property.
+     *
+     * @name Phaser.Geom.Rectangle#top
+     * @type {number}
+     * @since 3.0.0
+     */
+    top: {
+
+        get: function ()
+        {
+            return this.y;
+        },
+
+        set: function (value)
+        {
+            if (value >= this.bottom)
+            {
+                this.height = 0;
+            }
+            else
+            {
+                this.height = (this.bottom - value);
+            }
+
+            this.y = value;
+        }
+
+    },
+
+    /**
+     * The sum of the y and height properties.
+     * Changing the bottom property of a Rectangle object has no effect on the x, y and width properties, but does change the height property.
+     *
+     * @name Phaser.Geom.Rectangle#bottom
+     * @type {number}
+     * @since 3.0.0
+     */
+    bottom: {
+
+        get: function ()
+        {
+            return this.y + this.height;
+        },
+
+        set: function (value)
+        {
+            if (value <= this.y)
+            {
+                this.height = 0;
+            }
+            else
+            {
+                this.height = value - this.y;
+            }
+        }
+
+    },
+
+    /**
+     * The x coordinate of the center of the Rectangle.
+     *
+     * @name Phaser.Geom.Rectangle#centerX
+     * @type {number}
+     * @since 3.0.0
+     */
+    centerX: {
+
+        get: function ()
+        {
+            return this.x + (this.width / 2);
+        },
+
+        set: function (value)
+        {
+            this.x = value - (this.width / 2);
+        }
+
+    },
+
+    /**
+     * The y coordinate of the center of the Rectangle.
+     *
+     * @name Phaser.Geom.Rectangle#centerY
+     * @type {number}
+     * @since 3.0.0
+     */
+    centerY: {
+
+        get: function ()
+        {
+            return this.y + (this.height / 2);
+        },
+
+        set: function (value)
+        {
+            this.y = value - (this.height / 2);
+        }
+
+    }
+
+});
+
+module.exports = Rectangle;
+
+
+/***/ }),
+/* 102 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * Checks if a given point is inside a Rectangle's bounds.
+ *
+ * @function Phaser.Geom.Rectangle.Contains
+ * @since 3.0.0
+ *
+ * @param {Phaser.Geom.Rectangle} rect - The Rectangle to check.
+ * @param {number} x - The X coordinate of the point to check.
+ * @param {number} y - The Y coordinate of the point to check.
+ *
+ * @return {boolean} `true` if the point is within the Rectangle's bounds, otherwise `false`.
+ */
+var Contains = function (rect, x, y)
+{
+    if (rect.width <= 0 || rect.height <= 0)
+    {
+        return false;
+    }
+
+    return (rect.x <= x && rect.x + rect.width >= x && rect.y <= y && rect.y + rect.height >= y);
+};
+
+module.exports = Contains;
+
+
+/***/ }),
+/* 103 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var GetPoint = __webpack_require__(24);
+var Perimeter = __webpack_require__(25);
+
+//  Return an array of points from the perimeter of the rectangle
+//  each spaced out based on the quantity or step required
+
+/**
+ * Return an array of points from the perimeter of the rectangle, each spaced out based on the quantity or step required.
+ *
+ * @function Phaser.Geom.Rectangle.GetPoints
+ * @since 3.0.0
+ *
+ * @generic {Phaser.Geom.Point[]} O - [out,$return]
+ *
+ * @param {Phaser.Geom.Rectangle} rectangle - The Rectangle object to get the points from.
+ * @param {number} step - Step between points. Used to calculate the number of points to return when quantity is falsy. Ignored if quantity is positive.
+ * @param {integer} quantity - The number of evenly spaced points from the rectangles perimeter to return. If falsy, step param will be used to calculate the number of points.
+ * @param {(array|Phaser.Geom.Point[])} [out] - An optional array to store the points in.
+ *
+ * @return {(array|Phaser.Geom.Point[])} An array of Points from the perimeter of the rectangle.
+ */
+var GetPoints = function (rectangle, quantity, stepRate, out)
+{
+    if (out === undefined) { out = []; }
+
+    //  If quantity is a falsey value (false, null, 0, undefined, etc) then we calculate it based on the stepRate instead.
+    if (!quantity)
+    {
+        quantity = Perimeter(rectangle) / stepRate;
+    }
+
+    for (var i = 0; i < quantity; i++)
+    {
+        var position = i / quantity;
+
+        out.push(GetPoint(rectangle, position));
+    }
+
+    return out;
+};
+
+module.exports = GetPoints;
+
+
+/***/ }),
+/* 104 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Class = __webpack_require__(0);
+var GetPoint = __webpack_require__(105);
+var GetPoints = __webpack_require__(106);
+var Random = __webpack_require__(108);
+var Vector2 = __webpack_require__(7);
+
+/**
+ * @classdesc
+ * Defines a Line segment, a part of a line between two endpoints.
+ *
+ * @class Line
+ * @memberof Phaser.Geom
+ * @constructor
+ * @since 3.0.0
+ *
+ * @param {number} [x1=0] - The x coordinate of the lines starting point.
+ * @param {number} [y1=0] - The y coordinate of the lines starting point.
+ * @param {number} [x2=0] - The x coordinate of the lines ending point.
+ * @param {number} [y2=0] - The y coordinate of the lines ending point.
+ */
+var Line = new Class({
+
+    initialize:
+
+    function Line (x1, y1, x2, y2)
+    {
+        if (x1 === undefined) { x1 = 0; }
+        if (y1 === undefined) { y1 = 0; }
+        if (x2 === undefined) { x2 = 0; }
+        if (y2 === undefined) { y2 = 0; }
+
+        /**
+         * The x coordinate of the lines starting point.
+         *
+         * @name Phaser.Geom.Line#x1
+         * @type {number}
+         * @since 3.0.0
+         */
+        this.x1 = x1;
+
+        /**
+         * The y coordinate of the lines starting point.
+         *
+         * @name Phaser.Geom.Line#y1
+         * @type {number}
+         * @since 3.0.0
+         */
+        this.y1 = y1;
+
+        /**
+         * The x coordinate of the lines ending point.
+         *
+         * @name Phaser.Geom.Line#x2
+         * @type {number}
+         * @since 3.0.0
+         */
+        this.x2 = x2;
+
+        /**
+         * The y coordinate of the lines ending point.
+         *
+         * @name Phaser.Geom.Line#y2
+         * @type {number}
+         * @since 3.0.0
+         */
+        this.y2 = y2;
+    },
+
+    /**
+     * Get a point on a line that's a given percentage along its length.
+     *
+     * @method Phaser.Geom.Line#getPoint
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Geom.Point} O - [output,$return]
+     *
+     * @param {number} position - A value between 0 and 1, where 0 is the start, 0.5 is the middle and 1 is the end of the line.
+     * @param {(Phaser.Geom.Point|object)} [output] - An optional point, or point-like object, to store the coordinates of the point on the line.
+     *
+     * @return {(Phaser.Geom.Point|object)} A Point, or point-like object, containing the coordinates of the point on the line.
+     */
+    getPoint: function (position, output)
+    {
+        return GetPoint(this, position, output);
+    },
+
+    /**
+     * Get a number of points along a line's length.
+     *
+     * Provide a `quantity` to get an exact number of points along the line.
+     *
+     * Provide a `stepRate` to ensure a specific distance between each point on the line. Set `quantity` to `0` when
+     * providing a `stepRate`.
+     *
+     * @method Phaser.Geom.Line#getPoints
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Geom.Point} O - [output,$return]
+     *
+     * @param {integer} quantity - The number of points to place on the line. Set to `0` to use `stepRate` instead.
+     * @param {integer} [stepRate] - The distance between each point on the line. When set, `quantity` is implied and should be set to `0`.
+     * @param {(array|Phaser.Geom.Point[])} [output] - An optional array of Points, or point-like objects, to store the coordinates of the points on the line.
+     *
+     * @return {(array|Phaser.Geom.Point[])} An array of Points, or point-like objects, containing the coordinates of the points on the line.
+     */
+    getPoints: function (quantity, stepRate, output)
+    {
+        return GetPoints(this, quantity, stepRate, output);
+    },
+
+    /**
+     * Get a random Point on the Line.
+     *
+     * @method Phaser.Geom.Line#getRandomPoint
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Geom.Point} O - [point,$return]
+     *
+     * @param {(Phaser.Geom.Point|object)} [point] - An instance of a Point to be modified.
+     *
+     * @return {Phaser.Geom.Point} A random Point on the Line.
+     */
+    getRandomPoint: function (point)
+    {
+        return Random(this, point);
+    },
+
+    /**
+     * Set new coordinates for the line endpoints.
+     *
+     * @method Phaser.Geom.Line#setTo
+     * @since 3.0.0
+     *
+     * @param {number} [x1=0] - The x coordinate of the lines starting point.
+     * @param {number} [y1=0] - The y coordinate of the lines starting point.
+     * @param {number} [x2=0] - The x coordinate of the lines ending point.
+     * @param {number} [y2=0] - The y coordinate of the lines ending point.
+     *
+     * @return {Phaser.Geom.Line} This Line object.
+     */
+    setTo: function (x1, y1, x2, y2)
+    {
+        if (x1 === undefined) { x1 = 0; }
+        if (y1 === undefined) { y1 = 0; }
+        if (x2 === undefined) { x2 = 0; }
+        if (y2 === undefined) { y2 = 0; }
+
+        this.x1 = x1;
+        this.y1 = y1;
+
+        this.x2 = x2;
+        this.y2 = y2;
+
+        return this;
+    },
+
+    /**
+     * Returns a Vector2 object that corresponds to the start of this Line.
+     *
+     * @method Phaser.Geom.Line#getPointA
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Math.Vector2} O - [vec2,$return]
+     *
+     * @param {Phaser.Math.Vector2} [vec2] - A Vector2 object to set the results in. If `undefined` a new Vector2 will be created.
+     *
+     * @return {Phaser.Math.Vector2} A Vector2 object that corresponds to the start of this Line.
+     */
+    getPointA: function (vec2)
+    {
+        if (vec2 === undefined) { vec2 = new Vector2(); }
+
+        vec2.set(this.x1, this.y1);
+
+        return vec2;
+    },
+
+    /**
+     * Returns a Vector2 object that corresponds to the end of this Line.
+     *
+     * @method Phaser.Geom.Line#getPointB
+     * @since 3.0.0
+     *
+     * @generic {Phaser.Math.Vector2} O - [vec2,$return]
+     *
+     * @param {Phaser.Math.Vector2} [vec2] - A Vector2 object to set the results in. If `undefined` a new Vector2 will be created.
+     *
+     * @return {Phaser.Math.Vector2} A Vector2 object that corresponds to the end of this Line.
+     */
+    getPointB: function (vec2)
+    {
+        if (vec2 === undefined) { vec2 = new Vector2(); }
+
+        vec2.set(this.x2, this.y2);
+
+        return vec2;
+    },
+
+    /**
+     * The left position of the Line.
+     *
+     * @name Phaser.Geom.Line#left
+     * @type {number}
+     * @since 3.0.0
+     */
+    left: {
+
+        get: function ()
+        {
+            return Math.min(this.x1, this.x2);
+        },
+
+        set: function (value)
+        {
+            if (this.x1 <= this.x2)
+            {
+                this.x1 = value;
+            }
+            else
+            {
+                this.x2 = value;
+            }
+        }
+
+    },
+
+    /**
+     * The right position of the Line.
+     *
+     * @name Phaser.Geom.Line#right
+     * @type {number}
+     * @since 3.0.0
+     */
+    right: {
+
+        get: function ()
+        {
+            return Math.max(this.x1, this.x2);
+        },
+
+        set: function (value)
+        {
+            if (this.x1 > this.x2)
+            {
+                this.x1 = value;
+            }
+            else
+            {
+                this.x2 = value;
+            }
+        }
+
+    },
+
+    /**
+     * The top position of the Line.
+     *
+     * @name Phaser.Geom.Line#top
+     * @type {number}
+     * @since 3.0.0
+     */
+    top: {
+
+        get: function ()
+        {
+            return Math.min(this.y1, this.y2);
+        },
+
+        set: function (value)
+        {
+            if (this.y1 <= this.y2)
+            {
+                this.y1 = value;
+            }
+            else
+            {
+                this.y2 = value;
+            }
+        }
+
+    },
+
+    /**
+     * The bottom position of the Line.
+     *
+     * @name Phaser.Geom.Line#bottom
+     * @type {number}
+     * @since 3.0.0
+     */
+    bottom: {
+
+        get: function ()
+        {
+            return Math.max(this.y1, this.y2);
+        },
+
+        set: function (value)
+        {
+            if (this.y1 > this.y2)
+            {
+                this.y1 = value;
+            }
+            else
+            {
+                this.y2 = value;
+            }
+        }
+
+    }
+
+});
+
+module.exports = Line;
+
+
+/***/ }),
+/* 105 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Point = __webpack_require__(3);
+
+/**
+ * Get a point on a line that's a given percentage along its length.
+ *
+ * @function Phaser.Geom.Line.GetPoint
+ * @since 3.0.0
+ *
+ * @generic {Phaser.Geom.Point} O - [out,$return]
+ *
+ * @param {Phaser.Geom.Line} line - The line.
+ * @param {number} position - A value between 0 and 1, where 0 is the start, 0.5 is the middle and 1 is the end of the line.
+ * @param {(Phaser.Geom.Point|object)} [out] - An optional point, or point-like object, to store the coordinates of the point on the line.
+ *
+ * @return {(Phaser.Geom.Point|object)} The point on the line.
+ */
+var GetPoint = function (line, position, out)
+{
+    if (out === undefined) { out = new Point(); }
+
+    out.x = line.x1 + (line.x2 - line.x1) * position;
+    out.y = line.y1 + (line.y2 - line.y1) * position;
+
+    return out;
+};
+
+module.exports = GetPoint;
+
+
+/***/ }),
+/* 106 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Length = __webpack_require__(107);
+var Point = __webpack_require__(3);
+
+/**
+ * Get a number of points along a line's length.
+ *
+ * Provide a `quantity` to get an exact number of points along the line.
+ *
+ * Provide a `stepRate` to ensure a specific distance between each point on the line. Set `quantity` to `0` when
+ * providing a `stepRate`.
+ *
+ * @function Phaser.Geom.Line.GetPoints
+ * @since 3.0.0
+ *
+ * @generic {Phaser.Geom.Point[]} O - [out,$return]
+ *
+ * @param {Phaser.Geom.Line} line - The line.
+ * @param {integer} quantity - The number of points to place on the line. Set to `0` to use `stepRate` instead.
+ * @param {number} [stepRate] - The distance between each point on the line. When set, `quantity` is implied and should be set to `0`.
+ * @param {(array|Phaser.Geom.Point[])} [out] - An optional array of Points, or point-like objects, to store the coordinates of the points on the line.
+ *
+ * @return {(array|Phaser.Geom.Point[])} An array of Points, or point-like objects, containing the coordinates of the points on the line.
+ */
+var GetPoints = function (line, quantity, stepRate, out)
+{
+    if (out === undefined) { out = []; }
+
+    //  If quantity is a falsey value (false, null, 0, undefined, etc) then we calculate it based on the stepRate instead.
+    if (!quantity)
+    {
+        quantity = Length(line) / stepRate;
+    }
+
+    var x1 = line.x1;
+    var y1 = line.y1;
+
+    var x2 = line.x2;
+    var y2 = line.y2;
+
+    for (var i = 0; i < quantity; i++)
+    {
+        var position = i / quantity;
+
+        var x = x1 + (x2 - x1) * position;
+        var y = y1 + (y2 - y1) * position;
+
+        out.push(new Point(x, y));
+    }
+
+    return out;
+};
+
+module.exports = GetPoints;
+
+
+/***/ }),
+/* 107 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * Calculate the length of the given line.
+ *
+ * @function Phaser.Geom.Line.Length
+ * @since 3.0.0
+ *
+ * @param {Phaser.Geom.Line} line - The line to calculate the length of.
+ *
+ * @return {number} The length of the line.
+ */
+var Length = function (line)
+{
+    return Math.sqrt((line.x2 - line.x1) * (line.x2 - line.x1) + (line.y2 - line.y1) * (line.y2 - line.y1));
+};
+
+module.exports = Length;
+
+
+/***/ }),
+/* 108 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Point = __webpack_require__(3);
+
+/**
+ * Returns a random point on a given Line.
+ *
+ * @function Phaser.Geom.Line.Random
+ * @since 3.0.0
+ *
+ * @generic {Phaser.Geom.Point} O - [out,$return]
+ *
+ * @param {Phaser.Geom.Line} line - The Line to calculate the random Point on.
+ * @param {(Phaser.Geom.Point|object)} [out] - An instance of a Point to be modified.
+ *
+ * @return {(Phaser.Geom.Point|object)} A random Point on the Line.
+ */
+var Random = function (line, out)
+{
+    if (out === undefined) { out = new Point(); }
+
+    var t = Math.random();
+
+    out.x = line.x1 + t * (line.x2 - line.x1);
+    out.y = line.y1 + t * (line.y2 - line.y1);
+
+    return out;
+};
+
+module.exports = Random;
+
+
+/***/ }),
+/* 109 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Point = __webpack_require__(3);
+
+/**
+ * Returns a random point within a Rectangle.
+ *
+ * @function Phaser.Geom.Rectangle.Random
+ * @since 3.0.0
+ *
+ * @generic {Phaser.Geom.Point} O - [out,$return]
+ *
+ * @param {Phaser.Geom.Rectangle} rect - The Rectangle to return a point from.
+ * @param {Phaser.Geom.Point} out - The object to update with the point's coordinates.
+ *
+ * @return {Phaser.Geom.Point} The modified `out` object, or a new Point if none was provided.
+ */
+var Random = function (rect, out)
+{
+    if (out === undefined) { out = new Point(); }
+
+    out.x = rect.x + (Math.random() * rect.width);
+    out.y = rect.y + (Math.random() * rect.height);
+
+    return out;
+};
+
+module.exports = Random;
+
+
+/***/ }),
+/* 110 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * Rotate a `point` around `x` and `y` by the given `angle`.
+ *
+ * @function Phaser.Math.RotateAround
+ * @since 3.0.0
+ *
+ * @param {(Phaser.Geom.Point|object)} point - The point to be rotated.
+ * @param {number} x - The horizontal coordinate to rotate around.
+ * @param {number} y - The vertical coordinate to rotate around.
+ * @param {number} angle - The angle of rotation in radians.
+ *
+ * @return {Phaser.Geom.Point} The given point, rotated by the given angle around the given coordinates.
+ */
+var RotateAround = function (point, x, y, angle)
+{
+    var c = Math.cos(angle);
+    var s = Math.sin(angle);
+
+    var tx = point.x - x;
+    var ty = point.y - y;
+
+    point.x = tx * c - ty * s + x;
+    point.y = tx * s + ty * c + y;
+
+    return point;
+};
+
+module.exports = RotateAround;
+
+
+/***/ }),
+/* 111 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var BitmapMask = __webpack_require__(112);
+var GeometryMask = __webpack_require__(113);
+
+/**
+ * Provides methods used for getting and setting the mask of a Game Object.
+ *
+ * @name Phaser.GameObjects.Components.Mask
+ * @since 3.0.0
+ */
+
+var Mask = {
+
+    /**
+     * The Mask this Game Object is using during render.
+     *
+     * @name Phaser.GameObjects.Components.Mask#mask
+     * @type {Phaser.Display.Masks.BitmapMask|Phaser.Display.Masks.GeometryMask}
+     * @since 3.0.0
+     */
+    mask: null,
+
+    /**
+     * Sets the mask that this Game Object will use to render with.
+     *
+     * The mask must have been previously created and can be either a GeometryMask or a BitmapMask.
+     * Note: Bitmap Masks only work on WebGL. Geometry Masks work on both WebGL and Canvas.
+     *
+     * If a mask is already set on this Game Object it will be immediately replaced.
+     * 
+     * Masks are positioned in global space and are not relative to the Game Object to which they
+     * are applied. The reason for this is that multiple Game Objects can all share the same mask.
+     * 
+     * Masks have no impact on physics or input detection. They are purely a rendering component
+     * that allows you to limit what is visible during the render pass.
+     *
+     * @method Phaser.GameObjects.Components.Mask#setMask
+     * @since 3.6.2
+     *
+     * @param {Phaser.Display.Masks.BitmapMask|Phaser.Display.Masks.GeometryMask} mask - The mask this Game Object will use when rendering.
+     *
+     * @return {this} This Game Object instance.
+     */
+    setMask: function (mask)
+    {
+        this.mask = mask;
+
+        return this;
+    },
+
+    /**
+     * Clears the mask that this Game Object was using.
+     *
+     * @method Phaser.GameObjects.Components.Mask#clearMask
+     * @since 3.6.2
+     *
+     * @param {boolean} [destroyMask=false] - Destroy the mask before clearing it?
+     *
+     * @return {this} This Game Object instance.
+     */
+    clearMask: function (destroyMask)
+    {
+        if (destroyMask === undefined) { destroyMask = false; }
+
+        if (destroyMask && this.mask)
+        {
+            this.mask.destroy();
+        }
+
+        this.mask = null;
+
+        return this;
+    },
+
+    /**
+     * Creates and returns a Bitmap Mask. This mask can be used by any Game Object,
+     * including this one.
+     *
+     * To create the mask you need to pass in a reference to a renderable Game Object.
+     * A renderable Game Object is one that uses a texture to render with, such as an
+     * Image, Sprite, Render Texture or BitmapText.
+     *
+     * If you do not provide a renderable object, and this Game Object has a texture,
+     * it will use itself as the object. This means you can call this method to create
+     * a Bitmap Mask from any renderable Game Object.
+     *
+     * @method Phaser.GameObjects.Components.Mask#createBitmapMask
+     * @since 3.6.2
+     * 
+     * @param {Phaser.GameObjects.GameObject} [renderable] - A renderable Game Object that uses a texture, such as a Sprite.
+     *
+     * @return {Phaser.Display.Masks.BitmapMask} This Bitmap Mask that was created.
+     */
+    createBitmapMask: function (renderable)
+    {
+        if (renderable === undefined && this.texture)
+        {
+            // eslint-disable-next-line consistent-this
+            renderable = this;
+        }
+
+        return new BitmapMask(this.scene, renderable);
+    },
+
+    /**
+     * Creates and returns a Geometry Mask. This mask can be used by any Game Object,
+     * including this one.
+     *
+     * To create the mask you need to pass in a reference to a Graphics Game Object.
+     *
+     * If you do not provide a graphics object, and this Game Object is an instance
+     * of a Graphics object, then it will use itself to create the mask.
+     * 
+     * This means you can call this method to create a Geometry Mask from any Graphics Game Object.
+     *
+     * @method Phaser.GameObjects.Components.Mask#createGeometryMask
+     * @since 3.6.2
+     * 
+     * @param {Phaser.GameObjects.Graphics} [graphics] - A Graphics Game Object. The geometry within it will be used as the mask.
+     *
+     * @return {Phaser.Display.Masks.GeometryMask} This Geometry Mask that was created.
+     */
+    createGeometryMask: function (graphics)
+    {
+        if (graphics === undefined && this.type === 'Graphics')
+        {
+            // eslint-disable-next-line consistent-this
+            graphics = this;
+        }
+
+        return new GeometryMask(this.scene, graphics);
+    }
+
+};
+
+module.exports = Mask;
+
+
+/***/ }),
+/* 112 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Class = __webpack_require__(0);
+
+/**
+ * @classdesc
+ * A Bitmap Mask combines the alpha (opacity) of a masked pixel with the alpha of another pixel.
+ * Unlike the Geometry Mask, which is a clipping path, a Bitmap Mask behaves like an alpha mask,
+ * not a clipping path. It is only available when using the WebGL Renderer.
+ *
+ * A Bitmap Mask can use any Game Object to determine the alpha of each pixel of the masked Game Object(s).
+ * For any given point of a masked Game Object's texture, the pixel's alpha will be multiplied by the alpha
+ * of the pixel at the same position in the Bitmap Mask's Game Object. The color of the pixel from the
+ * Bitmap Mask doesn't matter.
+ *
+ * For example, if a pure blue pixel with an alpha of 0.95 is masked with a pure red pixel with an
+ * alpha of 0.5, the resulting pixel will be pure blue with an alpha of 0.475. Naturally, this means
+ * that a pixel in the mask with an alpha of 0 will hide the corresponding pixel in all masked Game Objects
+ *  A pixel with an alpha of 1 in the masked Game Object will receive the same alpha as the
+ * corresponding pixel in the mask.
+ *
+ * The Bitmap Mask's location matches the location of its Game Object, not the location of the
+ * masked objects. Moving or transforming the underlying Game Object will change the mask
+ * (and affect the visibility of any masked objects), whereas moving or transforming a masked object
+ * will not affect the mask.
+ *
+ * The Bitmap Mask will not render its Game Object by itself. If the Game Object is not in a
+ * Scene's display list, it will only be used for the mask and its full texture will not be directly
+ * visible. Adding the underlying Game Object to a Scene will not cause any problems - it will
+ * render as a normal Game Object and will also serve as a mask.
+ *
+ * @class BitmapMask
+ * @memberof Phaser.Display.Masks
+ * @constructor
+ * @since 3.0.0
+ *
+ * @param {Phaser.Scene} scene - The Scene which this Bitmap Mask will be used in.
+ * @param {Phaser.GameObjects.GameObject} renderable - A renderable Game Object that uses a texture, such as a Sprite.
+ */
+var BitmapMask = new Class({
+
+    initialize:
+
+    function BitmapMask (scene, renderable)
+    {
+        var renderer = scene.sys.game.renderer;
+
+        /**
+         * A reference to either the Canvas or WebGL Renderer that this Mask is using.
+         *
+         * @name Phaser.Display.Masks.BitmapMask#renderer
+         * @type {(Phaser.Renderer.Canvas.CanvasRenderer|Phaser.Renderer.WebGL.WebGLRenderer)}
+         * @since 3.11.0
+         */
+        this.renderer = renderer;
+
+        /**
+         * A renderable Game Object that uses a texture, such as a Sprite.
+         *
+         * @name Phaser.Display.Masks.BitmapMask#bitmapMask
+         * @type {Phaser.GameObjects.GameObject}
+         * @since 3.0.0
+         */
+        this.bitmapMask = renderable;
+
+        /**
+         * The texture used for the mask's framebuffer.
+         *
+         * @name Phaser.Display.Masks.BitmapMask#maskTexture
+         * @type {WebGLTexture}
+         * @default null
+         * @since 3.0.0
+         */
+        this.maskTexture = null;
+
+        /**
+         * The texture used for the main framebuffer.
+         *
+         * @name Phaser.Display.Masks.BitmapMask#mainTexture
+         * @type {WebGLTexture}
+         * @default null
+         * @since 3.0.0
+         */
+        this.mainTexture = null;
+
+        /**
+         * Whether the Bitmap Mask is dirty and needs to be updated.
+         *
+         * @name Phaser.Display.Masks.BitmapMask#dirty
+         * @type {boolean}
+         * @default true
+         * @since 3.0.0
+         */
+        this.dirty = true;
+
+        /**
+         * The framebuffer to which a masked Game Object is rendered.
+         *
+         * @name Phaser.Display.Masks.BitmapMask#mainFramebuffer
+         * @type {WebGLFramebuffer}
+         * @since 3.0.0
+         */
+        this.mainFramebuffer = null;
+
+        /**
+         * The framebuffer to which the Bitmap Mask's masking Game Object is rendered.
+         *
+         * @name Phaser.Display.Masks.BitmapMask#maskFramebuffer
+         * @type {WebGLFramebuffer}
+         * @since 3.0.0
+         */
+        this.maskFramebuffer = null;
+
+        /**
+         * Whether to invert the mask's alpha.
+         *
+         * If `true`, the alpha of the masking pixel will be inverted before it's multiplied with the masked pixel. Essentially, this means that a masked area will be visible only if the corresponding area in the mask is invisible.
+         *
+         * @name Phaser.Display.Masks.BitmapMask#invertAlpha
+         * @type {boolean}
+         * @since 3.1.2
+         */
+        this.invertAlpha = false;
+
+        if (renderer && renderer.gl)
+        {
+            var width = renderer.width;
+            var height = renderer.height;
+            var pot = ((width & (width - 1)) === 0 && (height & (height - 1)) === 0);
+            var gl = renderer.gl;
+            var wrap = pot ? gl.REPEAT : gl.CLAMP_TO_EDGE;
+            var filter = gl.LINEAR;
+
+            this.mainTexture = renderer.createTexture2D(0, filter, filter, wrap, wrap, gl.RGBA, null, width, height);
+            this.maskTexture = renderer.createTexture2D(0, filter, filter, wrap, wrap, gl.RGBA, null, width, height);
+            this.mainFramebuffer = renderer.createFramebuffer(width, height, this.mainTexture, false);
+            this.maskFramebuffer = renderer.createFramebuffer(width, height, this.maskTexture, false);
+
+            renderer.onContextRestored(function (renderer)
+            {
+                var width = renderer.width;
+                var height = renderer.height;
+                var pot = ((width & (width - 1)) === 0 && (height & (height - 1)) === 0);
+                var gl = renderer.gl;
+                var wrap = pot ? gl.REPEAT : gl.CLAMP_TO_EDGE;
+                var filter = gl.LINEAR;
+
+                this.mainTexture = renderer.createTexture2D(0, filter, filter, wrap, wrap, gl.RGBA, null, width, height);
+                this.maskTexture = renderer.createTexture2D(0, filter, filter, wrap, wrap, gl.RGBA, null, width, height);
+                this.mainFramebuffer = renderer.createFramebuffer(width, height, this.mainTexture, false);
+                this.maskFramebuffer = renderer.createFramebuffer(width, height, this.maskTexture, false);
+
+            }, this);
+        }
+    },
+
+    /**
+     * Sets a new masking Game Object for the Bitmap Mask.
+     *
+     * @method Phaser.Display.Masks.BitmapMask#setBitmap
+     * @since 3.0.0
+     *
+     * @param {Phaser.GameObjects.GameObject} renderable - A renderable Game Object that uses a texture, such as a Sprite.
+     */
+    setBitmap: function (renderable)
+    {
+        this.bitmapMask = renderable;
+    },
+
+    /**
+     * Prepares the WebGL Renderer to render a Game Object with this mask applied.
+     *
+     * This renders the masking Game Object to the mask framebuffer and switches to the main framebuffer so that the masked Game Object will be rendered to it instead of being rendered directly to the frame.
+     *
+     * @method Phaser.Display.Masks.BitmapMask#preRenderWebGL
+     * @since 3.0.0
+     *
+     * @param {(Phaser.Renderer.Canvas.CanvasRenderer|Phaser.Renderer.WebGL.WebGLRenderer)} renderer - The WebGL Renderer to prepare.
+     * @param {Phaser.GameObjects.GameObject} maskedObject - The masked Game Object which will be drawn.
+     * @param {Phaser.Cameras.Scene2D.Camera} camera - The Camera to render to.
+     */
+    preRenderWebGL: function (renderer, maskedObject, camera)
+    {
+        renderer.pipelines.BitmapMaskPipeline.beginMask(this, maskedObject, camera);
+    },
+
+    /**
+     * Finalizes rendering of a masked Game Object.
+     *
+     * This resets the previously bound framebuffer and switches the WebGL Renderer to the Bitmap Mask Pipeline, which uses a special fragment shader to apply the masking effect.
+     *
+     * @method Phaser.Display.Masks.BitmapMask#postRenderWebGL
+     * @since 3.0.0
+     *
+     * @param {(Phaser.Renderer.Canvas.CanvasRenderer|Phaser.Renderer.WebGL.WebGLRenderer)} renderer - The WebGL Renderer to clean up.
+     */
+    postRenderWebGL: function (renderer)
+    {
+        renderer.pipelines.BitmapMaskPipeline.endMask(this);
+    },
+
+    /**
+     * This is a NOOP method. Bitmap Masks are not supported by the Canvas Renderer.
+     *
+     * @method Phaser.Display.Masks.BitmapMask#preRenderCanvas
+     * @since 3.0.0
+     *
+     * @param {(Phaser.Renderer.Canvas.CanvasRenderer|Phaser.Renderer.WebGL.WebGLRenderer)} renderer - The Canvas Renderer which would be rendered to.
+     * @param {Phaser.GameObjects.GameObject} mask - The masked Game Object which would be rendered.
+     * @param {Phaser.Cameras.Scene2D.Camera} camera - The Camera to render to.
+     */
+    preRenderCanvas: function ()
+    {
+        // NOOP
+    },
+
+    /**
+     * This is a NOOP method. Bitmap Masks are not supported by the Canvas Renderer.
+     *
+     * @method Phaser.Display.Masks.BitmapMask#postRenderCanvas
+     * @since 3.0.0
+     *
+     * @param {(Phaser.Renderer.Canvas.CanvasRenderer|Phaser.Renderer.WebGL.WebGLRenderer)} renderer - The Canvas Renderer which would be rendered to.
+     */
+    postRenderCanvas: function ()
+    {
+        // NOOP
+    },
+
+    /**
+     * Destroys this BitmapMask and nulls any references it holds.
+     * 
+     * Note that if a Game Object is currently using this mask it will _not_ automatically detect you have destroyed it,
+     * so be sure to call `clearMask` on any Game Object using it, before destroying it.
+     *
+     * @method Phaser.Display.Masks.BitmapMask#destroy
+     * @since 3.7.0
+     */
+    destroy: function ()
+    {
+        this.bitmapMask = null;
+
+        var renderer = this.renderer;
+
+        if (renderer && renderer.gl)
+        {
+            renderer.deleteTexture(this.mainTexture);
+            renderer.deleteTexture(this.maskTexture);
+            renderer.deleteFramebuffer(this.mainFramebuffer);
+            renderer.deleteFramebuffer(this.maskFramebuffer);
+        }
+
+        this.mainTexture = null;
+        this.maskTexture = null;
+        this.mainFramebuffer = null;
+        this.maskFramebuffer = null;
+        this.renderer = null;
+    }
+
+});
+
+module.exports = BitmapMask;
+
+
+/***/ }),
+/* 113 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Class = __webpack_require__(0);
+
+/**
+ * @classdesc
+ * A Geometry Mask can be applied to a Game Object to hide any pixels of it which don't intersect
+ * a visible pixel from the geometry mask. The mask is essentially a clipping path which can only
+ * make a masked pixel fully visible or fully invisible without changing its alpha (opacity).
+ *
+ * A Geometry Mask uses a Graphics Game Object to determine which pixels of the masked Game Object(s)
+ * should be clipped. For any given point of a masked Game Object's texture, the pixel will only be displayed
+ * if the Graphics Game Object of the Geometry Mask has a visible pixel at the same position. The color and
+ * alpha of the pixel from the Geometry Mask do not matter.
+ *
+ * The Geometry Mask's location matches the location of its Graphics object, not the location of the masked objects.
+ * Moving or transforming the underlying Graphics object will change the mask (and affect the visibility
+ * of any masked objects), whereas moving or transforming a masked object will not affect the mask.
+ * You can think of the Geometry Mask (or rather, of the its Graphics object) as an invisible curtain placed
+ * in front of all masked objects which has its own visual properties and, naturally, respects the camera's
+ * visual properties, but isn't affected by and doesn't follow the masked objects by itself.
+ *
+ * @class GeometryMask
+ * @memberof Phaser.Display.Masks
+ * @constructor
+ * @since 3.0.0
+ *
+ * @param {Phaser.Scene} scene - This parameter is not used.
+ * @param {Phaser.GameObjects.Graphics} graphicsGeometry - The Graphics Game Object to use for the Geometry Mask. Doesn't have to be in the Display List.
+ */
+var GeometryMask = new Class({
+
+    initialize:
+
+    function GeometryMask (scene, graphicsGeometry)
+    {
+        /**
+         * The Graphics object which describes the Geometry Mask.
+         *
+         * @name Phaser.Display.Masks.GeometryMask#geometryMask
+         * @type {Phaser.GameObjects.Graphics}
+         * @since 3.0.0
+         */
+        this.geometryMask = graphicsGeometry;
+
+        /**
+         * Similar to the BitmapMasks invertAlpha setting this to true will then hide all pixels
+         * drawn to the Geometry Mask.
+         *
+         * @name Phaser.Display.Masks.GeometryMask#invertAlpha
+         * @type {boolean}
+         * @since 3.16.0
+         */
+        this.invertAlpha = false;
+    },
+
+    /**
+     * Sets a new Graphics object for the Geometry Mask.
+     *
+     * @method Phaser.Display.Masks.GeometryMask#setShape
+     * @since 3.0.0
+     *
+     * @param {Phaser.GameObjects.Graphics} graphicsGeometry - The Graphics object which will be used for the Geometry Mask.
+     */
+    setShape: function (graphicsGeometry)
+    {
+        this.geometryMask = graphicsGeometry;
+    },
+
+    /**
+     * Renders the Geometry Mask's underlying Graphics object to the OpenGL stencil buffer and enables the stencil test, which clips rendered pixels according to the mask.
+     *
+     * @method Phaser.Display.Masks.GeometryMask#preRenderWebGL
+     * @since 3.0.0
+     *
+     * @param {Phaser.Renderer.WebGL.WebGLRenderer} renderer - The WebGL Renderer instance to draw to.
+     * @param {Phaser.GameObjects.GameObject} mask - The Game Object being rendered.
+     * @param {Phaser.Cameras.Scene2D.Camera} camera - The camera the Game Object is being rendered through.
+     */
+    preRenderWebGL: function (renderer, mask, camera)
+    {
+        var gl = renderer.gl;
+        var geometryMask = this.geometryMask;
+
+        // Force flushing before drawing to stencil buffer
+        renderer.flush();
+
+        // Enable and setup GL state to write to stencil buffer
+        gl.enable(gl.STENCIL_TEST);
+        gl.clear(gl.STENCIL_BUFFER_BIT);
+        gl.colorMask(false, false, false, false);
+        gl.stencilFunc(gl.NOTEQUAL, 1, 1);
+        gl.stencilOp(gl.REPLACE, gl.REPLACE, gl.REPLACE);
+
+        // Write stencil buffer
+        geometryMask.renderWebGL(renderer, geometryMask, 0, camera);
+
+        renderer.flush();
+
+        // Use stencil buffer to affect next rendering object
+        gl.colorMask(true, true, true, true);
+
+        if (this.invertAlpha)
+        {
+            gl.stencilFunc(gl.NOTEQUAL, 1, 1);
+        }
+        else
+        {
+            gl.stencilFunc(gl.EQUAL, 1, 1);
+        }
+
+        gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
+    },
+
+    /**
+     * Flushes all rendered pixels and disables the stencil test of a WebGL context, thus disabling the mask for it.
+     *
+     * @method Phaser.Display.Masks.GeometryMask#postRenderWebGL
+     * @since 3.0.0
+     *
+     * @param {Phaser.Renderer.WebGL.WebGLRenderer} renderer - The WebGL Renderer instance to draw flush.
+     */
+    postRenderWebGL: function (renderer)
+    {
+        var gl = renderer.gl;
+
+        // Force flush before disabling stencil test
+        renderer.flush();
+
+        gl.disable(gl.STENCIL_TEST);
+    },
+
+    /**
+     * Sets the clipping path of a 2D canvas context to the Geometry Mask's underlying Graphics object.
+     *
+     * @method Phaser.Display.Masks.GeometryMask#preRenderCanvas
+     * @since 3.0.0
+     *
+     * @param {Phaser.Renderer.Canvas.CanvasRenderer} renderer - The Canvas Renderer instance to set the clipping path on.
+     * @param {Phaser.GameObjects.GameObject} mask - The Game Object being rendered.
+     * @param {Phaser.Cameras.Scene2D.Camera} camera - The camera the Game Object is being rendered through.
+     */
+    preRenderCanvas: function (renderer, mask, camera)
+    {
+        var geometryMask = this.geometryMask;
+
+        renderer.currentContext.save();
+
+        geometryMask.renderCanvas(renderer, geometryMask, 0, camera, null, null, true);
+
+        renderer.currentContext.clip();
+    },
+
+    /**
+     * Restore the canvas context's previous clipping path, thus turning off the mask for it.
+     *
+     * @method Phaser.Display.Masks.GeometryMask#postRenderCanvas
+     * @since 3.0.0
+     *
+     * @param {Phaser.Renderer.Canvas.CanvasRenderer} renderer - The Canvas Renderer instance being restored.
+     */
+    postRenderCanvas: function (renderer)
+    {
+        renderer.currentContext.restore();
+    },
+
+    /**
+     * Destroys this GeometryMask and nulls any references it holds.
+     *
+     * Note that if a Game Object is currently using this mask it will _not_ automatically detect you have destroyed it,
+     * so be sure to call `clearMask` on any Game Object using it, before destroying it.
+     *
+     * @method Phaser.Display.Masks.GeometryMask#destroy
+     * @since 3.7.0
+     */
+    destroy: function ()
+    {
+        this.geometryMask = null;
+    }
+
+});
+
+module.exports = GeometryMask;
+
+
+/***/ }),
+/* 114 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * Provides methods used for getting and setting the origin of a Game Object.
+ * Values are normalized, given in the range 0 to 1.
+ * Display values contain the calculated pixel values.
+ * Should be applied as a mixin and not used directly.
+ *
+ * @name Phaser.GameObjects.Components.Origin
+ * @since 3.0.0
+ */
+
+var Origin = {
+
+    /**
+     * A property indicating that a Game Object has this component.
+     *
+     * @name Phaser.GameObjects.Components.Origin#_originComponent
+     * @type {boolean}
+     * @private
+     * @default true
+     * @since 3.2.0
+     */
+    _originComponent: true,
+
+    /**
+     * The horizontal origin of this Game Object.
+     * The origin maps the relationship between the size and position of the Game Object.
+     * The default value is 0.5, meaning all Game Objects are positioned based on their center.
+     * Setting the value to 0 means the position now relates to the left of the Game Object.
+     *
+     * @name Phaser.GameObjects.Components.Origin#originX
+     * @type {number}
+     * @default 0.5
+     * @since 3.0.0
+     */
+    originX: 0.5,
+
+    /**
+     * The vertical origin of this Game Object.
+     * The origin maps the relationship between the size and position of the Game Object.
+     * The default value is 0.5, meaning all Game Objects are positioned based on their center.
+     * Setting the value to 0 means the position now relates to the top of the Game Object.
+     *
+     * @name Phaser.GameObjects.Components.Origin#originY
+     * @type {number}
+     * @default 0.5
+     * @since 3.0.0
+     */
+    originY: 0.5,
+
+    //  private + read only
+    _displayOriginX: 0,
+    _displayOriginY: 0,
+
+    /**
+     * The horizontal display origin of this Game Object.
+     * The origin is a normalized value between 0 and 1.
+     * The displayOrigin is a pixel value, based on the size of the Game Object combined with the origin.
+     *
+     * @name Phaser.GameObjects.Components.Origin#displayOriginX
+     * @type {number}
+     * @since 3.0.0
+     */
+    displayOriginX: {
+
+        get: function ()
+        {
+            return this._displayOriginX;
+        },
+
+        set: function (value)
+        {
+            this._displayOriginX = value;
+            this.originX = value / this.width;
+        }
+
+    },
+
+    /**
+     * The vertical display origin of this Game Object.
+     * The origin is a normalized value between 0 and 1.
+     * The displayOrigin is a pixel value, based on the size of the Game Object combined with the origin.
+     *
+     * @name Phaser.GameObjects.Components.Origin#displayOriginY
+     * @type {number}
+     * @since 3.0.0
+     */
+    displayOriginY: {
+
+        get: function ()
+        {
+            return this._displayOriginY;
+        },
+
+        set: function (value)
+        {
+            this._displayOriginY = value;
+            this.originY = value / this.height;
+        }
+
+    },
+
+    /**
+     * Sets the origin of this Game Object.
+     *
+     * The values are given in the range 0 to 1.
+     *
+     * @method Phaser.GameObjects.Components.Origin#setOrigin
+     * @since 3.0.0
+     *
+     * @param {number} [x=0.5] - The horizontal origin value.
+     * @param {number} [y=x] - The vertical origin value. If not defined it will be set to the value of `x`.
+     *
+     * @return {this} This Game Object instance.
+     */
+    setOrigin: function (x, y)
+    {
+        if (x === undefined) { x = 0.5; }
+        if (y === undefined) { y = x; }
+
+        this.originX = x;
+        this.originY = y;
+
+        return this.updateDisplayOrigin();
+    },
+
+    /**
+     * Sets the origin of this Game Object based on the Pivot values in its Frame.
+     *
+     * @method Phaser.GameObjects.Components.Origin#setOriginFromFrame
+     * @since 3.0.0
+     *
+     * @return {this} This Game Object instance.
+     */
+    setOriginFromFrame: function ()
+    {
+        if (!this.frame || !this.frame.customPivot)
+        {
+            return this.setOrigin();
+        }
+        else
+        {
+            this.originX = this.frame.pivotX;
+            this.originY = this.frame.pivotY;
+        }
+
+        return this.updateDisplayOrigin();
+    },
+
+    /**
+     * Sets the display origin of this Game Object.
+     * The difference between this and setting the origin is that you can use pixel values for setting the display origin.
+     *
+     * @method Phaser.GameObjects.Components.Origin#setDisplayOrigin
+     * @since 3.0.0
+     *
+     * @param {number} [x=0] - The horizontal display origin value.
+     * @param {number} [y=x] - The vertical display origin value. If not defined it will be set to the value of `x`.
+     *
+     * @return {this} This Game Object instance.
+     */
+    setDisplayOrigin: function (x, y)
+    {
+        if (x === undefined) { x = 0; }
+        if (y === undefined) { y = x; }
+
+        this.displayOriginX = x;
+        this.displayOriginY = y;
+
+        return this;
+    },
+
+    /**
+     * Updates the Display Origin cached values internally stored on this Game Object.
+     * You don't usually call this directly, but it is exposed for edge-cases where you may.
+     *
+     * @method Phaser.GameObjects.Components.Origin#updateDisplayOrigin
+     * @since 3.0.0
+     *
+     * @return {this} This Game Object instance.
+     */
+    updateDisplayOrigin: function ()
+    {
+        this._displayOriginX = Math.round(this.originX * this.width);
+        this._displayOriginY = Math.round(this.originY * this.height);
+
+        return this;
+    }
+
+};
+
+module.exports = Origin;
+
+
+/***/ }),
+/* 115 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * Provides methods used for setting the WebGL rendering pipeline of a Game Object.
+ *
+ * @name Phaser.GameObjects.Components.Pipeline
+ * @webglOnly
+ * @since 3.0.0
+ */
+
+var Pipeline = {
+
+    /**
+     * The initial WebGL pipeline of this Game Object.
+     *
+     * @name Phaser.GameObjects.Components.Pipeline#defaultPipeline
+     * @type {Phaser.Renderer.WebGL.WebGLPipeline}
+     * @default null
+     * @webglOnly
+     * @since 3.0.0
+     */
+    defaultPipeline: null,
+
+    /**
+     * The current WebGL pipeline of this Game Object.
+     *
+     * @name Phaser.GameObjects.Components.Pipeline#pipeline
+     * @type {Phaser.Renderer.WebGL.WebGLPipeline}
+     * @default null
+     * @webglOnly
+     * @since 3.0.0
+     */
+    pipeline: null,
+
+    /**
+     * Sets the initial WebGL Pipeline of this Game Object.
+     * This should only be called during the instantiation of the Game Object.
+     *
+     * @method Phaser.GameObjects.Components.Pipeline#initPipeline
+     * @webglOnly
+     * @since 3.0.0
+     *
+     * @param {string} [pipelineName=TextureTintPipeline] - The name of the pipeline to set on this Game Object. Defaults to the Texture Tint Pipeline.
+     *
+     * @return {boolean} `true` if the pipeline was set successfully, otherwise `false`.
+     */
+    initPipeline: function (pipelineName)
+    {
+        if (pipelineName === undefined) { pipelineName = 'TextureTintPipeline'; }
+
+        var renderer = this.scene.sys.game.renderer;
+
+        if (renderer && renderer.gl && renderer.hasPipeline(pipelineName))
+        {
+            this.defaultPipeline = renderer.getPipeline(pipelineName);
+            this.pipeline = this.defaultPipeline;
+
+            return true;
+        }
+
+        return false;
+    },
+
+    /**
+     * Sets the active WebGL Pipeline of this Game Object.
+     *
+     * @method Phaser.GameObjects.Components.Pipeline#setPipeline
+     * @webglOnly
+     * @since 3.0.0
+     *
+     * @param {string} pipelineName - The name of the pipeline to set on this Game Object.
+     *
+     * @return {this} This Game Object instance.
+     */
+    setPipeline: function (pipelineName)
+    {
+        var renderer = this.scene.sys.game.renderer;
+
+        if (renderer && renderer.gl && renderer.hasPipeline(pipelineName))
+        {
+            this.pipeline = renderer.getPipeline(pipelineName);
+        }
+
+        return this;
+    },
+
+    /**
+     * Resets the WebGL Pipeline of this Game Object back to the default it was created with.
+     *
+     * @method Phaser.GameObjects.Components.Pipeline#resetPipeline
+     * @webglOnly
+     * @since 3.0.0
+     *
+     * @return {boolean} `true` if the pipeline was set successfully, otherwise `false`.
+     */
+    resetPipeline: function ()
+    {
+        this.pipeline = this.defaultPipeline;
+
+        return (this.pipeline !== null);
+    },
+
+    /**
+     * Gets the name of the WebGL Pipeline this Game Object is currently using.
+     *
+     * @method Phaser.GameObjects.Components.Pipeline#getPipelineName
+     * @webglOnly
+     * @since 3.0.0
+     *
+     * @return {string} The string-based name of the pipeline being used by this Game Object.
+     */
+    getPipelineName: function ()
+    {
+        return this.pipeline.name;
+    }
+
+};
+
+module.exports = Pipeline;
+
+
+/***/ }),
+/* 116 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var ScaleModes = __webpack_require__(117);
+
+/**
+ * Provides methods used for getting and setting the scale of a Game Object.
+ *
+ * @name Phaser.GameObjects.Components.ScaleMode
+ * @since 3.0.0
+ */
+
+var ScaleMode = {
+
+    _scaleMode: ScaleModes.DEFAULT,
+
+    /**
+     * The Scale Mode being used by this Game Object.
+     * Can be either `ScaleModes.LINEAR` or `ScaleModes.NEAREST`.
+     *
+     * @name Phaser.GameObjects.Components.ScaleMode#scaleMode
+     * @type {Phaser.ScaleModes}
+     * @since 3.0.0
+     */
+    scaleMode: {
+
+        get: function ()
+        {
+            return this._scaleMode;
+        },
+
+        set: function (value)
+        {
+            if (value === ScaleModes.LINEAR || value === ScaleModes.NEAREST)
+            {
+                this._scaleMode = value;
+            }
+        }
+
+    },
+
+    /**
+     * Sets the Scale Mode being used by this Game Object.
+     * Can be either `ScaleModes.LINEAR` or `ScaleModes.NEAREST`.
+     *
+     * @method Phaser.GameObjects.Components.ScaleMode#setScaleMode
+     * @since 3.0.0
+     *
+     * @param {Phaser.ScaleModes} value - The Scale Mode to be used by this Game Object.
+     *
+     * @return {this} This Game Object instance.
+     */
+    setScaleMode: function (value)
+    {
+        this.scaleMode = value;
+
+        return this;
+    }
+
+};
+
+module.exports = ScaleMode;
+
+
+/***/ }),
+/* 117 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * Phaser Scale Modes.
+ * 
+ * @name Phaser.ScaleModes
+ * @enum {integer}
+ * @memberof Phaser
+ * @readonly
+ * @since 3.0.0
+ */
+
+module.exports = {
+
+    /**
+     * Default Scale Mode (Linear).
+     * 
+     * @name Phaser.ScaleModes.DEFAULT
+     */
+    DEFAULT: 0,
+
+    /**
+     * Linear Scale Mode.
+     * 
+     * @name Phaser.ScaleModes.LINEAR
+     */
+    LINEAR: 0,
+
+    /**
+     * Nearest Scale Mode.
+     * 
+     * @name Phaser.ScaleModes.NEAREST
+     */
+    NEAREST: 1
+
+};
+
+
+/***/ }),
+/* 118 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * Provides methods used for getting and setting the size of a Game Object.
+ * 
+ * @name Phaser.GameObjects.Components.Size
+ * @since 3.0.0
+ */
+
+var Size = {
+
+    /**
+     * A property indicating that a Game Object has this component.
+     * 
+     * @name Phaser.GameObjects.Components.Size#_sizeComponent
+     * @type {boolean}
+     * @private
+     * @default true
+     * @since 3.2.0
+     */
+    _sizeComponent: true,
+
+    /**
+     * The native (un-scaled) width of this Game Object.
+     * 
+     * Changing this value will not change the size that the Game Object is rendered in-game.
+     * For that you need to either set the scale of the Game Object (`setScale`) or use
+     * the `displayWidth` property.
+     * 
+     * @name Phaser.GameObjects.Components.Size#width
+     * @type {number}
+     * @since 3.0.0
+     */
+    width: 0,
+
+    /**
+     * The native (un-scaled) height of this Game Object.
+     * 
+     * Changing this value will not change the size that the Game Object is rendered in-game.
+     * For that you need to either set the scale of the Game Object (`setScale`) or use
+     * the `displayHeight` property.
+     * 
+     * @name Phaser.GameObjects.Components.Size#height
+     * @type {number}
+     * @since 3.0.0
+     */
+    height: 0,
+
+    /**
+     * The displayed width of this Game Object.
+     * 
+     * This value takes into account the scale factor.
+     * 
+     * Setting this value will adjust the Game Object's scale property.
+     * 
+     * @name Phaser.GameObjects.Components.Size#displayWidth
+     * @type {number}
+     * @since 3.0.0
+     */
+    displayWidth: {
+
+        get: function ()
+        {
+            return this.scaleX * this.frame.realWidth;
+        },
+
+        set: function (value)
+        {
+            this.scaleX = value / this.frame.realWidth;
+        }
+
+    },
+
+    /**
+     * The displayed height of this Game Object.
+     * 
+     * This value takes into account the scale factor.
+     * 
+     * Setting this value will adjust the Game Object's scale property.
+     * 
+     * @name Phaser.GameObjects.Components.Size#displayHeight
+     * @type {number}
+     * @since 3.0.0
+     */
+    displayHeight: {
+
+        get: function ()
+        {
+            return this.scaleY * this.frame.realHeight;
+        },
+
+        set: function (value)
+        {
+            this.scaleY = value / this.frame.realHeight;
+        }
+
+    },
+
+    /**
+     * Sets the size of this Game Object to be that of the given Frame.
+     * 
+     * This will not change the size that the Game Object is rendered in-game.
+     * For that you need to either set the scale of the Game Object (`setScale`) or call the
+     * `setDisplaySize` method, which is the same thing as changing the scale but allows you
+     * to do so by giving pixel values.
+     * 
+     * If you have enabled this Game Object for input, changing the size will _not_ change the
+     * size of the hit area. To do this you should adjust the `input.hitArea` object directly.
+     * 
+     * @method Phaser.GameObjects.Components.Size#setSizeToFrame
+     * @since 3.0.0
+     *
+     * @param {Phaser.Textures.Frame} frame - The frame to base the size of this Game Object on.
+     * 
+     * @return {this} This Game Object instance.
+     */
+    setSizeToFrame: function (frame)
+    {
+        if (frame === undefined) { frame = this.frame; }
+
+        this.width = frame.realWidth;
+        this.height = frame.realHeight;
+
+        return this;
+    },
+
+    /**
+     * Sets the internal size of this Game Object, as used for frame or physics body creation.
+     * 
+     * This will not change the size that the Game Object is rendered in-game.
+     * For that you need to either set the scale of the Game Object (`setScale`) or call the
+     * `setDisplaySize` method, which is the same thing as changing the scale but allows you
+     * to do so by giving pixel values.
+     * 
+     * If you have enabled this Game Object for input, changing the size will _not_ change the
+     * size of the hit area. To do this you should adjust the `input.hitArea` object directly.
+     * 
+     * @method Phaser.GameObjects.Components.Size#setSize
+     * @since 3.0.0
+     *
+     * @param {number} width - The width of this Game Object.
+     * @param {number} height - The height of this Game Object.
+     * 
+     * @return {this} This Game Object instance.
+     */
+    setSize: function (width, height)
+    {
+        this.width = width;
+        this.height = height;
+
+        return this;
+    },
+
+    /**
+     * Sets the display size of this Game Object.
+     * 
+     * Calling this will adjust the scale.
+     * 
+     * @method Phaser.GameObjects.Components.Size#setDisplaySize
+     * @since 3.0.0
+     *
+     * @param {number} width - The width of this Game Object.
+     * @param {number} height - The height of this Game Object.
+     * 
+     * @return {this} This Game Object instance.
+     */
+    setDisplaySize: function (width, height)
+    {
+        this.displayWidth = width;
+        this.displayHeight = height;
+
+        return this;
+    }
+
+};
+
+module.exports = Size;
+
+
+/***/ }),
+/* 119 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+//  bitmask flag for GameObject.renderMask
+var _FLAG = 8; // 1000
+
+/**
+ * Provides methods used for getting and setting the texture of a Game Object.
+ *
+ * @name Phaser.GameObjects.Components.Texture
+ * @since 3.0.0
+ */
+
+var Texture = {
+
+    /**
+     * The Texture this Game Object is using to render with.
+     *
+     * @name Phaser.GameObjects.Components.Texture#texture
+     * @type {Phaser.Textures.Texture|Phaser.Textures.CanvasTexture}
+     * @since 3.0.0
+     */
+    texture: null,
+
+    /**
+     * The Texture Frame this Game Object is using to render with.
+     *
+     * @name Phaser.GameObjects.Components.Texture#frame
+     * @type {Phaser.Textures.Frame}
+     * @since 3.0.0
+     */
+    frame: null,
+
+    /**
+     * Internal flag. Not to be set by this Game Object.
+     *
+     * @name Phaser.GameObjects.Components.Texture#isCropped
+     * @type {boolean}
+     * @private
+     * @since 3.11.0
+     */
+    isCropped: false,
+
+    /**
+     * Sets the texture and frame this Game Object will use to render with.
+     *
+     * Textures are referenced by their string-based keys, as stored in the Texture Manager.
+     *
+     * @method Phaser.GameObjects.Components.Texture#setTexture
+     * @since 3.0.0
+     *
+     * @param {string} key - The key of the texture to be used, as stored in the Texture Manager.
+     * @param {(string|integer)} [frame] - The name or index of the frame within the Texture.
+     *
+     * @return {this} This Game Object instance.
+     */
+    setTexture: function (key, frame)
+    {
+        this.texture = this.scene.sys.textures.get(key);
+
+        return this.setFrame(frame);
+    },
+
+    /**
+     * Sets the frame this Game Object will use to render with.
+     *
+     * The Frame has to belong to the current Texture being used.
+     *
+     * It can be either a string or an index.
+     *
+     * Calling `setFrame` will modify the `width` and `height` properties of your Game Object.
+     * It will also change the `origin` if the Frame has a custom pivot point, as exported from packages like Texture Packer.
+     *
+     * @method Phaser.GameObjects.Components.Texture#setFrame
+     * @since 3.0.0
+     *
+     * @param {(string|integer)} frame - The name or index of the frame within the Texture.
+     * @param {boolean} [updateSize=true] - Should this call adjust the size of the Game Object?
+     * @param {boolean} [updateOrigin=true] - Should this call adjust the origin of the Game Object?
+     *
+     * @return {this} This Game Object instance.
+     */
+    setFrame: function (frame, updateSize, updateOrigin)
+    {
+        if (updateSize === undefined) { updateSize = true; }
+        if (updateOrigin === undefined) { updateOrigin = true; }
+
+        this.frame = this.texture.get(frame);
+
+        if (!this.frame.cutWidth || !this.frame.cutHeight)
+        {
+            this.renderFlags &= ~_FLAG;
+        }
+        else
+        {
+            this.renderFlags |= _FLAG;
+        }
+
+        if (this._sizeComponent && updateSize)
+        {
+            this.setSizeToFrame();
+        }
+
+        if (this._originComponent && updateOrigin)
+        {
+            if (this.frame.customPivot)
+            {
+                this.setOrigin(this.frame.pivotX, this.frame.pivotY);
+            }
+            else
+            {
+                this.updateDisplayOrigin();
+            }
+        }
+
+        return this;
+    }
+
+};
+
+module.exports = Texture;
+
+
+/***/ }),
+/* 120 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+//  bitmask flag for GameObject.renderMask
+var _FLAG = 8; // 1000
+
+/**
+ * Provides methods used for getting and setting the texture of a Game Object.
+ *
+ * @name Phaser.GameObjects.Components.TextureCrop
+ * @since 3.0.0
+ */
+
+var TextureCrop = {
+
+    /**
+     * The Texture this Game Object is using to render with.
+     *
+     * @name Phaser.GameObjects.Components.TextureCrop#texture
+     * @type {Phaser.Textures.Texture|Phaser.Textures.CanvasTexture}
+     * @since 3.0.0
+     */
+    texture: null,
+
+    /**
+     * The Texture Frame this Game Object is using to render with.
+     *
+     * @name Phaser.GameObjects.Components.TextureCrop#frame
+     * @type {Phaser.Textures.Frame}
+     * @since 3.0.0
+     */
+    frame: null,
+
+    /**
+     * A boolean flag indicating if this Game Object is being cropped or not.
+     * You can toggle this at any time after `setCrop` has been called, to turn cropping on or off.
+     * Equally, calling `setCrop` with no arguments will reset the crop and disable it.
+     *
+     * @name Phaser.GameObjects.Components.TextureCrop#isCropped
+     * @type {boolean}
+     * @since 3.11.0
+     */
+    isCropped: false,
+
+    /**
+     * Applies a crop to a texture based Game Object, such as a Sprite or Image.
+     * 
+     * The crop is a rectangle that limits the area of the texture frame that is visible during rendering.
+     * 
+     * Cropping a Game Object does not change its size, dimensions, physics body or hit area, it just
+     * changes what is shown when rendered.
+     * 
+     * The crop coordinates are relative to the texture frame, not the Game Object, meaning 0 x 0 is the top-left.
+     * 
+     * Therefore, if you had a Game Object that had an 800x600 sized texture, and you wanted to show only the left
+     * half of it, you could call `setCrop(0, 0, 400, 600)`.
+     * 
+     * It is also scaled to match the Game Object scale automatically. Therefore a crop rect of 100x50 would crop
+     * an area of 200x100 when applied to a Game Object that had a scale factor of 2.
+     * 
+     * You can either pass in numeric values directly, or you can provide a single Rectangle object as the first argument.
+     * 
+     * Call this method with no arguments at all to reset the crop, or toggle the property `isCropped` to `false`.
+     * 
+     * You should do this if the crop rectangle becomes the same size as the frame itself, as it will allow
+     * the renderer to skip several internal calculations.
+     *
+     * @method Phaser.GameObjects.Components.TextureCrop#setCrop
+     * @since 3.11.0
+     *
+     * @param {(number|Phaser.Geom.Rectangle)} [x] - The x coordinate to start the crop from. Or a Phaser.Geom.Rectangle object, in which case the rest of the arguments are ignored.
+     * @param {number} [y] - The y coordinate to start the crop from.
+     * @param {number} [width] - The width of the crop rectangle in pixels.
+     * @param {number} [height] - The height of the crop rectangle in pixels.
+     *
+     * @return {this} This Game Object instance.
+     */
+    setCrop: function (x, y, width, height)
+    {
+        if (x === undefined)
+        {
+            this.isCropped = false;
+        }
+        else if (this.frame)
+        {
+            if (typeof x === 'number')
+            {
+                this.frame.setCropUVs(this._crop, x, y, width, height, this.flipX, this.flipY);
+            }
+            else
+            {
+                var rect = x;
+
+                this.frame.setCropUVs(this._crop, rect.x, rect.y, rect.width, rect.height, this.flipX, this.flipY);
+            }
+
+            this.isCropped = true;
+        }
+
+        return this;
+    },
+
+    /**
+     * Sets the texture and frame this Game Object will use to render with.
+     *
+     * Textures are referenced by their string-based keys, as stored in the Texture Manager.
+     *
+     * @method Phaser.GameObjects.Components.TextureCrop#setTexture
+     * @since 3.0.0
+     *
+     * @param {string} key - The key of the texture to be used, as stored in the Texture Manager.
+     * @param {(string|integer)} [frame] - The name or index of the frame within the Texture.
+     *
+     * @return {this} This Game Object instance.
+     */
+    setTexture: function (key, frame)
+    {
+        this.texture = this.scene.sys.textures.get(key);
+
+        return this.setFrame(frame);
+    },
+
+    /**
+     * Sets the frame this Game Object will use to render with.
+     *
+     * The Frame has to belong to the current Texture being used.
+     *
+     * It can be either a string or an index.
+     *
+     * Calling `setFrame` will modify the `width` and `height` properties of your Game Object.
+     * It will also change the `origin` if the Frame has a custom pivot point, as exported from packages like Texture Packer.
+     *
+     * @method Phaser.GameObjects.Components.TextureCrop#setFrame
+     * @since 3.0.0
+     *
+     * @param {(string|integer)} frame - The name or index of the frame within the Texture.
+     * @param {boolean} [updateSize=true] - Should this call adjust the size of the Game Object?
+     * @param {boolean} [updateOrigin=true] - Should this call adjust the origin of the Game Object?
+     *
+     * @return {this} This Game Object instance.
+     */
+    setFrame: function (frame, updateSize, updateOrigin)
+    {
+        if (updateSize === undefined) { updateSize = true; }
+        if (updateOrigin === undefined) { updateOrigin = true; }
+
+        this.frame = this.texture.get(frame);
+
+        if (!this.frame.cutWidth || !this.frame.cutHeight)
+        {
+            this.renderFlags &= ~_FLAG;
+        }
+        else
+        {
+            this.renderFlags |= _FLAG;
+        }
+
+        if (this._sizeComponent && updateSize)
+        {
+            this.setSizeToFrame();
+        }
+
+        if (this._originComponent && updateOrigin)
+        {
+            if (this.frame.customPivot)
+            {
+                this.setOrigin(this.frame.pivotX, this.frame.pivotY);
+            }
+            else
+            {
+                this.updateDisplayOrigin();
+            }
+        }
+
+        if (this.isCropped)
+        {
+            this.frame.updateCropUVs(this._crop, this.flipX, this.flipY);
+        }
+
+        return this;
+    },
+
+    /**
+     * Internal method that returns a blank, well-formed crop object for use by a Game Object.
+     *
+     * @method Phaser.GameObjects.Components.TextureCrop#resetCropObject
+     * @private
+     * @since 3.12.0
+     * 
+     * @return {object} The crop object.
+     */
+    resetCropObject: function ()
+    {
+        return { u0: 0, v0: 0, u1: 0, v1: 0, width: 0, height: 0, x: 0, y: 0, flipX: false, flipY: false, cx: 0, cy: 0, cw: 0, ch: 0 };
+    }
+
+};
+
+module.exports = TextureCrop;
+
+
+/***/ }),
+/* 121 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+/**
+ * @function GetColor
+ * @since 3.0.0
+ * @private
+ */
+var GetColor = function (value)
+{
+    return (value >> 16) + (value & 0xff00) + ((value & 0xff) << 16);
+};
+
+/**
+ * Provides methods used for setting the tint of a Game Object.
+ * Should be applied as a mixin and not used directly.
+ * 
+ * @name Phaser.GameObjects.Components.Tint
+ * @webglOnly
+ * @since 3.0.0
+ */
+
+var Tint = {
+
+    /**
+     * Private internal value. Holds the top-left tint value.
+     * 
+     * @name Phaser.GameObjects.Components.Tint#_tintTL
+     * @type {number}
+     * @private
+     * @default 16777215
+     * @since 3.0.0
+     */
+    _tintTL: 16777215,
+
+    /**
+     * Private internal value. Holds the top-right tint value.
+     * 
+     * @name Phaser.GameObjects.Components.Tint#_tintTR
+     * @type {number}
+     * @private
+     * @default 16777215
+     * @since 3.0.0
+     */
+    _tintTR: 16777215,
+
+    /**
+     * Private internal value. Holds the bottom-left tint value.
+     * 
+     * @name Phaser.GameObjects.Components.Tint#_tintBL
+     * @type {number}
+     * @private
+     * @default 16777215
+     * @since 3.0.0
+     */
+    _tintBL: 16777215,
+
+    /**
+     * Private internal value. Holds the bottom-right tint value.
+     * 
+     * @name Phaser.GameObjects.Components.Tint#_tintBR
+     * @type {number}
+     * @private
+     * @default 16777215
+     * @since 3.0.0
+     */
+    _tintBR: 16777215,
+
+    /**
+     * Private internal value. Holds if the Game Object is tinted or not.
+     * 
+     * @name Phaser.GameObjects.Components.Tint#_isTinted
+     * @type {boolean}
+     * @private
+     * @default false
+     * @since 3.11.0
+     */
+    _isTinted: false,
+
+    /**
+     * Fill or additive?
+     * 
+     * @name Phaser.GameObjects.Components.Tint#tintFill
+     * @type {boolean}
+     * @default false
+     * @since 3.11.0
+     */
+    tintFill: false,
+
+    /**
+     * Clears all tint values associated with this Game Object.
+     * 
+     * Immediately sets the color values back to 0xffffff and the tint type to 'additive',
+     * which results in no visible change to the texture.
+     *
+     * @method Phaser.GameObjects.Components.Tint#clearTint
+     * @webglOnly
+     * @since 3.0.0
+     * 
+     * @return {this} This Game Object instance.
+     */
+    clearTint: function ()
+    {
+        this.setTint(0xffffff);
+
+        this._isTinted = false;
+
+        return this;
+    },
+
+    /**
+     * Sets an additive tint on this Game Object.
+     * 
+     * The tint works by taking the pixel color values from the Game Objects texture, and then
+     * multiplying it by the color value of the tint. You can provide either one color value,
+     * in which case the whole Game Object will be tinted in that color. Or you can provide a color
+     * per corner. The colors are blended together across the extent of the Game Object.
+     * 
+     * To modify the tint color once set, either call this method again with new values or use the
+     * `tint` property to set all colors at once. Or, use the properties `tintTopLeft`, `tintTopRight,
+     * `tintBottomLeft` and `tintBottomRight` to set the corner color values independently.
+     * 
+     * To remove a tint call `clearTint`.
+     * 
+     * To swap this from being an additive tint to a fill based tint set the property `tintFill` to `true`.
+     *
+     * @method Phaser.GameObjects.Components.Tint#setTint
+     * @webglOnly
+     * @since 3.0.0
+     *
+     * @param {integer} [topLeft=0xffffff] - The tint being applied to the top-left of the Game Object. If no other values are given this value is applied evenly, tinting the whole Game Object.
+     * @param {integer} [topRight] - The tint being applied to the top-right of the Game Object.
+     * @param {integer} [bottomLeft] - The tint being applied to the bottom-left of the Game Object.
+     * @param {integer} [bottomRight] - The tint being applied to the bottom-right of the Game Object.
+     * 
+     * @return {this} This Game Object instance.
+     */
+    setTint: function (topLeft, topRight, bottomLeft, bottomRight)
+    {
+        if (topLeft === undefined) { topLeft = 0xffffff; }
+
+        if (topRight === undefined)
+        {
+            topRight = topLeft;
+            bottomLeft = topLeft;
+            bottomRight = topLeft;
+        }
+
+        this._tintTL = GetColor(topLeft);
+        this._tintTR = GetColor(topRight);
+        this._tintBL = GetColor(bottomLeft);
+        this._tintBR = GetColor(bottomRight);
+
+        this._isTinted = true;
+
+        this.tintFill = false;
+
+        return this;
+    },
+
+    /**
+     * Sets a fill-based tint on this Game Object.
+     * 
+     * Unlike an additive tint, a fill-tint literally replaces the pixel colors from the texture
+     * with those in the tint. You can use this for effects such as making a player flash 'white'
+     * if hit by something. You can provide either one color value, in which case the whole
+     * Game Object will be rendered in that color. Or you can provide a color per corner. The colors
+     * are blended together across the extent of the Game Object.
+     * 
+     * To modify the tint color once set, either call this method again with new values or use the
+     * `tint` property to set all colors at once. Or, use the properties `tintTopLeft`, `tintTopRight,
+     * `tintBottomLeft` and `tintBottomRight` to set the corner color values independently.
+     * 
+     * To remove a tint call `clearTint`.
+     * 
+     * To swap this from being a fill-tint to an additive tint set the property `tintFill` to `false`.
+     *
+     * @method Phaser.GameObjects.Components.Tint#setTintFill
+     * @webglOnly
+     * @since 3.11.0
+     *
+     * @param {integer} [topLeft=0xffffff] - The tint being applied to the top-left of the Game Object. If not other values are given this value is applied evenly, tinting the whole Game Object.
+     * @param {integer} [topRight] - The tint being applied to the top-right of the Game Object.
+     * @param {integer} [bottomLeft] - The tint being applied to the bottom-left of the Game Object.
+     * @param {integer} [bottomRight] - The tint being applied to the bottom-right of the Game Object.
+     * 
+     * @return {this} This Game Object instance.
+     */
+    setTintFill: function (topLeft, topRight, bottomLeft, bottomRight)
+    {
+        this.setTint(topLeft, topRight, bottomLeft, bottomRight);
+
+        this.tintFill = true;
+
+        return this;
+    },
+
+    /**
+     * The tint value being applied to the top-left of the Game Object.
+     * This value is interpolated from the corner to the center of the Game Object.
+     * 
+     * @name Phaser.GameObjects.Components.Tint#tintTopLeft
+     * @type {integer}
+     * @webglOnly
+     * @since 3.0.0
+     */
+    tintTopLeft: {
+
+        get: function ()
+        {
+            return this._tintTL;
+        },
+
+        set: function (value)
+        {
+            this._tintTL = GetColor(value);
+            this._isTinted = true;
+        }
+
+    },
+
+    /**
+     * The tint value being applied to the top-right of the Game Object.
+     * This value is interpolated from the corner to the center of the Game Object.
+     * 
+     * @name Phaser.GameObjects.Components.Tint#tintTopRight
+     * @type {integer}
+     * @webglOnly
+     * @since 3.0.0
+     */
+    tintTopRight: {
+
+        get: function ()
+        {
+            return this._tintTR;
+        },
+
+        set: function (value)
+        {
+            this._tintTR = GetColor(value);
+            this._isTinted = true;
+        }
+
+    },
+
+    /**
+     * The tint value being applied to the bottom-left of the Game Object.
+     * This value is interpolated from the corner to the center of the Game Object.
+     * 
+     * @name Phaser.GameObjects.Components.Tint#tintBottomLeft
+     * @type {integer}
+     * @webglOnly
+     * @since 3.0.0
+     */
+    tintBottomLeft: {
+
+        get: function ()
+        {
+            return this._tintBL;
+        },
+
+        set: function (value)
+        {
+            this._tintBL = GetColor(value);
+            this._isTinted = true;
+        }
+
+    },
+
+    /**
+     * The tint value being applied to the bottom-right of the Game Object.
+     * This value is interpolated from the corner to the center of the Game Object.
+     * 
+     * @name Phaser.GameObjects.Components.Tint#tintBottomRight
+     * @type {integer}
+     * @webglOnly
+     * @since 3.0.0
+     */
+    tintBottomRight: {
+
+        get: function ()
+        {
+            return this._tintBR;
+        },
+
+        set: function (value)
+        {
+            this._tintBR = GetColor(value);
+            this._isTinted = true;
+        }
+
+    },
+
+    /**
+     * The tint value being applied to the whole of the Game Object.
+     * 
+     * @name Phaser.GameObjects.Components.Tint#tint
+     * @type {integer}
+     * @webglOnly
+     * @since 3.0.0
+     */
+    tint: {
+
+        set: function (value)
+        {
+            this.setTint(value, value, value, value);
+        }
+    },
+
+    /**
+     * Does this Game Object have a tint applied to it or not?
+     * 
+     * @name Phaser.GameObjects.Components.Tint#isTinted
+     * @type {boolean}
+     * @webglOnly
+     * @readonly
+     * @since 3.11.0
+     */
+    isTinted: {
+
+        get: function ()
+        {
+            return this._isTinted;
+        }
+
+    }
+
+};
+
+module.exports = Tint;
+
+
+/***/ }),
+/* 122 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2019 Photon Storm Ltd.
+ * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
+ */
+
+var Class = __webpack_require__(0);
+var Events = __webpack_require__(123);
 
 /**
  * @callback DataEachCallback
@@ -9612,7 +16717,7 @@ module.exports = DataManager;
 
 
 /***/ }),
-/* 71 */
+/* 123 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -9627,16 +16732,16 @@ module.exports = DataManager;
 
 module.exports = {
 
-    CHANGE_DATA: __webpack_require__(72),
-    CHANGE_DATA_KEY: __webpack_require__(73),
-    REMOVE_DATA: __webpack_require__(74),
-    SET_DATA: __webpack_require__(75)
+    CHANGE_DATA: __webpack_require__(124),
+    CHANGE_DATA_KEY: __webpack_require__(125),
+    REMOVE_DATA: __webpack_require__(126),
+    SET_DATA: __webpack_require__(127)
 
 };
 
 
 /***/ }),
-/* 72 */
+/* 124 */
 /***/ (function(module, exports) {
 
 /**
@@ -9667,7 +16772,7 @@ module.exports = 'changedata';
 
 
 /***/ }),
-/* 73 */
+/* 125 */
 /***/ (function(module, exports) {
 
 /**
@@ -9697,7 +16802,7 @@ module.exports = 'changedata-';
 
 
 /***/ }),
-/* 74 */
+/* 126 */
 /***/ (function(module, exports) {
 
 /**
@@ -9724,7 +16829,7 @@ module.exports = 'removedata';
 
 
 /***/ }),
-/* 75 */
+/* 127 */
 /***/ (function(module, exports) {
 
 /**
@@ -9751,350 +16856,7 @@ module.exports = 'setdata';
 
 
 /***/ }),
-/* 76 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var has = Object.prototype.hasOwnProperty
-  , prefix = '~';
-
-/**
- * Constructor to create a storage for our `EE` objects.
- * An `Events` instance is a plain object whose properties are event names.
- *
- * @constructor
- * @private
- */
-function Events() {}
-
-//
-// We try to not inherit from `Object.prototype`. In some engines creating an
-// instance in this way is faster than calling `Object.create(null)` directly.
-// If `Object.create(null)` is not supported we prefix the event names with a
-// character to make sure that the built-in object properties are not
-// overridden or used as an attack vector.
-//
-if (Object.create) {
-  Events.prototype = Object.create(null);
-
-  //
-  // This hack is needed because the `__proto__` property is still inherited in
-  // some old browsers like Android 4, iPhone 5.1, Opera 11 and Safari 5.
-  //
-  if (!new Events().__proto__) prefix = false;
-}
-
-/**
- * Representation of a single event listener.
- *
- * @param {Function} fn The listener function.
- * @param {*} context The context to invoke the listener with.
- * @param {Boolean} [once=false] Specify if the listener is a one-time listener.
- * @constructor
- * @private
- */
-function EE(fn, context, once) {
-  this.fn = fn;
-  this.context = context;
-  this.once = once || false;
-}
-
-/**
- * Add a listener for a given event.
- *
- * @param {EventEmitter} emitter Reference to the `EventEmitter` instance.
- * @param {(String|Symbol)} event The event name.
- * @param {Function} fn The listener function.
- * @param {*} context The context to invoke the listener with.
- * @param {Boolean} once Specify if the listener is a one-time listener.
- * @returns {EventEmitter}
- * @private
- */
-function addListener(emitter, event, fn, context, once) {
-  if (typeof fn !== 'function') {
-    throw new TypeError('The listener must be a function');
-  }
-
-  var listener = new EE(fn, context || emitter, once)
-    , evt = prefix ? prefix + event : event;
-
-  if (!emitter._events[evt]) emitter._events[evt] = listener, emitter._eventsCount++;
-  else if (!emitter._events[evt].fn) emitter._events[evt].push(listener);
-  else emitter._events[evt] = [emitter._events[evt], listener];
-
-  return emitter;
-}
-
-/**
- * Clear event by name.
- *
- * @param {EventEmitter} emitter Reference to the `EventEmitter` instance.
- * @param {(String|Symbol)} evt The Event name.
- * @private
- */
-function clearEvent(emitter, evt) {
-  if (--emitter._eventsCount === 0) emitter._events = new Events();
-  else delete emitter._events[evt];
-}
-
-/**
- * Minimal `EventEmitter` interface that is molded against the Node.js
- * `EventEmitter` interface.
- *
- * @constructor
- * @public
- */
-function EventEmitter() {
-  this._events = new Events();
-  this._eventsCount = 0;
-}
-
-/**
- * Return an array listing the events for which the emitter has registered
- * listeners.
- *
- * @returns {Array}
- * @public
- */
-EventEmitter.prototype.eventNames = function eventNames() {
-  var names = []
-    , events
-    , name;
-
-  if (this._eventsCount === 0) return names;
-
-  for (name in (events = this._events)) {
-    if (has.call(events, name)) names.push(prefix ? name.slice(1) : name);
-  }
-
-  if (Object.getOwnPropertySymbols) {
-    return names.concat(Object.getOwnPropertySymbols(events));
-  }
-
-  return names;
-};
-
-/**
- * Return the listeners registered for a given event.
- *
- * @param {(String|Symbol)} event The event name.
- * @returns {Array} The registered listeners.
- * @public
- */
-EventEmitter.prototype.listeners = function listeners(event) {
-  var evt = prefix ? prefix + event : event
-    , handlers = this._events[evt];
-
-  if (!handlers) return [];
-  if (handlers.fn) return [handlers.fn];
-
-  for (var i = 0, l = handlers.length, ee = new Array(l); i < l; i++) {
-    ee[i] = handlers[i].fn;
-  }
-
-  return ee;
-};
-
-/**
- * Return the number of listeners listening to a given event.
- *
- * @param {(String|Symbol)} event The event name.
- * @returns {Number} The number of listeners.
- * @public
- */
-EventEmitter.prototype.listenerCount = function listenerCount(event) {
-  var evt = prefix ? prefix + event : event
-    , listeners = this._events[evt];
-
-  if (!listeners) return 0;
-  if (listeners.fn) return 1;
-  return listeners.length;
-};
-
-/**
- * Calls each of the listeners registered for a given event.
- *
- * @param {(String|Symbol)} event The event name.
- * @returns {Boolean} `true` if the event had listeners, else `false`.
- * @public
- */
-EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
-  var evt = prefix ? prefix + event : event;
-
-  if (!this._events[evt]) return false;
-
-  var listeners = this._events[evt]
-    , len = arguments.length
-    , args
-    , i;
-
-  if (listeners.fn) {
-    if (listeners.once) this.removeListener(event, listeners.fn, undefined, true);
-
-    switch (len) {
-      case 1: return listeners.fn.call(listeners.context), true;
-      case 2: return listeners.fn.call(listeners.context, a1), true;
-      case 3: return listeners.fn.call(listeners.context, a1, a2), true;
-      case 4: return listeners.fn.call(listeners.context, a1, a2, a3), true;
-      case 5: return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
-      case 6: return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
-    }
-
-    for (i = 1, args = new Array(len -1); i < len; i++) {
-      args[i - 1] = arguments[i];
-    }
-
-    listeners.fn.apply(listeners.context, args);
-  } else {
-    var length = listeners.length
-      , j;
-
-    for (i = 0; i < length; i++) {
-      if (listeners[i].once) this.removeListener(event, listeners[i].fn, undefined, true);
-
-      switch (len) {
-        case 1: listeners[i].fn.call(listeners[i].context); break;
-        case 2: listeners[i].fn.call(listeners[i].context, a1); break;
-        case 3: listeners[i].fn.call(listeners[i].context, a1, a2); break;
-        case 4: listeners[i].fn.call(listeners[i].context, a1, a2, a3); break;
-        default:
-          if (!args) for (j = 1, args = new Array(len -1); j < len; j++) {
-            args[j - 1] = arguments[j];
-          }
-
-          listeners[i].fn.apply(listeners[i].context, args);
-      }
-    }
-  }
-
-  return true;
-};
-
-/**
- * Add a listener for a given event.
- *
- * @param {(String|Symbol)} event The event name.
- * @param {Function} fn The listener function.
- * @param {*} [context=this] The context to invoke the listener with.
- * @returns {EventEmitter} `this`.
- * @public
- */
-EventEmitter.prototype.on = function on(event, fn, context) {
-  return addListener(this, event, fn, context, false);
-};
-
-/**
- * Add a one-time listener for a given event.
- *
- * @param {(String|Symbol)} event The event name.
- * @param {Function} fn The listener function.
- * @param {*} [context=this] The context to invoke the listener with.
- * @returns {EventEmitter} `this`.
- * @public
- */
-EventEmitter.prototype.once = function once(event, fn, context) {
-  return addListener(this, event, fn, context, true);
-};
-
-/**
- * Remove the listeners of a given event.
- *
- * @param {(String|Symbol)} event The event name.
- * @param {Function} fn Only remove the listeners that match this function.
- * @param {*} context Only remove the listeners that have this context.
- * @param {Boolean} once Only remove one-time listeners.
- * @returns {EventEmitter} `this`.
- * @public
- */
-EventEmitter.prototype.removeListener = function removeListener(event, fn, context, once) {
-  var evt = prefix ? prefix + event : event;
-
-  if (!this._events[evt]) return this;
-  if (!fn) {
-    clearEvent(this, evt);
-    return this;
-  }
-
-  var listeners = this._events[evt];
-
-  if (listeners.fn) {
-    if (
-      listeners.fn === fn &&
-      (!once || listeners.once) &&
-      (!context || listeners.context === context)
-    ) {
-      clearEvent(this, evt);
-    }
-  } else {
-    for (var i = 0, events = [], length = listeners.length; i < length; i++) {
-      if (
-        listeners[i].fn !== fn ||
-        (once && !listeners[i].once) ||
-        (context && listeners[i].context !== context)
-      ) {
-        events.push(listeners[i]);
-      }
-    }
-
-    //
-    // Reset the array, or remove it completely if we have no more listeners.
-    //
-    if (events.length) this._events[evt] = events.length === 1 ? events[0] : events;
-    else clearEvent(this, evt);
-  }
-
-  return this;
-};
-
-/**
- * Remove all listeners, or those of the specified event.
- *
- * @param {(String|Symbol)} [event] The event name.
- * @returns {EventEmitter} `this`.
- * @public
- */
-EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
-  var evt;
-
-  if (event) {
-    evt = prefix ? prefix + event : event;
-    if (this._events[evt]) clearEvent(this, evt);
-  } else {
-    this._events = new Events();
-    this._eventsCount = 0;
-  }
-
-  return this;
-};
-
-//
-// Alias methods names because people roll like that.
-//
-EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
-EventEmitter.prototype.addListener = EventEmitter.prototype.on;
-
-//
-// Expose the prefix.
-//
-EventEmitter.prefixed = prefix;
-
-//
-// Allow `EventEmitter` to be imported as module namespace.
-//
-EventEmitter.EventEmitter = EventEmitter;
-
-//
-// Expose the module.
-//
-if (true) {
-  module.exports = EventEmitter;
-}
-
-
-/***/ }),
-/* 77 */
+/* 128 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -10107,11 +16869,11 @@ if (true) {
  * @namespace Phaser.GameObjects.Events
  */
 
-module.exports = { DESTROY: __webpack_require__(78) };
+module.exports = { DESTROY: __webpack_require__(129) };
 
 
 /***/ }),
-/* 78 */
+/* 129 */
 /***/ (function(module, exports) {
 
 /**
@@ -10135,7 +16897,7 @@ module.exports = 'destroy';
 
 
 /***/ }),
-/* 79 */
+/* 130 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -10144,17 +16906,17 @@ module.exports = 'destroy';
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
-var renderWebGL = __webpack_require__(10);
-var renderCanvas = __webpack_require__(10);
+var renderWebGL = __webpack_require__(27);
+var renderCanvas = __webpack_require__(27);
 
 if (true)
 {
-    renderWebGL = __webpack_require__(80);
+    renderWebGL = __webpack_require__(131);
 }
 
 if (true)
 {
-    renderCanvas = __webpack_require__(82);
+    renderCanvas = __webpack_require__(133);
 }
 
 module.exports = {
@@ -10166,7 +16928,7 @@ module.exports = {
 
 
 /***/ }),
-/* 80 */
+/* 131 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -10175,7 +16937,7 @@ module.exports = {
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
-var CounterClockwise = __webpack_require__(81);
+var CounterClockwise = __webpack_require__(132);
 
 /**
  * Renders this Game Object with the Canvas Renderer to the given Camera.
@@ -10293,7 +17055,7 @@ module.exports = SpineGameObjectWebGLRenderer;
 
 
 /***/ }),
-/* 81 */
+/* 132 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -10302,7 +17064,7 @@ module.exports = SpineGameObjectWebGLRenderer;
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
-var CONST = __webpack_require__(8);
+var CONST = __webpack_require__(18);
 
 /**
  * Takes an angle in Phasers default clockwise format and converts it so that
@@ -10333,7 +17095,7 @@ module.exports = CounterClockwise;
 
 
 /***/ }),
-/* 82 */
+/* 133 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -10342,7 +17104,7 @@ module.exports = CounterClockwise;
  * @license      {@link https://github.com/photonstorm/phaser/blob/master/license.txt|MIT License}
  */
 
-var SetTransform = __webpack_require__(83);
+var SetTransform = __webpack_require__(134);
 
 /**
  * Renders this Game Object with the Canvas Renderer to the given Camera.
@@ -10396,7 +17158,7 @@ module.exports = SpineGameObjectCanvasRenderer;
 
 
 /***/ }),
-/* 83 */
+/* 134 */
 /***/ (function(module, exports) {
 
 /**
@@ -10481,7 +17243,7 @@ module.exports = SetTransform;
 
 
 /***/ }),
-/* 84 */
+/* 135 */
 /***/ (function(module, exports) {
 
 /*** IMPORTS FROM imports-loader ***/
@@ -19677,7 +26439,7 @@ module.exports = spine;
 }.call(window));
 
 /***/ }),
-/* 85 */
+/* 136 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
